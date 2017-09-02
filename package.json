@@ -3,6 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "axios": "^0.16.2",
+    "dotenv": "^4.0.0",
+    "firebase": "^4.3.0",
+    "firebase-admin": "^5.2.1",
+    "firebaseui": "^2.3.0",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
     "react-scripts": "1.0.12"

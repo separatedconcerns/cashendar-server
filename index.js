@@ -11,7 +11,7 @@ exports.addMessage = functions.https.onRequest((request, response) => {
   .ref('/items')
   .push({username: username, currentItem: currentItem})
   .then(() => {
-    response.sendStatus(201);
+    response.end();
   });
 });
 
@@ -28,6 +28,6 @@ exports.returnMessages = functions.https.onRequest((request, response) => {
         username: items[item].username
       });
     }
-    response.status(201).send(newState);
+    response.end();
   });
 });

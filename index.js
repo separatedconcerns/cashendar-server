@@ -16,8 +16,18 @@ exports.addMessage = functions.https.onRequest((request, response) => {
 });
 
 exports.returnMessages = functions.https.onRequest((request, response) => {
-	response.set('Access-Control-Allow-Origin', "*");
-  response.set('Access-Control-Allow-Methods', 'GET, POST');
-	response.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type");
- 	response.send('string from byeWorld');
+  response.header('Access-Control-Allow-Origin', '*');
+  const itemsRef = admin.database().ref('items');
+  itemsRef.on('value', (snapshot) => {
+    let items = snapshot.val();
+    let newState = [];
+    for (let item in items) {
+      newState.push({
+        id: item,
+        currentItem: items[item].currentItem,
+        username: items[item].username
+      });
+    }
+    response.status(201).send(newState);
+  });
 });

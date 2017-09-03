@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import './App.css';
 import firebase from './firebase.js';
 import axios from 'axios';
 import qs from 'qs';
@@ -59,15 +58,13 @@ class App extends Component {
 
   sendMessage(data) {
     let config = {
+      // TODO: add these to .env
       // url: 'http://localhost:5000/testproject-6177f/us-central1/addMessage',
       url: 'https://us-central1-testproject-6177f.cloudfunctions.net/addMessage',
       payload: qs.stringify(data)
     };
 
     axios.post(config.url, config.payload)
-    .then((response) => {
-      console.log(response);
-    })
     .catch((error) => {
       console.log(error);
     });

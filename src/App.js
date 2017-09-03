@@ -59,7 +59,8 @@ class App extends Component {
 
   sendMessage(data) {
     let config = {
-      url: 'http://localhost:5000/testproject-6177f/us-central1/addMessage',
+      // url: 'http://localhost:5000/testproject-6177f/us-central1/addMessage',
+      url: 'https://us-central1-testproject-6177f.cloudfunctions.net/addMessage',
       payload: qs.stringify(data)
     };
 

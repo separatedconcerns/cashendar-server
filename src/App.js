@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import './App.css';
 import firebase from './firebase.js';
+import axios from 'axios';
+import qs from 'qs';
 
 class App extends Component {
   constructor() {
@@ -12,8 +14,6 @@ class App extends Component {
     }
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-
-    process.env
   }
 
   componentDidMount() {
@@ -42,12 +42,21 @@ class App extends Component {
 
   handleSubmit(e) {
     e.preventDefault();
-    const itemsRef = firebase.database().ref('items');
-    const item = {
+    let item = {
       title: this.state.currentItem,
       user: this.state.username
     }
-    itemsRef.push(item);
+    var headers = {
+      'Content-Type': 'application/json'
+    }
+    axios.post('https://us-central1-testproject-6177f.cloudfunctions.net/addMessage', qs.stringify(item))
+    .then(function (response) {
+      console.log(response);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+
     this.setState({
       currentItem: '',
       username: ''

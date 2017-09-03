@@ -7,7 +7,9 @@
     "dotenv": "^4.0.0",
     "firebase": "^4.3.0",
     "firebase-admin": "^5.2.1",
+    "firebase-functions": "^0.6.3",
     "firebaseui": "^2.3.0",
+    "qs": "^6.5.0",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
     "react-scripts": "1.0.12"

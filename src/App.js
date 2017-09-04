@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 // import firebase from './firebase.js';
-// import axios from 'axios';
-// import qs from 'qs';
+import axios from 'axios';
+import qs from 'qs';
 var PlaidLink = require('react-plaid-link');
 
 class App extends Component {
@@ -13,9 +13,10 @@ class App extends Component {
       items: []
     };
     // this.handleChange = this.handleChange.bind(this);
-    // this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleOnSuccess = this.handleOnSuccess.bind(this);
     // this.getMessages = this.getMessages.bind(this);
     // this.sendMessage = this.sendMessage.bind(this);
+    this.exchangePublicToken = this.exchangePublicToken.bind(this);
   }
 
   // getMessages() {
@@ -57,20 +58,19 @@ class App extends Component {
   //   });
   // }
   //
-  // sendMessage(data) {
-  //   let config = {
-  //     // TODO: add these to .env
-  //     // url: 'http://localhost:5000/testproject-6177f/us-central1/addMessage',
-  //     url: 'https://us-central1-testproject-6177f.cloudfunctions.net/addMessage',
-  //     payload: qs.stringify(data)
-  //   };
-  //
-  //   axios.post(config.url, config.payload)
-  //   .catch((error) => {
-  //     console.log(error);
-  //   });
-  // }
-  //
+  exchangePublicToken(publicToken) {
+    console.log('line 61');
+    let config = {
+      url: 'http://localhost:5000/testproject-6177f/us-central1/exchangePublicToken',
+      payload: qs.stringify({publicToken: publicToken})
+    };
+
+    axios.post(config.url, config.payload)
+    .catch((error) => {
+      console.log(error);
+    });
+  }
+
   // handleSubmit(e) {
   //   e.preventDefault();
   //
@@ -91,6 +91,7 @@ class App extends Component {
     // send token to client server
     console.log('token', token);
     console.log('metadata', metadata);
+    this.exchangePublicToken(token);
   }
 
   render() {

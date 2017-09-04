@@ -36,4 +36,5 @@ jobs:
       # run tests!
       - run: npm run build
       - run: npm run test
-      - run: npm install firebase firebase deploy --token "$FIREBASE_DEPLOY_TOKEN" --non-interactive
+      - run: npm install firebase
+      - run: firebase deploy --token "$FIREBASE_DEPLOY_TOKEN" --non-interactive

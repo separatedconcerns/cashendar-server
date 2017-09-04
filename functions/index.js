@@ -1,6 +1,9 @@
 // const axios = require('axios');
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+const dotenv = require('dotenv');
+dotenv.config();
+
 admin.initializeApp(functions.config().firebase);
 
 exports.addMessage = functions.https.onRequest((request, response) => {

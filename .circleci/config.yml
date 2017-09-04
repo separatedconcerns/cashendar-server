@@ -36,11 +36,11 @@ jobs:
       # run tests!
       - run: npm run build
       - run: npm run test
+      - run: npm install -g firebase-tools
 
       - deploy:
           name: Deploy to Firebase
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-            alias firebase="`npm config get prefix`/bin/firebase"
               firebase deploy --token=$FIREBASE_DEPLOY_TOKEN --non-interactive
             fi

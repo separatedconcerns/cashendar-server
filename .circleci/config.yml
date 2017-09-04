@@ -38,14 +38,10 @@ jobs:
       - run: npm run test
       - run: npm run build
 
-      - test:
-          post:
-            - bash <(curl -s https://codecov.io/bash)
-
-
       - deploy:
           name: Deploy to Firebase
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               ./node_modules/.bin/firebase deploy --token=$FIREBASE_DEPLOY_TOKEN
+              bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports"
             fi

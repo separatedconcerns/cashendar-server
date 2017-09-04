@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import firebase from './firebase.js';
-import axios from 'axios';
-import qs from 'qs';
+// import firebase from './firebase.js';
+// import axios from 'axios';
+// import qs from 'qs';
 var PlaidLink = require('react-plaid-link');
 
 class App extends Component {

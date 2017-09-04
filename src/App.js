@@ -99,7 +99,7 @@ class App extends Component {
 
         <PlaidLink
           publicKey={process.env.REACT_APP_PLAID_PUBLIC_KEY}
-          product='auth'
+          product='connect'
           env='sandbox'
           clientName='Wheres My Money'
           onSuccess={this.handleOnSuccess}

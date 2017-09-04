@@ -34,12 +34,12 @@ jobs:
           key: v1-dependencies-{{ checksum "package.json" }}
 
       # run tests!
-      - run: npm run build
       - run: npm run test
+      - run: npm run build
 
       - deploy:
           name: Deploy to Firebase
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              firebase deploy --token=$FIREBASE_DEPLOY_TOKEN --non-interactive
+              ./node_modules/.bin/firebase deploy --token=$FIREBASE_DEPLOY_TOKEN --non-interactive
             fi

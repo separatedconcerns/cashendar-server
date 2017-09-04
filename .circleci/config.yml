@@ -36,7 +36,6 @@ jobs:
       # run tests!
       - run: npm run build
       - run: npm run test
-      - run: npm install -g firebase-tools
 
       - deploy:
           name: Deploy to Firebase

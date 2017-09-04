@@ -37,7 +37,7 @@ jobs:
       - run: npm run build
       - run: npm run test
 
-      - deployment:
+      - deploy:
           production:
             branch: master
             commands:

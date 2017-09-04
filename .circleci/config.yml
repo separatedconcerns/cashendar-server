@@ -38,6 +38,11 @@ jobs:
       - run: npm run test
       - run: npm run build
 
+      - test:
+          post:
+            - bash <(curl -s https://codecov.io/bash)
+
+
       - deploy:
           name: Deploy to Firebase
           command: |

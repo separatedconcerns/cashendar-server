@@ -18,7 +18,7 @@ class App extends Component {
   }
 
   login() {
-    auth.signInWithPopup(provider) 
+    auth.signInWithPopup(provider)
       .then((result) => {
         const user = result.user;
         this.setState({
@@ -35,15 +35,15 @@ class App extends Component {
         });
       });
   }
-  
+
   componentDidMount() {
     auth.onAuthStateChanged((user) => {
       if (user) {
         this.setState({ user });
-      } 
+      }
     });
   }
-  
+
   exchangePublicToken(publicToken) {
     let config = {
       url: 'http://localhost:5000/testproject-6177f/us-central1/exchangePublicToken',
@@ -65,21 +65,28 @@ class App extends Component {
     return (
       <div className='App'>
 
-      <div className="wrapper">
-        {this.state.user ?
-          <button onClick={this.logout}>Log Out</button>                
+        <div className="wrapper">
+          {this.state.user ?
+            <button onClick={this.logout}>Log Out</button>
           :
-          <button onClick={this.login}>Log In</button>              
-        }
-      </div>
+          <button onClick={this.login}>Log In</button>
+          }
+        </div>
 
-        <PlaidLink
-          publicKey={process.env.REACT_APP_PLAID_PUBLIC_KEY}
-          product='connect'
-          env='sandbox'
-          clientName='Wheres My Money'
-          onSuccess={this.handleOnSuccess}
-        />
+        {this.state.user ?
+          <div>
+            <div>{this.state.user.email}</div>
+            <PlaidLink
+              publicKey={process.env.REACT_APP_PLAID_PUBLIC_KEY}
+              product='connect'
+              env='sandbox'
+              clientName='Wheres My Money'
+              onSuccess={this.handleOnSuccess}
+            />
+          </div>
+        :
+        <div>Log in to link account</div>
+        }
       </div>
     );
   }

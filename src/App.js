@@ -17,13 +17,24 @@ class App extends Component {
     this.exchangePublicToken = this.exchangePublicToken.bind(this);
   }
 
+  verifyUser() {
+    auth.currentUser.getToken()
+      .then(idToken => {
+          const config = {
+            url: 'http://localhost:5000/testproject-6177f/us-central1/verifyIDtoken',
+            payload: qs.stringify({idToken: idToken})
+          };
+          axios.post(config.url, config.payload)
+            .catch(err => console.log(err));
+        });
+  }
+
   login() {
     auth.signInWithPopup(provider)
-      .then((result) => {
+      .then(result => {
         const user = result.user;
-        this.setState({
-          user
-        });
+        this.setState({user});
+        this.verifyUser();
       });
   }
 

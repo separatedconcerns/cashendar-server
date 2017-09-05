@@ -41,16 +41,14 @@ class App extends Component {
   logout() {
     auth.signOut()
       .then(() => {
-        this.setState({
-          user: null
-        });
+        this.setState({user: null});
       });
   }
 
   componentDidMount() {
     auth.onAuthStateChanged((user) => {
       if (user) {
-        this.setState({ user });
+        this.setState({user});
       }
     });
   }
@@ -60,11 +58,8 @@ class App extends Component {
       url: 'http://localhost:5000/testproject-6177f/us-central1/exchangePublicToken',
       payload: qs.stringify({publicToken: publicToken})
     };
-
     axios.post(config.url, config.payload)
-    .catch((error) => {
-      console.log(error);
-    });
+    .catch(error => { console.log(error);});
   }
 
   handleOnSuccess(token, metadata) {
@@ -76,7 +71,7 @@ class App extends Component {
     return (
       <div className='App'>
 
-        <div className="wrapper">
+        <div className='wrapper'>
           {this.state.user ?
             <button onClick={this.logout}>Log Out</button>
           :

@@ -39,7 +39,7 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
     });
 });
 
-exports.writeTransactions = functions.https.onRequest((request, response) => {
+exports.getTransactionsFromPlaid = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const access_token = 'access-sandbox-2c10cb64-9ead-4128-9dfa-fe851df9ac5a';
   const plaidClient = new plaid.Client(
@@ -91,4 +91,3 @@ exports.writeTransactions = functions.https.onRequest((request, response) => {
       console.log(error);
     });
 });
-

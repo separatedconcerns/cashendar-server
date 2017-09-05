@@ -91,3 +91,9 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
       console.log(error);
     });
 });
+
+
+exports.getTransactionsFromDatabase = functions.https.onRequest((request, response) => {
+  response.header('Access-Control-Allow-Origin', '*');
+  response.send('transactions will go here');
+});

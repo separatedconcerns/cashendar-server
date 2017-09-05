@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
-// import firebase from './firebase.js';
+import firebase, { auth, provider } from './firebase.js';
 import axios from 'axios';
 import qs from 'qs';
 var PlaidLink = require('react-plaid-link');
+
+
 
 class App extends Component {
   constructor() {
@@ -10,13 +12,36 @@ class App extends Component {
     this.state = {
       currentItem: '',
       username: '',
-      items: []
+      items: [],
+      user: null
     };
+
+    this.login = this.login.bind(this);
+    this.logout = this.logout.bind(this);
     // this.handleChange = this.handleChange.bind(this);
     this.handleOnSuccess = this.handleOnSuccess.bind(this);
     // this.getMessages = this.getMessages.bind(this);
     // this.sendMessage = this.sendMessage.bind(this);
     this.exchangePublicToken = this.exchangePublicToken.bind(this);
+  }
+
+  login() {
+    auth.signInWithPopup(provider) 
+      .then((result) => {
+        const user = result.user;
+        this.setState({
+          user
+        });
+      });
+  }
+
+  logout() {
+    auth.signOut()
+      .then(() => {
+        this.setState({
+          user: null
+        });
+      });
   }
 
   // getMessages() {
@@ -30,7 +55,7 @@ class App extends Component {
   //   // .catch((error) => {
   //   //   console.log(error);
   //   // });
-  //
+  
   //   const itemsRef = firebase.database().ref('items');
   //   itemsRef.on('value', (snapshot) => {
   //     let items = snapshot.val();
@@ -47,11 +72,16 @@ class App extends Component {
   //     });
   //   });
   // }
-  //
-  // componentDidMount() {
-  //   this.getMessages();
-  // }
-  //
+  
+  componentDidMount() {
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        this.setState({ user });
+      } 
+    });
+    // this.getMessages();
+  }
+  
   // handleChange(e) {
   //   this.setState({
   //     [e.target.name]: e.target.value
@@ -73,14 +103,14 @@ class App extends Component {
 
   // handleSubmit(e) {
   //   e.preventDefault();
-  //
+  
   //   let data = {
   //     currentItem: this.state.currentItem,
   //     username: this.state.username
   //   };
-  //
+  
   //   this.sendMessage(data);
-  //
+  
   //   this.setState({
   //     currentItem: '',
   //     username: ''
@@ -97,6 +127,14 @@ class App extends Component {
   render() {
     return (
       <div className='App'>
+
+      <div className="wrapper">
+        {this.state.user ?
+          <button onClick={this.logout}>Log Out</button>                
+          :
+          <button onClick={this.login}>Log In</button>              
+        }
+      </div>
 
         <PlaidLink
           publicKey={process.env.REACT_APP_PLAID_PUBLIC_KEY}

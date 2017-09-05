@@ -92,8 +92,20 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
     });
 });
 
-
 exports.getTransactionsFromDatabase = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   response.send('transactions will go here');
+});
+
+exports.verifyIDtoken = functions.https.onRequest((request, response) => {
+  response.header('Access-Control-Allow-Origin', '*');
+  const idToken = request.body.idToken;
+
+  admin.auth().verifyIdToken(idToken)
+    .then(decodedToken => {
+      const uid = decodedToken.uid;
+      console.log(uid);
+    });
+
+  response.send('got yo token');
 });

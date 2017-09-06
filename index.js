@@ -30,14 +30,15 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
 
       let payload = {item_id: item_id,
         access_token: access_token,
-        request_id: request_id,};
+        request_id: request_id};
 
       admin.database()
-      .ref('/users')
-      .push(payload)
+      .ref('/users' + '/ni6laljDCHdTIZYA2hSrKfxfvWw2' + '/access_tokens' )
+      .set(payload)
       .then(() => {
         response.end();
       });
+
 
     }).catch((error) => {
       console.log(error);
@@ -46,7 +47,7 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
 
 exports.getTransactionsFromPlaid = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
-  const access_token = 'access-sandbox-2c10cb64-9ead-4128-9dfa-fe851df9ac5a';
+  const access_token = 'access-sandbox-0228c2e2-755b-4137-b1ad-7f52300b5635';
   const plaidClient = new plaid.Client(
     process.env.REACT_APP_PLAID_CLIENT_ID,
     process.env.REACT_APP_PLAID_SECRET,
@@ -59,10 +60,6 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
 
   plaidClient.getTransactions(access_token, thirtyDaysAgo, today)
     .then((successResponse) => {
-      // console.log('line 67: accounts', successResponse.accounts);
-      // console.log('line 68: transactions', successResponse.transactions);
-      // console.log('line 69: item', successResponse.item);
-      // console.log('line 70: request id', successResponse.request_id);
 
       let item_id = successResponse.item.item_id;
       let accounts = successResponse.accounts;
@@ -81,8 +78,8 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
           console.log(childData.item_id === item_id);
 
           admin.database()
-          .ref(`users/-KtEAsQdDs4LehAJ2Q5p/${item_id}`)
-          .push({transactions: transactions})
+          .ref(`users/ni6laljDCHdTIZYA2hSrKfxfvWw2/access_tokens/access_token/${item_id}`)
+          .set({transactions: transactions})
           .then(() => {
             response.end();
           });
@@ -104,7 +101,7 @@ exports.getTransactionsFromDatabase = functions.https.onRequest((request, respon
 exports.addUser = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const idToken = request.body.idToken;
-  
+
   admin.auth().verifyIdToken(idToken)
     .then(decodedToken => {
       let uid = decodedToken.uid;

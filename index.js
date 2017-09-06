@@ -13,6 +13,29 @@ admin.initializeApp({
   databaseURL: process.env.REACT_APP_FIREBASE_DATABASE_URL
 });
 
+exports.addUser = functions.https.onRequest((request, response) => {
+  response.header('Access-Control-Allow-Origin', '*');
+  const idToken = request.body.idToken;
+
+  admin.auth().verifyIdToken(idToken)
+    .then(decodedToken => {
+      let uid = decodedToken.uid;
+      admin.auth().getUser(uid)
+        .then(userRecord => {
+          let user = userRecord.toJSON();
+
+          admin.database().ref('users/' + uid).set({
+            email: user.email,
+            name: user.displayName
+          });
+        })
+        .catch(error => {
+          console.log("Error fetching user data:", error);
+        });
+    });
+  response.end();
+});
+
 exports.exchangePublicToken = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const publicToken = request.body.publicToken;
@@ -33,6 +56,7 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
         access_token: access_token,
         request_id: request_id};
 
+      // TODO: try auth.currentUser.getIdToken() to retrieve current user's uid
       admin.database()
       .ref('/users' + '/ni6laljDCHdTIZYA2hSrKfxfvWw2' + '/access_tokens' )
       .set(payload)
@@ -40,11 +64,10 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
         response.end();
       });
 
-
     }).catch((error) => {
       console.log(error);
     });
-
+  // TODO: change GET to POST and POST access token to this address
   axios.get('http://localhost:5000/testproject-6177f/us-central1/getTransactionsFromPlaid').catch(error => {
     console.log(error);
   });
@@ -52,6 +75,7 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
 
 exports.getTransactionsFromPlaid = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
+  // get access token from the request object
   const access_token = 'access-sandbox-0228c2e2-755b-4137-b1ad-7f52300b5635';
   const plaidClient = new plaid.Client(
     process.env.REACT_APP_PLAID_CLIENT_ID,
@@ -71,9 +95,7 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
       let request_id = successResponse.request_id;
       let transactions = successResponse.transactions;
 
-      const ref = admin.database().ref('users');
-
-      ref.once('value', function(snapshot) {
+      admin.database().ref('users').once('value', function(snapshot) {
         snapshot.forEach(function(childSnapshot) {
           var childKey = childSnapshot.key;
           var childData = childSnapshot.val();
@@ -152,25 +174,3 @@ exports.getTransactionsFromDatabase = functions.https.onRequest((request, respon
   response.json(sample);
 });
 
-exports.addUser = functions.https.onRequest((request, response) => {
-  response.header('Access-Control-Allow-Origin', '*');
-  const idToken = request.body.idToken;
-
-  admin.auth().verifyIdToken(idToken)
-    .then(decodedToken => {
-      let uid = decodedToken.uid;
-      admin.auth().getUser(uid)
-        .then(userRecord => {
-          let user = userRecord.toJSON();
-
-          admin.database().ref('users/' + uid).set({
-            email: user.email,
-            name: user.displayName
-          });
-        })
-        .catch(error => {
-          console.log("Error fetching user data:", error);
-        });
-    });
-  response.end();
-});

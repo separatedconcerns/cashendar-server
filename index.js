@@ -5,7 +5,12 @@ const dotenv = require('dotenv');
 const moment = require('moment');
 dotenv.config();
 
-admin.initializeApp(functions.config().firebase);
+var serviceAccount = require('./serviceAccountKey.json');
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: process.env.REACT_APP_FIREBASE_DATABASE_URL
+});
 
 exports.exchangePublicToken = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
@@ -81,7 +86,6 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
           .then(() => {
             response.end();
           });
-
         });
       });
 
@@ -97,15 +101,25 @@ exports.getTransactionsFromDatabase = functions.https.onRequest((request, respon
   response.send('transactions will go here');
 });
 
-exports.verifyIDtoken = functions.https.onRequest((request, response) => {
+exports.addUser = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const idToken = request.body.idToken;
-
+  
   admin.auth().verifyIdToken(idToken)
     .then(decodedToken => {
-      const uid = decodedToken.uid;
-      console.log(uid);
-    });
+      let uid = decodedToken.uid;
+      admin.auth().getUser(uid)
+        .then(userRecord => {
+          let user = userRecord.toJSON();
 
-  response.send('got yo token');
+          admin.database().ref('users/' + uid).set({
+            email: user.email,
+            name: user.displayName
+          });
+        })
+        .catch(error => {
+          console.log("Error fetching user data:", error);
+        });
+    });
+  response.end();
 });

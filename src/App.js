@@ -18,7 +18,7 @@ class App extends Component {
   }
 
   verifyUser() {
-    auth.currentUser.getToken()
+    auth.currentUser.getIdToken()
       .then(idToken => {
           const config = {
             url: 'http://localhost:5000/testproject-6177f/us-central1/addUser',

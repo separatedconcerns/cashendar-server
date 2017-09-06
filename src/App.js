@@ -17,6 +17,23 @@ class App extends Component {
     this.exchangePublicToken = this.exchangePublicToken.bind(this);
   }
 
+  componentDidMount() {
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        this.setState({user});
+      }
+    });
+  }
+
+  login() {
+    auth.signInWithPopup(provider)
+      .then(result => {
+        const user = result.user;
+        this.setState({user});
+        this.verifyUser();
+      });
+  }
+
   verifyUser() {
     auth.currentUser.getIdToken()
       .then(idToken => {
@@ -29,28 +46,9 @@ class App extends Component {
         });
   }
 
-  login() {
-    auth.signInWithPopup(provider)
-      .then(result => {
-        const user = result.user;
-        this.setState({user});
-        this.verifyUser();
-      });
-  }
-
-  logout() {
-    auth.signOut()
-      .then(() => {
-        this.setState({user: null});
-      });
-  }
-
-  componentDidMount() {
-    auth.onAuthStateChanged((user) => {
-      if (user) {
-        this.setState({user});
-      }
-    });
+  handleOnSuccess(token, metadata) {
+    // send token to client server
+    this.exchangePublicToken(token);
   }
 
   exchangePublicToken(publicToken) {
@@ -62,9 +60,11 @@ class App extends Component {
     .catch(error => { console.log(error);});
   }
 
-  handleOnSuccess(token, metadata) {
-    // send token to client server
-    this.exchangePublicToken(token);
+  logout() {
+    auth.signOut()
+      .then(() => {
+        this.setState({user: null});
+      });
   }
 
   render() {

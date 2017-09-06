@@ -8,13 +8,15 @@ class App extends Component {
   constructor() {
     super();
     this.state = {
-      user: null
+      user: null,
+      transactions: []
     };
 
     this.login = this.login.bind(this);
     this.logout = this.logout.bind(this);
     this.handleOnSuccess = this.handleOnSuccess.bind(this);
     this.exchangePublicToken = this.exchangePublicToken.bind(this);
+    this.getTransactionsFromDatabase = this.getTransactionsFromDatabase.bind(this);
   }
 
   componentDidMount() {
@@ -57,6 +59,7 @@ class App extends Component {
       payload: qs.stringify({publicToken: publicToken})
     };
     axios.post(config.url, config.payload)
+    .then(() => this.getTransactionsFromDatabase())
     .catch(error => { console.log(error);});
   }
 
@@ -66,6 +69,17 @@ class App extends Component {
         this.setState({user: null});
       });
   }
+
+  getTransactionsFromDatabase() {
+    axios.get('http://localhost:5000/testproject-6177f/us-central1/getTransactionsFromDatabase')
+      .then((response) => {
+        this.setState({transactions: response.data});
+        console.log(this.state.transactions);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
 
   render() {
     return (
@@ -93,6 +107,12 @@ class App extends Component {
         :
         <div>Log in to link account</div>
         }
+        <div className='Transactions'>
+          {this.state.transactions.map((transaction) => (
+            <transaction key={transaction.id}>{transaction.date + ' | ' + transaction.name + ' - $' + transaction.amount}<br/></transaction>
+          ))}
+        </div>
+
       </div>
     );
   }

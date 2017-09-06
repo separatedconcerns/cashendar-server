@@ -3,6 +3,7 @@ const admin = require('firebase-admin');
 const plaid = require('plaid');
 const dotenv = require('dotenv');
 const moment = require('moment');
+const axios = require('axios');
 dotenv.config();
 
 var serviceAccount = require('./serviceAccountKey.json');
@@ -43,6 +44,10 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
     }).catch((error) => {
       console.log(error);
     });
+
+  axios.get('http://localhost:5000/testproject-6177f/us-central1/getTransactionsFromPlaid').catch(error => {
+    console.log(error);
+  });
 });
 
 exports.getTransactionsFromPlaid = functions.https.onRequest((request, response) => {

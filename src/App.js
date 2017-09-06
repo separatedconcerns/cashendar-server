@@ -21,7 +21,7 @@ class App extends Component {
     auth.currentUser.getToken()
       .then(idToken => {
           const config = {
-            url: 'http://localhost:5000/testproject-6177f/us-central1/verifyIDtoken',
+            url: 'http://localhost:5000/testproject-6177f/us-central1/addUser',
             payload: qs.stringify({idToken: idToken})
           };
           axios.post(config.url, config.payload)

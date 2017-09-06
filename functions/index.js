@@ -19,12 +19,12 @@ exports.addUser = functions.https.onRequest((request, response) => {
 
   admin.auth().verifyIdToken(idToken)
     .then(decodedToken => {
-      let uid = decodedToken.uid;
-      admin.auth().getUser(uid)
+      let uniqueUserId = decodedToken.uid;
+      admin.auth().getUser(uniqueUserId)
         .then(userRecord => {
           let user = userRecord.toJSON();
 
-          admin.database().ref('users/' + uid).set({
+          admin.database().ref('users/' + uniqueUserId).set({
             email: user.email,
             name: user.displayName
           });
@@ -39,6 +39,7 @@ exports.addUser = functions.https.onRequest((request, response) => {
 exports.exchangePublicToken = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const publicToken = request.body.publicToken;
+  const uniqueUserId = request.body.uniqueUserId;
   const plaidClient = new plaid.Client(
     process.env.REACT_APP_PLAID_CLIENT_ID,
     process.env.REACT_APP_PLAID_SECRET,
@@ -58,7 +59,7 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
 
       // TODO: try auth.currentUser.getIdToken() to retrieve current user's uid
       admin.database()
-      .ref('/users' + '/ni6laljDCHdTIZYA2hSrKfxfvWw2' + '/access_tokens' )
+      .ref(`/users/${uniqueUserId}/access_tokens`)
       .set(payload)
       .then(() => {
         response.end();

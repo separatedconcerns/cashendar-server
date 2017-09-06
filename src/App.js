@@ -54,9 +54,13 @@ class App extends Component {
   }
 
   exchangePublicToken(publicToken) {
+
     let config = {
       url: 'http://localhost:5000/testproject-6177f/us-central1/exchangePublicToken',
-      payload: qs.stringify({publicToken: publicToken})
+      payload: qs.stringify({
+        publicToken: publicToken,
+        uniqueUserId: auth.currentUser.uid
+      })
     };
     axios.post(config.url, config.payload)
     .then(() => this.getTransactionsFromDatabase())

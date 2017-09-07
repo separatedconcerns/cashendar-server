@@ -67,6 +67,16 @@ class App extends Component {
     .catch(error => { console.log(error);});
   }
 
+  getTransactionsFromDatabase() {
+    axios.get('http://localhost:5000/testproject-6177f/us-central1/getTransactionsFromDatabase')
+    .then((response) => {
+      this.setState({transactions: response.data});
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+  };
+  
   logout() {
     auth.signOut()
       .then(() => {
@@ -74,16 +84,7 @@ class App extends Component {
       });
   }
 
-  getTransactionsFromDatabase() {
-    axios.get('http://localhost:5000/testproject-6177f/us-central1/getTransactionsFromDatabase')
-      .then((response) => {
-        this.setState({transactions: response.data});
-        console.log(this.state.transactions);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
+
 
   render() {
     return (
@@ -113,7 +114,7 @@ class App extends Component {
         }
         <div className='Transactions'>
           {this.state.transactions.map((transaction) => (
-            <transaction key={transaction.id}>{transaction.date + ' | ' + transaction.name + ' - $' + transaction.amount}<br/></transaction>
+            <transaction key={transaction.transaction_id}>{transaction.date + ' | ' + transaction.name + ' - $' + transaction.amount}<br/></transaction>
           ))}
         </div>
 

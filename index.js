@@ -65,10 +65,10 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
           access_token: access_token,
           uniqueUserId: uniqueUserId
         })
-          .catch(error => {
-            console.log(error);
-          });
-        response.end();
+        .then( () => response.end())
+        .catch(error => {
+          console.log(error);
+        });
       });
     })
     .catch((error) => {
@@ -101,22 +101,17 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
 
       admin.database().ref('users').once('value', function(snapshot) {
         snapshot.forEach(function(childSnapshot) {
-          var childKey = childSnapshot.key;
-          var childData = childSnapshot.val();
-          // console.log(childKey);
-          // console.log(childData.item_id);
-          // console.log(item_id);
-          // console.log(childData.item_id === item_id);
+          let childKey = childSnapshot.key;
+          let childData = childSnapshot.val();
 
           admin.database()
-          .ref(`users/${uniqueUserId}/access_tokens/${item_id}`)
+          .ref(`users/${uniqueUserId}/access_tokens/itemId`)
           .set({transactions})
           .then(() => {
             response.end();
           });
         });
       });
-      response.end();
     }).catch((error) => {
       console.log(error);
     });
@@ -124,55 +119,11 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
 
 exports.getTransactionsFromDatabase = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
-  const sample = [{
-   "account_id": "vokyE5Rn6vHKqDLRXEn5fne7LwbKPLIXGK98d",
-   "amount": 2307.21,
-   "category": [
-     "Shops",
-     "Computers and Electronics"
-   ],
-   "category_id": "19013000",
-   "date": "2017-01-29",
-   "location": {
-    "address": "300 Post St",
-    "city": "San Francisco",
-    "state": "CA",
-    "zip": "94108",
-    "lat": null,
-    "lon": null
-   },
-   "name": "Apple Store",
-   "payment_meta": Object,
-   "pending": false,
-   "pending_transaction_id": null,
-   "account_owner": null,
-   "transaction_id": "lPNjeW1nR6CDn5okmGQ6hEpMo4lLNoSrzqDje",
-   "transaction_type": "place"
-  }, {
-   "account_id": "XA96y1wW3xS7wKyEdbRzFkpZov6x1ohxMXwep",
-   "amount": 78.5,
-   "category": [
-     "Food and Drink",
-     "Restaurants"
-   ],
-   "category_id": "13005000",
-   "date": "2017-01-29",
-   "location": {
-     "address": "262 W 15th St",
-     "city": "New York",
-     "state": "NY",
-     "zip": "10011",
-     "lat": 40.740352,
-     "lon": -74.001761
-   },
-   "name": "Golden Crepes",
-   "payment_meta": Object,
-   "pending": false,
-   "pending_transaction_id": null,
-   "account_owner": null,
-   "transaction_id": "4WPD9vV5A1cogJwyQ5kVFB3vPEmpXPS3qvjXQ",
-   "transaction_type": "place"
- }];
-  response.json(sample);
+  const uniqueUserId = request.body.uniqueUserId;
+
+  admin.database()
+    .ref(`users/${uniqueUserId}/access_tokens/itemId/transactions`)
+    .once('value')
+    .then(snapshot => response.json(snapshot.val()) );
 });
 

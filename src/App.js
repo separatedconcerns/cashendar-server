@@ -105,8 +105,6 @@ class App extends Component {
       });
   }
 
-
-
   render() {
     return (
       <div className='App'>
@@ -135,11 +133,14 @@ class App extends Component {
         }
         <div className='Transactions'>
           {this.state.transactions.map((transaction, idx) => (
-            <transaction key={transaction.transaction_id}>{transaction.date + ' | ' + transaction.name + ' - $' + transaction.amount}<br/>
-              {this.state.transactions.length-1 === idx || transaction.date !== this.state.transactions[idx+1].date ?
-                <div>{'Total spent on ' + transaction.date + ' ==> '}<u>{'$' + this.state.transactionSums[transaction.date]}</u><br/><br/></div> :
-                <div></div>
+            <transaction key={transaction.transaction_id}>
+              {idx === 0 || transaction.date !== this.state.transactions[idx - 1].date ?
+                <div><u>{'Total spent on ' + transaction.date + ' ==> '}
+                     <b>{'$' + this.state.transactionSums[transaction.date]}</b></u><br/></div> : <div></div>
               }
+              {'\xa0\xa0\xa0' + transaction.date + ' | ' + '\xa0' + transaction.name + '\xa0\xa0' + '$'}
+              <em>{transaction.amount}</em><br/>
+              {(this.state.transactions.length - 1 === idx || transaction.date !== this.state.transactions[idx+1].date) && <div><br/></div>}
             </transaction>
           ))}
         </div>

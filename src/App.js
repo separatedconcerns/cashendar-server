@@ -9,7 +9,8 @@ class App extends Component {
     super();
     this.state = {
       user: null,
-      transactions: []
+      transactions: [],
+      transactionSums: {}
     };
 
     this.login = this.login.bind(this);
@@ -17,6 +18,7 @@ class App extends Component {
     this.handleOnSuccess = this.handleOnSuccess.bind(this);
     this.exchangePublicToken = this.exchangePublicToken.bind(this);
     this.getTransactionsFromDatabase = this.getTransactionsFromDatabase.bind(this);
+    this.sumTransactions = this.sumTransactions.bind(this);
   }
 
   componentDidMount() {
@@ -74,16 +76,28 @@ class App extends Component {
         uniqueUserId: auth.currentUser.uid
       })
     };
-
     axios.post(config.url, config.payload)
     .then((response) => {
       this.setState({transactions: response.data});
+      this.sumTransactions();
     })
     .catch((error) => {
       console.log(error);
     });
   };
-  
+
+  sumTransactions() {
+    let transactionSums = {};
+    this.state.transactions.forEach((transaction) => {
+      if (transactionSums[transaction.date]) {
+        transactionSums[transaction.date] += transaction.amount;
+      } else {
+        transactionSums[transaction.date] = transaction.amount;
+      }
+    });
+    this.setState({transactionSums: transactionSums});
+  }
+
   logout() {
     auth.signOut()
       .then(() => {
@@ -120,8 +134,13 @@ class App extends Component {
         <div>Log in to link account</div>
         }
         <div className='Transactions'>
-          {this.state.transactions.map((transaction) => (
-            <transaction key={transaction.transaction_id}>{transaction.date + ' | ' + transaction.name + ' - $' + transaction.amount}<br/></transaction>
+          {this.state.transactions.map((transaction, idx) => (
+            <transaction key={transaction.transaction_id}>{transaction.date + ' | ' + transaction.name + ' - $' + transaction.amount}<br/>
+              {this.state.transactions.length-1 === idx || transaction.date !== this.state.transactions[idx+1].date ?
+                <div>{'Total spent on ' + transaction.date + ' ==> '}<u>{'$' + this.state.transactionSums[transaction.date]}</u><br/><br/></div> :
+                <div></div>
+              }
+            </transaction>
           ))}
         </div>
 

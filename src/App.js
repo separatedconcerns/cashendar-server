@@ -68,7 +68,14 @@ class App extends Component {
   }
 
   getTransactionsFromDatabase() {
-    axios.get('http://localhost:5000/testproject-6177f/us-central1/getTransactionsFromDatabase')
+    let config = {
+      url: 'http://localhost:5000/testproject-6177f/us-central1/getTransactionsFromDatabase',
+      payload: qs.stringify({
+        uniqueUserId: auth.currentUser.uid
+      })
+    };
+
+    axios.post(config.url, config.payload)
     .then((response) => {
       this.setState({transactions: response.data});
     })

@@ -49,35 +49,38 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
   plaidClient.exchangePublicToken(publicToken)
     .then((successResponse) => {
 
-      let item_id = successResponse.item_id;
       let access_token = successResponse.access_token;
       let request_id = successResponse.request_id;
 
-      let payload = {item_id: item_id,
+      let payload = {
         access_token: access_token,
-        request_id: request_id};
+        request_id: request_id
+      };
 
-      // TODO: try auth.currentUser.getIdToken() to retrieve current user's uid
       admin.database()
       .ref(`/users/${uniqueUserId}/access_tokens`)
       .set(payload)
       .then(() => {
+        axios.post('http://localhost:5000/testproject-6177f/us-central1/getTransactionsFromPlaid', {
+          access_token: access_token,
+          uniqueUserId: uniqueUserId
+        })
+          .catch(error => {
+            console.log(error);
+          });
         response.end();
       });
-
-    }).catch((error) => {
+    })
+    .catch((error) => {
       console.log(error);
     });
-  // TODO: change GET to POST and POST access token to this address
-  axios.get('http://localhost:5000/testproject-6177f/us-central1/getTransactionsFromPlaid').catch(error => {
-    console.log(error);
-  });
 });
 
 exports.getTransactionsFromPlaid = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
-  // get access token from the request object
-  const access_token = 'access-sandbox-0228c2e2-755b-4137-b1ad-7f52300b5635';
+  const access_token = request.body.access_token;
+  const uniqueUserId = request.body.uniqueUserId;
+
   const plaidClient = new plaid.Client(
     process.env.REACT_APP_PLAID_CLIENT_ID,
     process.env.REACT_APP_PLAID_SECRET,
@@ -100,22 +103,20 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
         snapshot.forEach(function(childSnapshot) {
           var childKey = childSnapshot.key;
           var childData = childSnapshot.val();
-          console.log(childKey);
-          console.log(childData.item_id);
-          console.log(item_id);
-          console.log(childData.item_id === item_id);
+          // console.log(childKey);
+          // console.log(childData.item_id);
+          // console.log(item_id);
+          // console.log(childData.item_id === item_id);
 
           admin.database()
-          .ref(`users/ni6laljDCHdTIZYA2hSrKfxfvWw2/access_tokens/access_token/${item_id}`)
-          .set({transactions: transactions})
+          .ref(`users/${uniqueUserId}/access_tokens/${item_id}`)
+          .set({transactions})
           .then(() => {
             response.end();
           });
         });
       });
-
       response.end();
-
     }).catch((error) => {
       console.log(error);
     });

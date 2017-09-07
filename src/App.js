@@ -101,14 +101,18 @@ class App extends Component {
   logout() {
     auth.signOut()
       .then(() => {
-        this.setState({user: null});
+        this.setState({
+          user: null,
+          transactions: [],
+          transactionSums: {}
+        });
       });
   }
 
   render() {
     return (
       <div className='App'>
-
+        <h1>Where's My Money</h1>
         <div className='wrapper'>
           {this.state.user ?
             <button onClick={this.logout}>Log Out</button>
@@ -135,10 +139,10 @@ class App extends Component {
           {this.state.transactions.map((transaction, idx) => (
             <transaction key={transaction.transaction_id}>
               {idx === 0 || transaction.date !== this.state.transactions[idx - 1].date ?
-                <div><u>{'Total spent on ' + transaction.date + ' ==> '}
-                     <b>{'$' + this.state.transactionSums[transaction.date]}</b></u><br/></div> : <div></div>
+                <div><u>{`Total spent on ${transaction.date} ==> `}
+                     <b>{`$${this.state.transactionSums[transaction.date]}`}</b></u><br/></div> : <div></div>
               }
-              {'\xa0\xa0\xa0' + transaction.date + ' | ' + '\xa0' + transaction.name + '\xa0\xa0' + '$'}
+              {`\xa0\xa0\xa0 ${transaction.date} | \xa0 ${transaction.name} \xa0\xa0 $`}
               <em>{transaction.amount}</em><br/>
               {(this.state.transactions.length - 1 === idx || transaction.date !== this.state.transactions[idx+1].date) && <div><br/></div>}
             </transaction>

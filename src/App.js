@@ -128,6 +128,7 @@ class App extends Component {
               publicKey={process.env.REACT_APP_PLAID_PUBLIC_KEY}
               product='connect'
               env='sandbox'
+              institution={'ins_100000'}
               clientName='Wheres My Money'
               onSuccess={this.handleOnSuccess}
             />

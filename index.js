@@ -4,7 +4,8 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const moment = require('moment');
 const axios = require('axios');
-const plaidClient = require('./plaidClient.js')
+const plaid = require('plaid');
+// const plaidClient = require('./plaidClient.js')
 
 admin.initializeApp({
   credential: admin.credential.cert({
@@ -53,6 +54,12 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
   const publicToken = request.body.publicToken;
   const uniqueUserId = request.body.uniqueUserId;
 
+  const plaidClient = new plaid.Client(
+    process.env.REACT_APP_PLAID_CLIENT_ID,
+    process.env.REACT_APP_PLAID_SECRET,
+    process.env.REACT_APP_PLAID_PUBLIC_KEY,
+    plaid.environments.sandbox);
+
   plaidClient.exchangePublicToken(publicToken)
   .then(successResponse => {
     return {
@@ -82,6 +89,12 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
   const now = moment();
   const today = now.format('YYYY-MM-DD');
   const thirtyDaysAgo = now.subtract(30, 'days').format('YYYY-MM-DD');
+
+  const plaidClient = new plaid.Client(
+    process.env.REACT_APP_PLAID_CLIENT_ID,
+    process.env.REACT_APP_PLAID_SECRET,
+    process.env.REACT_APP_PLAID_PUBLIC_KEY,
+    plaid.environments.sandbox);
 
   plaidClient.getTransactions(access_token, thirtyDaysAgo, today)
   .then(successResponse => {

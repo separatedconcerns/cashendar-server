@@ -68,7 +68,6 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
 })
 
 exports.getTransactionsFromPlaid = functions.https.onRequest((request, response) => {
-  response.header('Access-Control-Allow-Origin', '*');
   const access_token = request.body.access_token;
   const uniqueUserId = request.body.uniqueUserId;
   const now = moment();

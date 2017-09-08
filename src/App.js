@@ -10,7 +10,8 @@ class App extends Component {
     this.state = {
       user: null,
       transactions: [],
-      transactionSums: {}
+      transactionSums: {},
+      OAuthToken: null
     };
 
     this.login = this.login.bind(this);
@@ -33,8 +34,17 @@ class App extends Component {
     auth.signInWithPopup(provider)
       .then(result => {
         const user = result.user;
-        this.setState({user});
+        const OAuthToken = result.credential.accessToken;
+        this.setState({user, OAuthToken});
         this.verifyUser();
+      })
+      .then(() => {
+        const config = {
+          url: 'http://localhost:5000/testproject-6177f/us-central1/readCalendar',
+          payload: qs.stringify({OAuthToken: this.state.OAuthToken})
+        };
+        axios.post(config.url, config.payload)
+          .catch(err => console.log(err));
       });
   }
 

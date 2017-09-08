@@ -30,7 +30,7 @@ exports.addUser = functions.https.onRequest((request, response) => {
 
   admin.auth()
   .verifyIdToken(idToken)
-  .then(decodedToken => { 
+  .then(decodedToken => {
     uniqueUserId = decodedToken.uid;
     return admin.auth().getUser(uniqueUserId) })
   .then(userRecord => {
@@ -109,7 +109,7 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
       snapshot.forEach(childSnapshot => {
         let childKey = childSnapshot.key;
         let childData = childSnapshot.val();
-        
+
         admin.database()
         .ref(`users/${uniqueUserId}/access_tokens/itemId`)
         .set({transactions})
@@ -130,3 +130,9 @@ exports.getTransactionsFromDatabase = functions.https.onRequest((request, respon
   .then(snapshot => response.json(snapshot.val()) );
 });
 
+exports.readCalendar = functions.https.onRequest((request, response) => {
+  response.header('Access-Control-Allow-Origin', '*');
+  const OAuthToken = request.body.OAuthToken;
+  console.log(OAuthToken);
+  response.end(OAuthToken);
+});

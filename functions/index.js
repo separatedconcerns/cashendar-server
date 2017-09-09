@@ -5,6 +5,9 @@ const admin = require('firebase-admin');
 const moment = require('moment');
 const axios = require('axios');
 const plaid = require('plaid');
+const google = require('googleapis');
+const googleAuth = require('google-auth-library');
+const Promise = require('bluebird');
 // const plaidClient = require('./plaidClient.js')
 
 admin.initializeApp({
@@ -137,6 +140,81 @@ exports.readCalendar = functions.https.onRequest((request, response) => {
   response.end(OAuthToken);
 });
 
+exports.addCalendarEvent = functions.https.onRequest((request, response) => {
+  response.header('Access-Control-Allow-Origin', '*');
+  var credentialsObj = {
+    "installed": {
+      "client_id": "560541486783-7vto2l61ga9ssbb8614354pi6i1i8a1f.apps.googleusercontent.com",
+      "project_id": "feisty-coast-179022",
+      "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+      "token_uri": "https://accounts.google.com/o/oauth2/token",
+      "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+      "client_secret": "-_BbGTqmu80CBR6I9pn9A3FS",
+      "redirect_uris": [
+        "urn:ietf:wg:oauth:2.0:oob",
+        "http://localhost"
+      ]
+    }
+  }
+
+  function authorize(credentials, callback) {
+    var _callback = Promise.promisify(callback);
+    var clientSecret = credentials.installed.client_secret;
+    var clientId = credentials.installed.client_id;
+    var redirectUrl = credentials.installed.redirect_uris[0];
+    var auth = new googleAuth();
+    var oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
+
+    oauth2Client.credentials = {
+      "access_token": "ya29.GlvABBCgUSYvU6HVF0dlezEhkw2KHTgsQBYcZKK2geCGLQ0sCDM613ITBxRdiDZXjXBUqKI_bWNa7BsmtRhdyMzFctN_kUuFuhtAKw8g63tPNZ1sTVhh-pWaTMUD",
+      "refresh_token": "1/vU7t3U2e4FfhMyC75GTa4OJk3sysHPK8reweaV7XwEs",
+      "token_type": "Bearer",
+      "expiry_date": 1504909016620
+    };
+
+    _callback(oauth2Client)
+    .catch(e => getToken(oauth2Client, callback));
+  }
+
+  function getToken(oauth2Client, callback) {
+    oauth2Client.getToken(code)
+    .then(token => {
+      oauth2Client.credentials = token;
+      storeToken(token);
+      callback(oauth2Client);
+    }).catch(err => console.log('Error while trying to retrieve access token', err));
+  }
+
+  authorize(credentialsObj, createEvent);
+
+  function createEvent(auth) {
+    var event = {
+      'summary': 'Spent $32.00',
+      'description': '$32 at sandwich shop',
+      'start': {
+        'date': '2017-09-03',
+        'timeZone': 'America/Los_Angeles'
+      },
+      'end': {
+        'date': '2017-09-03',
+        'timeZone': 'America/Los_Angeles'
+      }
+    };
+
+    var targetCal = {
+      auth: auth,
+      calendarId: "7n7ngj8e5u17gdgu363skhquhg@group.calendar.google.com",
+      resource: event
+    };
+
+    var eventInsert = Promise.promisify(google.calendar('v3').events.insert);
+
+    eventInsert(targetCal)
+    .then(event => console.log('Event created: ', event.description))
+    .catch(e => console.log('there was an error contacting Google Calendar' + e));
+  }
+  response.end('');
+});
 // end point that requires unique USER ID
   // returns an integer representing dollar amount spent
 

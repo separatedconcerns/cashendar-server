@@ -136,3 +136,15 @@ exports.readCalendar = functions.https.onRequest((request, response) => {
   console.log(OAuthToken);
   response.end(OAuthToken);
 });
+
+// end point that requires unique USER ID
+  // returns an integer representing dollar amount spent
+
+// end point that requires USER ID
+  // returns "Profile deleted" message
+
+// end point that requires USER ID and Auth Token
+  // return "bank relationship deleted" message
+
+// end point that requires USER ID
+  // returns all accounts for that user

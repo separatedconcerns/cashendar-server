@@ -217,12 +217,25 @@ exports.addCalendarEvent = functions.https.onRequest((request, response) => {
 });
 // end point that requires unique USER ID
   // returns an integer representing dollar amount spent
-
+exports.getDailySpending = functions.https.onRequest((request, response) => {
+  response.header('Access-Control-Allow-Origin', '*');
+  response.end('this will return dollar amount spent');
+});
 // end point that requires USER ID
   // returns "Profile deleted" message
-
+exports.deleteUserProfile = functions.https.onRequest((request, response) => {
+  response.header('Access-Control-Allow-Origin', '*');
+  response.end('Profile Deleted');
+});
 // end point that requires USER ID and Auth Token
   // return "bank relationship deleted" message
-
+exports.deleteBankAccount = functions.https.onRequest((request, response) => {
+  response.header('Access-Control-Allow-Origin', '*');
+  response.end('Bank relationship deleted');
+});
 // end point that requires USER ID
   // returns all accounts for that user
+exports.getAllUserAccounts = functions.https.onRequest((request, response) => {
+  response.header('Access-Control-Allow-Origin', '*');
+  response.end('Returns all accounts for user');
+});

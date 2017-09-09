@@ -144,15 +144,15 @@ exports.addCalendarEvent = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   var credentialsObj = {
     "installed": {
-      "client_id": "560541486783-7vto2l61ga9ssbb8614354pi6i1i8a1f.apps.googleusercontent.com",
-      "project_id": "feisty-coast-179022",
-      "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-      "token_uri": "https://accounts.google.com/o/oauth2/token",
-      "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-      "client_secret": "-_BbGTqmu80CBR6I9pn9A3FS",
+      "client_id": process.env.GCAL_CLIENT_ID,
+      "project_id": process.env.GCAL_PROJECT_ID,
+      "auth_uri": process.env.GCAL_AUTH_URI,
+      "token_uri": process.env.GCAL_TOKEN_URI,
+      "auth_provider_x509_cert_url": process.env.GCAL_AUTH_PROVIDER,
+      "client_secret": process.env.GCAL_CLIENT_SECRET,
       "redirect_uris": [
-        "urn:ietf:wg:oauth:2.0:oob",
-        "http://localhost"
+        process.env.GCAL_URN,
+        process.env.GCAL_LOCALHOST
       ]
     }
   }
@@ -166,10 +166,10 @@ exports.addCalendarEvent = functions.https.onRequest((request, response) => {
     var oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
 
     oauth2Client.credentials = {
-      "access_token": "ya29.GlvABBCgUSYvU6HVF0dlezEhkw2KHTgsQBYcZKK2geCGLQ0sCDM613ITBxRdiDZXjXBUqKI_bWNa7BsmtRhdyMzFctN_kUuFuhtAKw8g63tPNZ1sTVhh-pWaTMUD",
-      "refresh_token": "1/vU7t3U2e4FfhMyC75GTa4OJk3sysHPK8reweaV7XwEs",
-      "token_type": "Bearer",
-      "expiry_date": 1504909016620
+      "access_token": process.env.OAUTH2_ACCESS_TOKEN,
+      "refresh_token": process.env.OAUTH2_REFRESH_TOKEN,
+      "token_type": process.env.OAUTH2_TOKEN_TYPE,
+      "expiry_date": process.env.OAUTH2_EXPIRY_DATE
     };
 
     _callback(oauth2Client)

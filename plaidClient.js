@@ -1,5 +1,3 @@
-const dotenv = require('dotenv');
-dotenv.config();
 const plaid = require('plaid');
 
 const plaidClient = new plaid.Client(

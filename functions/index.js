@@ -10,6 +10,7 @@ const Promise = require('bluebird');
 const googleClient = require('./googleClient.js');
 const plaidClient = require('./plaidClient.js');
 
+
 exports.addUser = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const idToken = request.body.idToken;
@@ -116,12 +117,12 @@ exports.createNewCalendar = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
 
   function authorize(credentials, callback) {
-    var _callback = Promise.promisify(callback);
-    var clientSecret = credentials.installed.client_secret;
-    var clientId = credentials.installed.client_id;
-    var redirectUrl = credentials.installed.redirect_uris[0];
-    var auth = new googleAuth();
-    var oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
+    let _callback = Promise.promisify(callback);
+    let clientSecret = credentials.installed.client_secret;
+    let clientId = credentials.installed.client_id;
+    let redirectUrl = credentials.installed.redirect_uris[0];
+    let auth = new googleAuth();
+    let oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
 
     oauth2Client.credentials = googleClient.oauth2ClientCredentials; 
     _callback(oauth2Client)
@@ -140,8 +141,8 @@ exports.createNewCalendar = functions.https.onRequest((request, response) => {
   authorize(googleClient.APICredentials, createCalendar);
 
   function createCalendar(auth) {
-    var calendarCreate = Promise.promisify(google.calendar('v3').calendars.insert);
-    var config = {
+    let calendarCreate = Promise.promisify(google.calendar('v3').calendars.insert);
+    let config = {
       auth: auth,
       resource: { summary: 'cashMoney4' }
     }
@@ -155,12 +156,12 @@ exports.addCalendarEvent = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   
   function authorize(credentials, callback) {
-    var _callback = Promise.promisify(callback);
-    var clientSecret = credentials.installed.client_secret;
-    var clientId = credentials.installed.client_id;
-    var redirectUrl = credentials.installed.redirect_uris[0];
-    var auth = new googleAuth();
-    var oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
+    let _callback = Promise.promisify(callback);
+    let clientSecret = credentials.installed.client_secret;
+    let clientId = credentials.installed.client_id;
+    let redirectUrl = credentials.installed.redirect_uris[0];
+    let auth = new googleAuth();
+    let oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
 
     oauth2Client.credentials = googleClient.oauth2ClientCredentials; 
     _callback(oauth2Client)
@@ -179,7 +180,7 @@ exports.addCalendarEvent = functions.https.onRequest((request, response) => {
   authorize(googleClient.APICredentials, createEvent);
 
   function createEvent(auth) {
-    var event = {
+    let event = {
       'summary': 'Spent $32.00',
       'description': '$32 at sandwich shop',
       'start': {
@@ -192,13 +193,13 @@ exports.addCalendarEvent = functions.https.onRequest((request, response) => {
       }
     };
 
-    var targetCal = {
+    let targetCal = {
       auth: auth,
       calendarId: 'primary',
       resource: event
     };
 
-    var eventInsert = Promise.promisify(google.calendar('v3').events.insert);
+    let eventInsert = Promise.promisify(google.calendar('v3').events.insert);
 
     eventInsert(targetCal)
     .then(response.end('Event Created'))
@@ -213,7 +214,25 @@ exports.addCalendarEvent = functions.https.onRequest((request, response) => {
   // returns an integer representing dollar amount spent
 exports.getDailySpending = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
-  response.end('this will return dollar amount spent');
+  const uniqueUserId = request.body.uniqueUserId;
+  // const uniqueUserId = 'oaSpKSFQJXeperMTQGT8zQfmwY33';
+  let config = {
+    url: 'http://localhost:5000/testproject-6177f/us-central1/getTransactionsFromDatabase',
+    payload: {uniqueUserId: uniqueUserId}
+  };
+  axios.post(config.url, config.payload)
+    .then(transactions => {
+      let sums = {}; 
+      transactions.data.forEach(transaction => {
+        if (sums[transaction.date]) {
+          sums[transaction.date] += transaction.amount;
+        } else {
+          sums[transaction.date] = transaction.amount;
+        }
+      });
+      return sums; 
+    }).then(sums => response.json(sums))
+    .catch(error => {console.log(error)});
 });
 // end point that requires USER ID
   // returns "Profile deleted" message
@@ -233,3 +252,4 @@ exports.getAllUserAccounts = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   response.end('Returns all accounts for user');
 });
+

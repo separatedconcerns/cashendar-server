@@ -22,7 +22,8 @@
     "deploy": "firebase deploy",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom --coverage",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "server-start": "firebase serve --only functions"
   },
   "devDependencies": {
     "firebase-tools": "^3.10.0"

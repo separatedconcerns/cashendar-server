@@ -215,7 +215,6 @@ exports.addCalendarEvent = functions.https.onRequest((request, response) => {
 exports.getDailySpending = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const uniqueUserId = request.body.uniqueUserId;
-  // const uniqueUserId = 'oaSpKSFQJXeperMTQGT8zQfmwY33';
   let config = {
     url: 'http://localhost:5000/testproject-6177f/us-central1/getTransactionsFromDatabase',
     payload: {uniqueUserId: uniqueUserId}

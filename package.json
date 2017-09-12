@@ -13,5 +13,8 @@
     "moment": "^2.18.1",
     "plaid": "^2.0.5"
   },
+  "scripts": {
+    "server-start": "firebase serve --only functions"
+  },
   "private": true
 }

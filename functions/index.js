@@ -1,30 +1,14 @@
 const dotenv = require('dotenv');
 dotenv.config();
 const functions = require('firebase-functions');
-const admin = require('firebase-admin');
+const admin = require('./firebaseClient.js');
 const moment = require('moment');
 const axios = require('axios');
-const plaid = require('plaid');
 const google = require('googleapis');
 const googleAuth = require('google-auth-library');
 const Promise = require('bluebird');
-// const plaidClient = require('./plaidClient.js')
-
-admin.initializeApp({
-  credential: admin.credential.cert({
- "type": process.env.REACT_APP_FIREBASE_TYPE,
- "project_id": process.env.REACT_APP_FIREBASE_PROJECT_ID,
- "private_key_id": process.env.REACT_APP_FIREBASE_PRIVATE_KEY_ID,
- "private_key": process.env.REACT_APP_FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
- "client_email": process.env.REACT_APP_FIREBASE_CLIENT_EMAIL,
- "client_id": process.env.REACT_APP_FIREBASE_CLIENT_ID,
- "auth_uri": process.env.REACT_APP_FIREBASE_AUTH_URI,
- "token_uri": process.env.REACT_APP_FIREBASE_TOKEN_URI,
- "auth_provider_x509_cert_url": process.env.REACT_APP_FIREBASE_AUTH_PROVIDER_X509_CERT_URL,
- "client_x509_cert_url": process.env.REACT_APP_FIREBASE_CLIENT_X509_CERT_URL
-}),
-  databaseURL: process.env.REACT_APP_FIREBASE_DATABASE_URL
-});
+const googleClient = require('./googleClient.js');
+const plaidClient = require('./plaidClient.js');
 
 exports.addUser = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
@@ -57,12 +41,6 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
   const publicToken = request.body.publicToken;
   const uniqueUserId = request.body.uniqueUserId;
 
-  const plaidClient = new plaid.Client(
-    process.env.REACT_APP_PLAID_CLIENT_ID,
-    process.env.REACT_APP_PLAID_SECRET,
-    process.env.REACT_APP_PLAID_PUBLIC_KEY,
-    plaid.environments.sandbox);
-
   plaidClient.exchangePublicToken(publicToken)
   .then(successResponse => {
     return {
@@ -81,8 +59,8 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
       access_token: payload.access_token,
       uniqueUserId: uniqueUserId
     })
+    .then(response.end())
   })
-  .then(response.end())
   .catch(error => console.log(error) );
 })
 
@@ -92,12 +70,6 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
   const now = moment();
   const today = now.format('YYYY-MM-DD');
   const thirtyDaysAgo = now.subtract(30, 'days').format('YYYY-MM-DD');
-
-  const plaidClient = new plaid.Client(
-    process.env.REACT_APP_PLAID_CLIENT_ID,
-    process.env.REACT_APP_PLAID_SECRET,
-    process.env.REACT_APP_PLAID_PUBLIC_KEY,
-    plaid.environments.sandbox);
 
   plaidClient.getTransactions(access_token, thirtyDaysAgo, today)
   .then(successResponse => {
@@ -119,7 +91,7 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
       });
     });
   })
-  .then(response.end())
+  .then(() => response.end())
   .catch(error => console.log(error));
 });
 
@@ -136,26 +108,12 @@ exports.getTransactionsFromDatabase = functions.https.onRequest((request, respon
 exports.readCalendar = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const OAuthToken = request.body.OAuthToken;
-  console.log(OAuthToken);
+  // console.log(OAuthToken);
   response.end(OAuthToken);
 });
 
-exports.addCalendarEvent = functions.https.onRequest((request, response) => {
+exports.createNewCalendar = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
-  var credentialsObj = {
-    "installed": {
-      "client_id": process.env.GCAL_CLIENT_ID,
-      "project_id": process.env.GCAL_PROJECT_ID,
-      "auth_uri": process.env.GCAL_AUTH_URI,
-      "token_uri": process.env.GCAL_TOKEN_URI,
-      "auth_provider_x509_cert_url": process.env.GCAL_AUTH_PROVIDER,
-      "client_secret": process.env.GCAL_CLIENT_SECRET,
-      "redirect_uris": [
-        process.env.GCAL_URN,
-        process.env.GCAL_LOCALHOST
-      ]
-    }
-  }
 
   function authorize(credentials, callback) {
     var _callback = Promise.promisify(callback);
@@ -165,13 +123,46 @@ exports.addCalendarEvent = functions.https.onRequest((request, response) => {
     var auth = new googleAuth();
     var oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
 
-    oauth2Client.credentials = {
-      "access_token": process.env.OAUTH2_ACCESS_TOKEN,
-      "refresh_token": process.env.OAUTH2_REFRESH_TOKEN,
-      "token_type": process.env.OAUTH2_TOKEN_TYPE,
-      "expiry_date": process.env.OAUTH2_EXPIRY_DATE
-    };
+    oauth2Client.credentials = googleClient.oauth2ClientCredentials; 
+    _callback(oauth2Client)
+      .catch(e => getToken(oauth2Client, callback));
+  }
 
+  function getToken(oauth2Client, callback) {
+    oauth2Client.getToken(code)
+      .then(token => {
+        oauth2Client.credentials = token;
+        storeToken(token);
+        callback(oauth2Client);
+      }).catch(err => console.log('Error while trying to retrieve access token', err));
+  }
+
+  authorize(googleClient.APICredentials, createCalendar);
+
+  function createCalendar(auth) {
+    var calendarCreate = Promise.promisify(google.calendar('v3').calendars.insert);
+    var config = {
+      auth: auth,
+      resource: { summary: 'cashMoney4' }
+    }
+    calendarCreate(config)
+      .then(event => response.end('Calendar created: line 274'))
+      .catch(e => response.end('there was an error contacting Google Calendar ' + e));
+  }
+});
+
+exports.addCalendarEvent = functions.https.onRequest((request, response) => {
+  response.header('Access-Control-Allow-Origin', '*');
+  
+  function authorize(credentials, callback) {
+    var _callback = Promise.promisify(callback);
+    var clientSecret = credentials.installed.client_secret;
+    var clientId = credentials.installed.client_id;
+    var redirectUrl = credentials.installed.redirect_uris[0];
+    var auth = new googleAuth();
+    var oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
+
+    oauth2Client.credentials = googleClient.oauth2ClientCredentials; 
     _callback(oauth2Client)
     .catch(e => getToken(oauth2Client, callback));
   }
@@ -185,7 +176,7 @@ exports.addCalendarEvent = functions.https.onRequest((request, response) => {
     }).catch(err => console.log('Error while trying to retrieve access token', err));
   }
 
-  authorize(credentialsObj, createEvent);
+  authorize(googleClient.APICredentials, createEvent);
 
   function createEvent(auth) {
     var event = {
@@ -203,18 +194,21 @@ exports.addCalendarEvent = functions.https.onRequest((request, response) => {
 
     var targetCal = {
       auth: auth,
-      calendarId: "7n7ngj8e5u17gdgu363skhquhg@group.calendar.google.com",
+      calendarId: 'primary',
       resource: event
     };
 
     var eventInsert = Promise.promisify(google.calendar('v3').events.insert);
 
     eventInsert(targetCal)
-    .then(event => console.log('Event created: ', event.description))
-    .catch(e => console.log('there was an error contacting Google Calendar' + e));
+    .then(response.end('Event Created'))
+    .catch(e => response.end('there was an error contacting Google Calendar' + e));
   }
-  response.end('');
 });
+
+
+
+
 // end point that requires unique USER ID
   // returns an integer representing dollar amount spent
 exports.getDailySpending = functions.https.onRequest((request, response) => {

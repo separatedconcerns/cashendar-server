@@ -10,32 +10,37 @@ const Promise = require('bluebird');
 const googleClient = require('./googleClient.js');
 const plaidClient = require('./plaidClient.js');
 
-
 exports.addUser = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const idToken = request.body.idToken;
   let uniqueUserId;
 
-  admin.auth()
-  .verifyIdToken(idToken)
+  admin.auth().verifyIdToken(idToken)
   .then(decodedToken => {
     uniqueUserId = decodedToken.uid;
-    return admin.auth().getUser(uniqueUserId) })
-  .then(userRecord => {
-    let user = userRecord.toJSON();
-    let payload = {
-      email: user.email,
-      name: user.displayName
-    }
-    return payload;
-  })
-  .then(payload =>
-    admin.database()
-    .ref('users/' + uniqueUserId)
-    .set(payload))
-  .then(response.end())
-  .catch(error => console.log("Error fetching user data:", error) );
+    let ref = admin.database().ref(`users/${uniqueUserId}`);
+
+    ref.once('value')
+    .then(snapshot => {
+      if (snapshot.exists()) { response.end(); }
+      else {
+        admin.auth().getUser(uniqueUserId)
+        .then(userRecord => {
+          let user = userRecord.toJSON();
+          let payload = {
+            email: user.email,
+            name: user.displayName
+          };
+          return payload;
+        }).then(payload => {
+          admin.database().ref('users/' + uniqueUserId).set(payload)
+        }).then(response.end())
+          .catch(error => console.log('Error fetching user data:', error));
+      }
+    });
+  });
 });
+
 
 exports.exchangePublicToken = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
@@ -49,7 +54,7 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
       request_id: successResponse.request_id
     };
   })
-  .then(payload =>{
+  .then(payload => {
     admin.database()
     .ref(`/users/${uniqueUserId}/access_tokens`)
     .set(payload);
@@ -60,10 +65,10 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
       access_token: payload.access_token,
       uniqueUserId: uniqueUserId
     })
-    .then(response.end())
+    .then(response.end());
   })
-  .catch(error => console.log(error) );
-})
+  .catch(error => console.log(error));
+});
 
 exports.getTransactionsFromPlaid = functions.https.onRequest((request, response) => {
   const access_token = request.body.access_token;
@@ -88,7 +93,7 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
 
         admin.database()
         .ref(`users/${uniqueUserId}/access_tokens/itemId`)
-        .set({transactions})
+        .set({transactions});
       });
     });
   })
@@ -103,7 +108,7 @@ exports.getTransactionsFromDatabase = functions.https.onRequest((request, respon
   admin.database()
   .ref(`users/${uniqueUserId}/access_tokens/itemId/transactions`)
   .once('value')
-  .then(snapshot => response.json(snapshot.val()) );
+  .then(snapshot => response.json(snapshot.val()));
 });
 
 exports.readCalendar = functions.https.onRequest((request, response) => {
@@ -125,7 +130,7 @@ exports.createNewCalendar = functions.https.onRequest((request, response) => {
     let auth = new googleAuth();
     let oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
 
-    oauth2Client.credentials = googleClient.oauth2ClientCredentials; 
+    oauth2Client.credentials = googleClient.oauth2ClientCredentials;
     _callback(oauth2Client)
       .catch(e => getToken(oauth2Client, callback));
   }
@@ -145,15 +150,15 @@ exports.createNewCalendar = functions.https.onRequest((request, response) => {
     let calendarCreate = Promise.promisify(google.calendar('v3').calendars.insert);
     let config = {
       auth: auth,
-      resource: { summary: 'cashMoney4' }
-    }
+      resource: {summary: 'cashMoney4'}
+    };
     calendarCreate(config)
       .then(event => {
         console.log(event.id);
-        // TODO: 
-        //  save event.id to db 
+        // TODO:
+        //  save event.id to db
         //  save event.summary to db
-        response.end('')})
+        response.end('');})
       .catch(e => response.end('there was an error contacting Google Calendar ' + e));
   }
 });
@@ -170,11 +175,11 @@ exports.addCalendarEvent = functions.https.onRequest((request, response) => {
     let auth = new googleAuth();
     let oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
     // console.log(auth);
-    oauth2Client.credentials = googleClient.oauth2ClientCredentials; 
+    oauth2Client.credentials = googleClient.oauth2ClientCredentials;
     _callback(oauth2Client)
     .catch(e => console.log(e));
   }
-   
+
   function getToken(oauth2Client, callback) {
     oauth2Client.getToken(code)
     .then(token => {
@@ -185,7 +190,7 @@ exports.addCalendarEvent = functions.https.onRequest((request, response) => {
   }
 
   authorize(googleClient.APICredentials, createEvent);
- 
+
   function createEvent(auth) {
     let config = {
       url: 'http://localhost:5000/testproject-6177f/us-central1/getDailySpending',
@@ -193,12 +198,12 @@ exports.addCalendarEvent = functions.https.onRequest((request, response) => {
     };
     axios.post(config.url, config.payload)
     .then(sums => {
-      let dailySpending = sums.data; 
+      let dailySpending = sums.data;
       console.log(sums.data)
       const calendarId = '2slbaav4o97vbeqjftb3ihat5o@group.calendar.google.com';
 
       for (let date in dailySpending) {
-        
+
         let event = {
           'summary': `Spent $${dailySpending[date]}`,
           'description': '',
@@ -224,7 +229,7 @@ exports.addCalendarEvent = functions.https.onRequest((request, response) => {
           .catch(e => response.end('there was an error contacting Google Calendar' + e));
       }
     }).then(response.end(''))
-    .catch(e => console.log(e)); 
+    .catch(e => console.log(e));
   }
 
 });
@@ -243,7 +248,7 @@ exports.getDailySpending = functions.https.onRequest((request, response) => {
   };
   axios.post(config.url, config.payload)
     .then(transactions => {
-      let sums = {}; 
+      let sums = {};
       transactions.data.forEach(transaction => {
         if (sums[transaction.date]) {
           sums[transaction.date] += transaction.amount;
@@ -251,7 +256,7 @@ exports.getDailySpending = functions.https.onRequest((request, response) => {
           sums[transaction.date] = transaction.amount;
         }
       });
-      return sums; 
+      return sums;
     }).then(sums => response.json(sums))
     .catch(error => {console.log(error)});
 });
@@ -273,4 +278,3 @@ exports.getAllUserAccounts = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   response.end('Returns all accounts for user');
 });
-

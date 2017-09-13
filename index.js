@@ -1,14 +1,14 @@
 const dotenv = require('dotenv');
 dotenv.config();
 const functions = require('firebase-functions');
-const admin = require('./firebaseClient.js');
+const admin = require('./apiClients/firebaseClient.js');
 const moment = require('moment');
 const axios = require('axios');
 const google = require('googleapis');
 const googleAuth = require('google-auth-library');
 const Promise = require('bluebird');
-const googleClient = require('./googleClient.js');
-const plaidClient = require('./plaidClient.js');
+const googleClient = require('./apiClients/googleClient.js');
+const plaidClient = require('./apiClients/plaidClient.js');
 
 exports.addUser = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');

@@ -115,6 +115,7 @@ exports.readCalendar = functions.https.onRequest((request, response) => {
 
 exports.createNewCalendar = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
+  const uniqueUserId = request.body.uniqueUserId;
 
   function authorize(credentials, callback) {
     let _callback = Promise.promisify(callback);
@@ -147,14 +148,20 @@ exports.createNewCalendar = functions.https.onRequest((request, response) => {
       resource: { summary: 'cashMoney4' }
     }
     calendarCreate(config)
-      .then(event => response.end('Calendar created: line 274'))
+      .then(event => {
+        console.log(event.id);
+        // TODO: 
+        //  save event.id to db 
+        //  save event.summary to db
+        response.end('')})
       .catch(e => response.end('there was an error contacting Google Calendar ' + e));
   }
 });
 
 exports.addCalendarEvent = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
-  
+  const uniqueUserId = request.body.uniqueUserId;
+
   function authorize(credentials, callback) {
     let _callback = Promise.promisify(callback);
     let clientSecret = credentials.installed.client_secret;
@@ -162,12 +169,12 @@ exports.addCalendarEvent = functions.https.onRequest((request, response) => {
     let redirectUrl = credentials.installed.redirect_uris[0];
     let auth = new googleAuth();
     let oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
-
+    // console.log(auth);
     oauth2Client.credentials = googleClient.oauth2ClientCredentials; 
     _callback(oauth2Client)
-    .catch(e => getToken(oauth2Client, callback));
+    .catch(e => console.log(e));
   }
-
+   
   function getToken(oauth2Client, callback) {
     oauth2Client.getToken(code)
     .then(token => {
@@ -178,33 +185,48 @@ exports.addCalendarEvent = functions.https.onRequest((request, response) => {
   }
 
   authorize(googleClient.APICredentials, createEvent);
-
+ 
   function createEvent(auth) {
-    let event = {
-      'summary': 'Spent $32.00',
-      'description': '$32 at sandwich shop',
-      'start': {
-        'date': '2017-09-03',
-        'timeZone': 'America/Los_Angeles'
-      },
-      'end': {
-        'date': '2017-09-03',
-        'timeZone': 'America/Los_Angeles'
+    let config = {
+      url: 'http://localhost:5000/testproject-6177f/us-central1/getDailySpending',
+      payload: { uniqueUserId: uniqueUserId }
+    };
+    axios.post(config.url, config.payload)
+    .then(sums => {
+      let dailySpending = sums.data; 
+      console.log(sums.data)
+      const calendarId = '2slbaav4o97vbeqjftb3ihat5o@group.calendar.google.com';
+
+      for (let date in dailySpending) {
+        
+        let event = {
+          'summary': `Spent $${dailySpending[date]}`,
+          'description': '',
+          'start': {
+            'date': date,
+            'timeZone': 'America/Los_Angeles'
+          },
+          'end': {
+            'date': date,
+            'timeZone': 'America/Los_Angeles'
+          }
+        };
+        // console.log(event.summary);
+        let targetCal = {
+          auth: auth,
+          calendarId: calendarId,
+          resource: event
+        };
+
+        let eventInsert = Promise.promisify(google.calendar('v3').events.insert);
+
+        eventInsert(targetCal)
+          .catch(e => response.end('there was an error contacting Google Calendar' + e));
       }
-    };
-
-    let targetCal = {
-      auth: auth,
-      calendarId: 'primary',
-      resource: event
-    };
-
-    let eventInsert = Promise.promisify(google.calendar('v3').events.insert);
-
-    eventInsert(targetCal)
-    .then(response.end('Event Created'))
-    .catch(e => response.end('there was an error contacting Google Calendar' + e));
+    }).then(response.end(''))
+    .catch(e => console.log(e)); 
   }
+
 });
 
 

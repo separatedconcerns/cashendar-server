@@ -13,8 +13,6 @@ const plaidClient = require('./apiClients/plaidClient.js');
 exports.addUser = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const idToken = request.body.idToken;
-  // let uniqueUserId;
-  // let calendar; 
   admin.auth().verifyIdToken(idToken)
   .then(decodedToken => {
     let uniqueUserId = decodedToken.uid;

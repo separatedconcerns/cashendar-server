@@ -38,9 +38,10 @@ exports.addUser = functions.https.onRequest((request, response) => {
                       let calId = calendar.data.id;
                       let calName = calendar.data.summary; 
                       admin.database().ref('users/' + uniqueUserId).update({calendarId: calId, calendarName: calName})
-                    }).then(response.end(''))
+                    })
                 })
-            }).catch(error => console.log('Error fetching user data:', error));
+            }).then(response.end(''))
+            .catch(error => console.log('Error fetching user data:', error));
       }
     });
   });
@@ -102,7 +103,18 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
       });
     });
   })
-  .then(() => response.end())
+  .then(() => {
+    let ref = admin.database().ref(`users/${uniqueUserId}/calendarId`);
+    ref.once('value')
+    .then(snapshot => {
+      let calendarId = snapshot.val(); 
+      let config = {
+        url: 'http://localhost:5000/testproject-6177f/us-central1/addCalendarEvents',
+        payload: { uniqueUserId: uniqueUserId, calendarId: calendarId}
+      };
+      axios.post(config.url, config.payload)
+    })
+  }).then(() => response.end())
   .catch(error => console.log(error));
 });
 
@@ -163,9 +175,10 @@ exports.createNewCalendar = functions.https.onRequest((request, response) => {
   }
 });
 
-exports.addCalendarEvent = functions.https.onRequest((request, response) => {
+exports.addCalendarEvents = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const uniqueUserId = request.body.uniqueUserId;
+  const calendarId = request.body.calendarId; 
 
   function authorize(credentials, callback) {
     let _callback = Promise.promisify(callback);
@@ -199,8 +212,6 @@ exports.addCalendarEvent = functions.https.onRequest((request, response) => {
     axios.post(config.url, config.payload)
     .then(sums => {
       let dailySpending = sums.data;
-      console.log(sums.data)
-      const calendarId = '2slbaav4o97vbeqjftb3ihat5o@group.calendar.google.com';
 
       for (let date in dailySpending) {
 
@@ -216,7 +227,7 @@ exports.addCalendarEvent = functions.https.onRequest((request, response) => {
             'timeZone': 'America/Los_Angeles'
           }
         };
-        // console.log(event.summary);
+      
         let targetCal = {
           auth: auth,
           calendarId: calendarId,

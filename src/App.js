@@ -36,24 +36,16 @@ class App extends Component {
         const user = result.user;
         const OAuthToken = result.credential.accessToken;
         this.setState({user, OAuthToken});
-        this.verifyUser();
+        this.verifyUser(OAuthToken);
       })
-      .then(() => {
-        const config = {
-          url: 'http://localhost:5000/testproject-6177f/us-central1/readCalendar',
-          payload: qs.stringify({OAuthToken: this.state.OAuthToken})
-        };
-        axios.post(config.url, config.payload)
-          .catch(err => console.log(err));
-      });
   }
 
-  verifyUser() {
+  verifyUser(OAuthToken) {
     auth.currentUser.getIdToken()
       .then(idToken => {
           const config = {
             url: 'http://localhost:5000/testproject-6177f/us-central1/addUser',
-            payload: qs.stringify({idToken: idToken})
+            payload: qs.stringify({idToken: idToken, OAuthToken: OAuthToken})
           };
           axios.post(config.url, config.payload)
             .catch(err => console.log(err));

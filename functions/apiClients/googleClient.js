@@ -25,7 +25,7 @@ const googleAuth = require('google-auth-library');
 //     var auth = new googleAuth();
 //     // console.log(auth);
 //     var oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
-   
+
 //     oauth2Client.credentials = {
 //         "access_token": process.env.OAUTH2_ACCESS_TOKEN,
 //         "refresh_token": process.env.OAUTH2_REFRESH_TOKEN,
@@ -45,12 +45,9 @@ const googleAuth = require('google-auth-library');
 //             callback(oauth2Client);
 //         }).catch(err => console.log('Error while trying to retrieve access token', err));
 // }
-var oauth2ClientCredentials = {
-        "access_token": process.env.OAUTH2_ACCESS_TOKEN,
-        "refresh_token": process.env.OAUTH2_REFRESH_TOKEN,
-        "token_type": process.env.OAUTH2_TOKEN_TYPE,
-        "expiry_date": process.env.OAUTH2_EXPIRY_DATE
-    };
+// var oauth2ClientCredentials = {
+//         "access_token": process.env.OAUTH2_ACCESS_TOKEN,
+//     };
 
 
 var APICredentials = {
@@ -69,6 +66,5 @@ var APICredentials = {
     }
 
 module.exports = {
-    oauth2ClientCredentials, 
     APICredentials
 }

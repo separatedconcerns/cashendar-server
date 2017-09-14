@@ -13,29 +13,36 @@ const plaidClient = require('./apiClients/plaidClient.js');
 exports.addUser = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const idToken = request.body.idToken;
-  let uniqueUserId;
-
+  // let uniqueUserId;
+  // let calendar; 
   admin.auth().verifyIdToken(idToken)
   .then(decodedToken => {
-    uniqueUserId = decodedToken.uid;
+    let uniqueUserId = decodedToken.uid;
     let ref = admin.database().ref(`users/${uniqueUserId}`);
-
     ref.once('value')
     .then(snapshot => {
       if (snapshot.exists()) { response.end(); }
       else {
-        admin.auth().getUser(uniqueUserId)
-        .then(userRecord => {
-          let user = userRecord.toJSON();
-          let payload = {
-            email: user.email,
-            name: user.displayName
-          };
-          return payload;
-        }).then(payload => {
-          admin.database().ref('users/' + uniqueUserId).set(payload)
-        }).then(response.end())
-          .catch(error => console.log('Error fetching user data:', error));
+          admin.auth().getUser(uniqueUserId)
+            .then(userRecord => {
+              let user = userRecord.toJSON();
+              let payload = {
+                email: user.email,
+                name: user.displayName
+              };
+              admin.database().ref('users/' + uniqueUserId).set(payload)
+                .then(() => {
+                  let config = {
+                    url: 'http://localhost:5000/testproject-6177f/us-central1/createNewCalendar'
+                  };
+                  axios.post(config.url)
+                    .then(calendar => {
+                      let calId = calendar.data.id;
+                      let calName = calendar.data.summary; 
+                      admin.database().ref('users/' + uniqueUserId).update({calendarId: calId, calendarName: calName})
+                    }).then(response.end(''))
+                })
+            }).catch(error => console.log('Error fetching user data:', error));
       }
     });
   });
@@ -120,7 +127,6 @@ exports.readCalendar = functions.https.onRequest((request, response) => {
 
 exports.createNewCalendar = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
-  const uniqueUserId = request.body.uniqueUserId;
 
   function authorize(credentials, callback) {
     let _callback = Promise.promisify(callback);
@@ -150,16 +156,12 @@ exports.createNewCalendar = functions.https.onRequest((request, response) => {
     let calendarCreate = Promise.promisify(google.calendar('v3').calendars.insert);
     let config = {
       auth: auth,
-      resource: {summary: 'cashMoney4'}
+      resource: {summary: 'Wheres My Money!!!'}
     };
     calendarCreate(config)
-      .then(event => {
-        console.log(event.id);
-        // TODO:
-        //  save event.id to db
-        //  save event.summary to db
-        response.end('');})
-      .catch(e => response.end('there was an error contacting Google Calendar ' + e));
+      .then(calendar => {
+        response.json(calendar);
+      }).catch(e => response.end('there was an error contacting Google Calendar ' + e));
   }
 });
 

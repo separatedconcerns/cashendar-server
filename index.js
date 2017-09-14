@@ -13,40 +13,42 @@ const plaidClient = require('./apiClients/plaidClient.js');
 exports.addUser = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const idToken = request.body.idToken;
+  const OAuthToken = request.body.OAuthToken;
+
   admin.auth().verifyIdToken(idToken)
   .then(decodedToken => {
     let uniqueUserId = decodedToken.uid;
     let ref = admin.database().ref(`users/${uniqueUserId}`);
     ref.once('value')
     .then(snapshot => {
-      if (snapshot.exists()) { response.end(); }
-      else {
-          admin.auth().getUser(uniqueUserId)
-            .then(userRecord => {
+      if (snapshot.exists()) { response.end(); } else {
+        admin.auth().getUser(uniqueUserId)
+        .then(userRecord => {
               let user = userRecord.toJSON();
               let payload = {
                 email: user.email,
-                name: user.displayName
+                name: user.displayName,
+                OAuthToken: OAuthToken
               };
               admin.database().ref('users/' + uniqueUserId).set(payload)
-                .then(() => {
-                  let config = {
-                    url: 'http://localhost:5000/testproject-6177f/us-central1/createNewCalendar'
-                  };
-                  axios.post(config.url)
-                    .then(calendar => {
-                      let calId = calendar.data.id;
-                      let calName = calendar.data.summary; 
-                      admin.database().ref('users/' + uniqueUserId).update({calendarId: calId, calendarName: calName})
-                    })
-                })
+              .then(() => {
+                let config = {
+                  url: 'http://localhost:5000/testproject-6177f/us-central1/createNewCalendar',
+                  payload: {OAuthToken: OAuthToken}
+                };
+                axios.post(config.url, config.payload)
+                .then(calendar => {
+                  let calId = calendar.data.id;
+                  let calName = calendar.data.summary;
+                  admin.database().ref('users/' + uniqueUserId).update({calendarId: calId, calendarName: calName});
+                });
+              });
             }).then(response.end(''))
             .catch(error => console.log('Error fetching user data:', error));
       }
     });
   });
 });
-
 
 exports.exchangePublicToken = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
@@ -102,18 +104,18 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
         .set({transactions});
       });
     });
-  })
-  .then(() => {
-    let ref = admin.database().ref(`users/${uniqueUserId}/calendarId`);
+  }).then(() => {
+    let ref = admin.database().ref(`users/${uniqueUserId}/`);
     ref.once('value')
     .then(snapshot => {
-      let calendarId = snapshot.val(); 
+      let calendarId = snapshot.val().calendarId;
+      let OAuthToken = snapshot.val().OAuthToken;
       let config = {
         url: 'http://localhost:5000/testproject-6177f/us-central1/addCalendarEvents',
-        payload: { uniqueUserId: uniqueUserId, calendarId: calendarId}
+        payload: {uniqueUserId: uniqueUserId, calendarId: calendarId, OAuthToken: OAuthToken}
       };
-      axios.post(config.url, config.payload)
-    })
+      axios.post(config.url, config.payload);
+    });
   }).then(() => response.end())
   .catch(error => console.log(error));
 });
@@ -128,15 +130,9 @@ exports.getTransactionsFromDatabase = functions.https.onRequest((request, respon
   .then(snapshot => response.json(snapshot.val()));
 });
 
-exports.readCalendar = functions.https.onRequest((request, response) => {
-  response.header('Access-Control-Allow-Origin', '*');
-  const OAuthToken = request.body.OAuthToken;
-  // console.log(OAuthToken);
-  response.end(OAuthToken);
-});
-
 exports.createNewCalendar = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
+  const OAuthToken = request.body.OAuthToken;
 
   function authorize(credentials, callback) {
     let _callback = Promise.promisify(callback);
@@ -146,18 +142,20 @@ exports.createNewCalendar = functions.https.onRequest((request, response) => {
     let auth = new googleAuth();
     let oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
 
-    oauth2Client.credentials = googleClient.oauth2ClientCredentials;
+    oauth2Client.credentials = {
+      'access_token': OAuthToken
+    };
     _callback(oauth2Client)
-      .catch(e => getToken(oauth2Client, callback));
+    .catch(e => getToken(oauth2Client, callback));
   }
 
   function getToken(oauth2Client, callback) {
     oauth2Client.getToken(code)
-      .then(token => {
-        oauth2Client.credentials = token;
-        storeToken(token);
-        callback(oauth2Client);
-      }).catch(err => console.log('Error while trying to retrieve access token', err));
+    .then(token => {
+      oauth2Client.credentials = token;
+      storeToken(token);
+      callback(oauth2Client);
+    }).catch(err => console.log('Error while trying to retrieve access token', err));
   }
 
   authorize(googleClient.APICredentials, createCalendar);
@@ -169,16 +167,17 @@ exports.createNewCalendar = functions.https.onRequest((request, response) => {
       resource: {summary: 'Wheres My Money!!!'}
     };
     calendarCreate(config)
-      .then(calendar => {
-        response.json(calendar);
-      }).catch(e => response.end('there was an error contacting Google Calendar ' + e));
+    .then(calendar => {
+      response.json(calendar);
+    }).catch(e => response.end('there was an error contacting Google Calendar ' + e));
   }
 });
 
 exports.addCalendarEvents = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const uniqueUserId = request.body.uniqueUserId;
-  const calendarId = request.body.calendarId; 
+  const calendarId = request.body.calendarId;
+  const OAuthToken = request.body.OAuthToken;
 
   function authorize(credentials, callback) {
     let _callback = Promise.promisify(callback);
@@ -187,8 +186,10 @@ exports.addCalendarEvents = functions.https.onRequest((request, response) => {
     let redirectUrl = credentials.installed.redirect_uris[0];
     let auth = new googleAuth();
     let oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
-    // console.log(auth);
-    oauth2Client.credentials = googleClient.oauth2ClientCredentials;
+
+    oauth2Client.credentials = {
+      'access_token': OAuthToken
+    };
     _callback(oauth2Client)
     .catch(e => console.log(e));
   }
@@ -207,14 +208,13 @@ exports.addCalendarEvents = functions.https.onRequest((request, response) => {
   function createEvent(auth) {
     let config = {
       url: 'http://localhost:5000/testproject-6177f/us-central1/getDailySpending',
-      payload: { uniqueUserId: uniqueUserId }
+      payload: {uniqueUserId: uniqueUserId}
     };
     axios.post(config.url, config.payload)
     .then(sums => {
       let dailySpending = sums.data;
 
       for (let date in dailySpending) {
-
         let event = {
           'summary': `Spent $${dailySpending[date]}`,
           'description': '',
@@ -227,7 +227,7 @@ exports.addCalendarEvents = functions.https.onRequest((request, response) => {
             'timeZone': 'America/Los_Angeles'
           }
         };
-      
+
         let targetCal = {
           auth: auth,
           calendarId: calendarId,
@@ -237,19 +237,18 @@ exports.addCalendarEvents = functions.https.onRequest((request, response) => {
         let eventInsert = Promise.promisify(google.calendar('v3').events.insert);
 
         eventInsert(targetCal)
-          .catch(e => response.end('there was an error contacting Google Calendar' + e));
+        .catch(e => response.end('there was an error contacting Google Calendar' + e));
       }
     }).then(response.end(''))
     .catch(e => console.log(e));
   }
-
 });
 
 
 
 
 // end point that requires unique USER ID
-  // returns an integer representing dollar amount spent
+// returns an integer representing dollar amount spent
 exports.getDailySpending = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const uniqueUserId = request.body.uniqueUserId;
@@ -269,22 +268,22 @@ exports.getDailySpending = functions.https.onRequest((request, response) => {
       });
       return sums;
     }).then(sums => response.json(sums))
-    .catch(error => {console.log(error)});
+    .catch(error => {console.log(error);});
 });
 // end point that requires USER ID
-  // returns "Profile deleted" message
+// returns "Profile deleted" message
 exports.deleteUserProfile = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   response.end('Profile Deleted');
 });
 // end point that requires USER ID and Auth Token
-  // return "bank relationship deleted" message
+// return "bank relationship deleted" message
 exports.deleteBankAccount = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   response.end('Bank relationship deleted');
 });
 // end point that requires USER ID
-  // returns all accounts for that user
+// returns all accounts for that user
 exports.getAllUserAccounts = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   response.end('Returns all accounts for user');

@@ -5,7 +5,6 @@ const admin = require('./apiClients/firebaseClient.js');
 const moment = require('moment');
 const axios = require('axios');
 const google = require('googleapis');
-const googleAuth = require('google-auth-library');
 const Promise = require('bluebird');
 const googleClient = require('./apiClients/googleClient.js');
 const plaidClient = require('./apiClients/plaidClient.js');
@@ -136,17 +135,6 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
   .catch(error => console.log(error));
 });
 
-//************** GET TRANSACTIONS FROM DATABASE ************************//
-exports.getTransactionsFromDatabase = functions.https.onRequest((request, response) => {
-  response.header('Access-Control-Allow-Origin', '*');
-  const uniqueUserId = request.body.uniqueUserId;
-
-  admin.database()
-  .ref(`users/${uniqueUserId}/access_tokens/itemId/transactions`)
-  .once('value')
-  .then(snapshot => response.json(snapshot.val()));
-});
-
 //**************** CREATE NEW CALENDAR **********************//
 exports.createNewCalendar = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
@@ -155,31 +143,7 @@ exports.createNewCalendar = functions.https.onRequest((request, response) => {
   // Creates a new OAuth2 client, 
   // then adds OAuthToken to OAuth2Client and invokes a callback passing in the oauth2Client, 
   // in this case the callback is createCalendar
-  function authorize(credentials, callback) {
-    let _callback = Promise.promisify(callback);
-    let clientSecret = credentials.installed.client_secret;
-    let clientId = credentials.installed.client_id;
-    let redirectUrl = credentials.installed.redirect_uris[0];
-    let auth = new googleAuth();
-    let oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
-
-    oauth2Client.credentials = {
-      'access_token': OAuthToken
-    };
-    _callback(oauth2Client)
-    .catch(e => getToken(oauth2Client, callback));
-  }
-
-  function getToken(oauth2Client, callback) {
-    oauth2Client.getToken(code)
-    .then(token => {
-      oauth2Client.credentials = token;
-      storeToken(token);
-      callback(oauth2Client);
-    }).catch(err => console.log('Error while trying to retrieve access token', err));
-  }
-
-  authorize(googleClient.APICredentials, createCalendar);
+  googleClient.authorize(OAuthToken, createCalendar);
   
   // Creates new Where's My Money calendar in user's google calendar
   function createCalendar(auth) {
@@ -205,29 +169,14 @@ exports.addCalendarEvents = functions.https.onRequest((request, response) => {
   // Creates a new OAuth2 client, 
   // then adds OAuthToken to OAuth2Client and invokes a callback passing in the oauth2Client, 
   // in this case the callback is createEvents
-  function authorize(credentials, callback) {
-    let _callback = Promise.promisify(callback);
-    let clientSecret = credentials.installed.client_secret;
-    let clientId = credentials.installed.client_id;
-    let redirectUrl = credentials.installed.redirect_uris[0];
-    let auth = new googleAuth();
-    let oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
+  googleClient.authorize(OAuthToken, createEvents);
 
-    oauth2Client.credentials = {
-      'access_token': OAuthToken
-    };
-    _callback(oauth2Client)
-    .catch(e => console.log(e));
-  }
-
-  authorize(googleClient.APICredentials, createEvents);
-
-  // Gets daily spending object from db
+  // Gets daily spending object 
   // then creates a new calendar event for each day's total spending
   function createEvents(auth) {
     let config = {
       url: 'http://localhost:5000/testproject-6177f/us-central1/getDailySpending',
-      payload: {uniqueUserId: uniqueUserId}
+      payload: { uniqueUserId: uniqueUserId}
     };
     axios.post(config.url, config.payload)
     .then(sums => {
@@ -275,19 +224,31 @@ exports.getDailySpending = functions.https.onRequest((request, response) => {
   // Gets a user's transactions from db
   // then sums the transaction amounts by date
   axios.post(config.url, config.payload)
-    .then(transactions => {
-      let sums = {};
-      transactions.data.forEach(transaction => {
-        if (sums[transaction.date]) {
-          sums[transaction.date] += transaction.amount;
-        } else {
-          sums[transaction.date] = transaction.amount;
-        }
-      });
-      return sums;
-    }).then(sums => response.json(sums))
-    .catch(error => {console.log(error);});
+  .then(transactions => {
+    let sums = {};
+    transactions.data.forEach(transaction => {
+      if (sums[transaction.date]) {
+        sums[transaction.date] += transaction.amount;
+      } else {
+        sums[transaction.date] = transaction.amount;
+      }
+    });
+    return sums;
+  }).then(sums => response.json(sums))
+  .catch(error => {console.log(error);});
 });
+
+//************** GET TRANSACTIONS FROM DATABASE ************************//
+exports.getTransactionsFromDatabase = functions.https.onRequest((request, response) => {
+  response.header('Access-Control-Allow-Origin', '*');
+  const uniqueUserId = request.body.uniqueUserId; 
+
+  admin.database()
+    .ref(`users/${uniqueUserId}/access_tokens/itemId/transactions`)
+    .once('value')
+    .then(snapshot => response.json(snapshot.val()));
+});
+
 // end point that requires USER ID
 // returns "Profile deleted" message
 exports.deleteUserProfile = functions.https.onRequest((request, response) => {
@@ -310,6 +271,7 @@ exports.deleteUserProfile = functions.https.onRequest((request, response) => {
   // TODO: send delete request to plaid after deleting calendar and before deleting Profile
   // prevents unnecessary billing from plaid if going to production
 });
+
 // end point that requires USER ID and Auth Token
 // return "bank relationship deleted" message
 exports.deleteBankAccount = functions.https.onRequest((request, response) => {
@@ -328,31 +290,7 @@ exports.deleteCalendar = functions.https.onRequest((request, response) => {
   const OAuthToken = request.body.OAuthToken;
   const calendarId = request.body.calendarId;
 
-  function authorize(credentials, callback) {
-    let _callback = Promise.promisify(callback);
-    let clientSecret = credentials.installed.client_secret;
-    let clientId = credentials.installed.client_id;
-    let redirectUrl = credentials.installed.redirect_uris[0];
-    let auth = new googleAuth();
-    let oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
-
-    oauth2Client.credentials = {
-      'access_token': OAuthToken
-    };
-    _callback(oauth2Client)
-    .catch(e => getToken(oauth2Client, callback));
-  }
-
-  function getToken(oauth2Client, callback) {
-    oauth2Client.getToken(code)
-    .then(token => {
-      oauth2Client.credentials = token;
-      storeToken(token);
-      callback(oauth2Client);
-    }).catch(err => console.log('Error while trying to retrieve access token', err));
-  }
-
-  authorize(googleClient.APICredentials, deleteCalendar);
+  googleClient.authorize(OAuthToken, deleteCalendar);
 
   function deleteCalendar(auth) {
     let calendarDelete = Promise.promisify(google.calendar('v3').calendars.delete);

@@ -14,18 +14,18 @@ exports.addUser = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const idToken = request.body.idToken;
   const OAuthToken = request.body.OAuthToken;
-  
+
   // verifies firebase idToken
   admin.auth().verifyIdToken(idToken)
   .then(decodedToken => {
     let uniqueUserId = decodedToken.uid;
     let ref = admin.database().ref(`users/${uniqueUserId}`);
-    
+
     // searches for uniqueUserId in db
-        // if user exists response is ended 
-        // otherwise a new user is created in db, 
-        // a new calendar is created, 
-        // calendarId is saved in db 
+        // if user exists response is ended
+        // otherwise a new user is created in db,
+        // a new calendar is created,
+        // calendarId is saved in db
     ref.once('value')
     .then(snapshot => {
       if (snapshot.exists()) { response.end(); } else {
@@ -62,9 +62,9 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const publicToken = request.body.publicToken;
   const uniqueUserId = request.body.uniqueUserId;
-  
-  // Exchanges publicToken with Plaid API for access_token, 
-  //  then saves access-token to user's profile in db, 
+
+  // Exchanges publicToken with Plaid API for access_token,
+  //  then saves access-token to user's profile in db,
   //  then invokes getTransactionsFromPlaid endpoint passing in uniqueUserId and access_token
   plaidClient.exchangePublicToken(publicToken)
   .then(successResponse => {
@@ -72,20 +72,17 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
       access_token: successResponse.access_token,
       request_id: successResponse.request_id
     };
-  })
-  .then(payload => {
+  }).then(payload => {
     admin.database()
     .ref(`/users/${uniqueUserId}/access_tokens`)
     .set(payload);
     return payload;
-  })
-  .then(payload => {
+  }).then(payload => {
     axios.post('http://localhost:5000/testproject-6177f/us-central1/getTransactionsFromPlaid', {
       access_token: payload.access_token,
       uniqueUserId: uniqueUserId
     })
-    .then(response.end());
-  })
+  }).then(response.end())
   .catch(error => console.log(error));
 });
 
@@ -140,11 +137,11 @@ exports.createNewCalendar = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const OAuthToken = request.body.OAuthToken;
 
-  // Creates a new OAuth2 client, 
-  // then adds OAuthToken to OAuth2Client and invokes a callback passing in the oauth2Client, 
+  // Creates a new OAuth2 client,
+  // then adds OAuthToken to OAuth2Client and invokes a callback passing in the oauth2Client,
   // in this case the callback is createCalendar
   googleClient.authorize(OAuthToken, createCalendar);
-  
+
   // Creates new Where's My Money calendar in user's google calendar
   function createCalendar(auth) {
     let calendarCreate = Promise.promisify(google.calendar('v3').calendars.insert);
@@ -153,9 +150,8 @@ exports.createNewCalendar = functions.https.onRequest((request, response) => {
       resource: {summary: 'Wheres My Money!!!'}
     };
     calendarCreate(config)
-    .then(calendar => {
-      response.json(calendar);
-    }).catch(e => response.end('there was an error contacting Google Calendar ' + e));
+    .then(calendar => response.json(calendar))
+    .catch(e => response.end('there was an error contacting Google Calendar ' + e));
   }
 });
 
@@ -166,12 +162,12 @@ exports.addCalendarEvents = functions.https.onRequest((request, response) => {
   const calendarId = request.body.calendarId;
   const OAuthToken = request.body.OAuthToken;
 
-  // Creates a new OAuth2 client, 
-  // then adds OAuthToken to OAuth2Client and invokes a callback passing in the oauth2Client, 
+  // Creates a new OAuth2 client,
+  // then adds OAuthToken to OAuth2Client and invokes a callback passing in the oauth2Client,
   // in this case the callback is createEvents
   googleClient.authorize(OAuthToken, createEvents);
 
-  // Gets daily spending object 
+  // Gets daily spending object
   // then creates a new calendar event for each day's total spending
   function createEvents(auth) {
     let config = {
@@ -241,7 +237,7 @@ exports.getDailySpending = functions.https.onRequest((request, response) => {
 //************** GET TRANSACTIONS FROM DATABASE ************************//
 exports.getTransactionsFromDatabase = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
-  const uniqueUserId = request.body.uniqueUserId; 
+  const uniqueUserId = request.body.uniqueUserId;
 
   admin.database()
     .ref(`users/${uniqueUserId}/access_tokens/itemId/transactions`)

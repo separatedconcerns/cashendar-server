@@ -288,3 +288,47 @@ exports.getAllUserAccounts = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   response.end('Returns all accounts for user');
 });
+
+exports.deleteCalendar = functions.https.onRequest((request, response) => {
+  response.header('Access-Control-Allow-Origin', '*');
+  const OAuthToken = request.body.OAuthToken;
+  const calendarId = request.body.calendarId;
+
+  function authorize(credentials, callback) {
+    let _callback = Promise.promisify(callback);
+    let clientSecret = credentials.installed.client_secret;
+    let clientId = credentials.installed.client_id;
+    let redirectUrl = credentials.installed.redirect_uris[0];
+    let auth = new googleAuth();
+    let oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
+
+    oauth2Client.credentials = {
+      'access_token': OAuthToken
+    };
+    _callback(oauth2Client)
+    .catch(e => getToken(oauth2Client, callback));
+  }
+
+  function getToken(oauth2Client, callback) {
+    oauth2Client.getToken(code)
+    .then(token => {
+      oauth2Client.credentials = token;
+      storeToken(token);
+      callback(oauth2Client);
+    }).catch(err => console.log('Error while trying to retrieve access token', err));
+  }
+
+  authorize(googleClient.APICredentials, deleteCalendar);
+
+  function deleteCalendar(auth) {
+    let calendarDelete = Promise.promisify(google.calendar('v3').calendars.delete);
+    let config = {
+      auth: auth,
+      calendarId: calendarId,
+    };
+    calendarDelete(config)
+    .then(calendar => {
+      response.json(calendar);
+    }).catch(e => response.end('there was an error contacting Google Calendar ' + e));
+  }
+});

@@ -1,0 +1,38 @@
+[debug] [2017-09-15T16:59:00.353Z] ----------------------------------------------------------------------
+[debug] [2017-09-15T16:59:00.355Z] Command:       /usr/local/bin/node /usr/local/bin/firebase serve --only functions
+[debug] [2017-09-15T16:59:00.355Z] CLI Version:   3.10.0
+[debug] [2017-09-15T16:59:00.355Z] Platform:      darwin
+[debug] [2017-09-15T16:59:00.356Z] Node Version:  v6.11.2
+[debug] [2017-09-15T16:59:00.356Z] Time:          Fri Sep 15 2017 09:59:00 GMT-0700 (PDT)
+[debug] [2017-09-15T16:59:00.356Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2017-09-15T16:59:00.366Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2017-09-15T16:59:00.366Z] > authorizing via signed-in user
+[debug] [2017-09-15T16:59:00.368Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/testproject-6177f  
+ Fri Sep 15 2017 09:59:00 GMT-0700 (PDT)
+[debug] [2017-09-15T16:59:00.763Z] <<< HTTP RESPONSE 200
+[debug] [2017-09-15T16:59:00.764Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/testproject-6177f/tokens  
+ Fri Sep 15 2017 09:59:00 GMT-0700 (PDT)
+[debug] [2017-09-15T16:59:01.554Z] <<< HTTP RESPONSE 200
+[info] 
+[info] === Serving from '/Users/hmultani/Desktop/studyProjects/HRProjects/wheres-my-money'...
+[info] 
+[info] i  functions: Preparing to emulate HTTPS functions. Support for other event types coming soon.
+[debug] [2017-09-15T16:59:01.794Z] >>> HTTP REQUEST GET https://appengine.googleapis.com/v1/apps/testproject-6177f  
+ Fri Sep 15 2017 09:59:01 GMT-0700 (PDT)
+[debug] [2017-09-15T16:59:01.794Z] >>> HTTP REQUEST GET https://apikeys.googleapis.com/v1/projects/testproject-6177f/apiKeys  
+ Fri Sep 15 2017 09:59:01 GMT-0700 (PDT)
+[debug] [2017-09-15T16:59:02.167Z] <<< HTTP RESPONSE 200
+[debug] [2017-09-15T16:59:02.223Z] <<< HTTP RESPONSE 200
+[info] ✔  functions: exchangePublicToken: http://localhost:5000/testproject-6177f/us-central1/exchangePublicToken
+[info] ✔  functions: getTransactionsFromPlaid: http://localhost:5000/testproject-6177f/us-central1/getTransactionsFromPlaid
+[info] ✔  functions: addCalendarEvents: http://localhost:5000/testproject-6177f/us-central1/addCalendarEvents
+[info] ✔  functions: deleteCalendar: http://localhost:5000/testproject-6177f/us-central1/deleteCalendar
+[info] ✔  functions: addUser: http://localhost:5000/testproject-6177f/us-central1/addUser
+[info] ✔  functions: createNewCalendar: http://localhost:5000/testproject-6177f/us-central1/createNewCalendar
+[info] ✔  functions: getDailySpending: http://localhost:5000/testproject-6177f/us-central1/getDailySpending
+[info] ✔  functions: getTransactionsFromDatabase: http://localhost:5000/testproject-6177f/us-central1/getTransactionsFromDatabase
+[info] ✔  functions: deleteUserProfile: http://localhost:5000/testproject-6177f/us-central1/deleteUserProfile
+[info] ✔  functions: deleteBankAccount: http://localhost:5000/testproject-6177f/us-central1/deleteBankAccount
+[info] ✔  functions: getAllUserAccounts: http://localhost:5000/testproject-6177f/us-central1/getAllUserAccounts
+[info] Shutting down...

@@ -274,7 +274,23 @@ exports.getDailySpending = functions.https.onRequest((request, response) => {
 // returns "Profile deleted" message
 exports.deleteUserProfile = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
-  response.end('Profile Deleted');
+  const uniqueUserId = request.body.uniqueUserId;
+
+  let ref = admin.database().ref(`users/${uniqueUserId}/`);
+  ref.once('value')
+  .then(snapshot => {
+    let config = {
+      url: 'http://localhost:5000/testproject-6177f/us-central1/deleteCalendar',
+      payload: {
+        calendarId: snapshot.val().calendarId,
+        OAuthToken: snapshot.val().OAuthToken
+      }
+    }
+    axios.post(config.url, config.payload)
+    .then(admin.database().ref(`users/${uniqueUserId}`).remove());
+  }).then(response.end('Profile Deleted'))
+  // TODO: send delete request to plaid after deleting calendar and before deleting Profile
+  // prevents unnecessary billing from plaid if going to production
 });
 // end point that requires USER ID and Auth Token
 // return "bank relationship deleted" message

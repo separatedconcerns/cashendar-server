@@ -14,7 +14,7 @@
     "plaid": "^2.0.5"
   },
   "scripts": {
-    "server-start": "firebase serve --only functions"
+    "start": "firebase serve --only functions"
   },
   "private": true
 }

@@ -10,15 +10,21 @@ const Promise = require('bluebird');
 const googleClient = require('./apiClients/googleClient.js');
 const plaidClient = require('./apiClients/plaidClient.js');
 
+//***************** ADD USER *********************//
 exports.addUser = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const idToken = request.body.idToken;
   const OAuthToken = request.body.OAuthToken;
-
+  
+  // verifies firebase idToken
   admin.auth().verifyIdToken(idToken)
   .then(decodedToken => {
     let uniqueUserId = decodedToken.uid;
     let ref = admin.database().ref(`users/${uniqueUserId}`);
+    
+    // searches for uniqueUserId in db
+        // if user exists response is ended 
+        // otherwise 
     ref.once('value')
     .then(snapshot => {
       if (snapshot.exists()) { response.end(); } else {
@@ -50,6 +56,7 @@ exports.addUser = functions.https.onRequest((request, response) => {
   });
 });
 
+//**************************************//
 exports.exchangePublicToken = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const publicToken = request.body.publicToken;
@@ -78,6 +85,7 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
   .catch(error => console.log(error));
 });
 
+//**************************************//
 exports.getTransactionsFromPlaid = functions.https.onRequest((request, response) => {
   const access_token = request.body.access_token;
   const uniqueUserId = request.body.uniqueUserId;
@@ -120,6 +128,7 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
   .catch(error => console.log(error));
 });
 
+//**************************************//
 exports.getTransactionsFromDatabase = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const uniqueUserId = request.body.uniqueUserId;
@@ -130,6 +139,7 @@ exports.getTransactionsFromDatabase = functions.https.onRequest((request, respon
   .then(snapshot => response.json(snapshot.val()));
 });
 
+//**************************************//
 exports.createNewCalendar = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const OAuthToken = request.body.OAuthToken;
@@ -172,7 +182,7 @@ exports.createNewCalendar = functions.https.onRequest((request, response) => {
     }).catch(e => response.end('there was an error contacting Google Calendar ' + e));
   }
 });
-
+//**************************************//
 exports.addCalendarEvents = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const uniqueUserId = request.body.uniqueUserId;
@@ -194,14 +204,7 @@ exports.addCalendarEvents = functions.https.onRequest((request, response) => {
     .catch(e => console.log(e));
   }
 
-  function getToken(oauth2Client, callback) {
-    oauth2Client.getToken(code)
-    .then(token => {
-      oauth2Client.credentials = token;
-      storeToken(token);
-      callback(oauth2Client);
-    }).catch(err => console.log('Error while trying to retrieve access token', err));
-  }
+  
 
   authorize(googleClient.APICredentials, createEvent);
 
@@ -244,11 +247,7 @@ exports.addCalendarEvents = functions.https.onRequest((request, response) => {
   }
 });
 
-
-
-
-// end point that requires unique USER ID
-// returns an integer representing dollar amount spent
+//**************************************//
 exports.getDailySpending = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const uniqueUserId = request.body.uniqueUserId;

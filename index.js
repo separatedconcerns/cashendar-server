@@ -24,7 +24,9 @@ exports.addUser = functions.https.onRequest((request, response) => {
     
     // searches for uniqueUserId in db
         // if user exists response is ended 
-        // otherwise 
+        // otherwise a new user is created in db, 
+        // a new calendar is created, 
+        // calendarId is saved in db 
     ref.once('value')
     .then(snapshot => {
       if (snapshot.exists()) { response.end(); } else {
@@ -56,12 +58,15 @@ exports.addUser = functions.https.onRequest((request, response) => {
   });
 });
 
-//**************************************//
+//************** EXCHANGE PUBLIC TOKEN ******************//
 exports.exchangePublicToken = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const publicToken = request.body.publicToken;
   const uniqueUserId = request.body.uniqueUserId;
-
+  
+  // Exchanges publicToken with Plaid API for access_token, 
+  //  then saves access-token to user's profile in db, 
+  //  then invokes getTransactionsFromPlaid endpoint passing in uniqueUserId and access_token
   plaidClient.exchangePublicToken(publicToken)
   .then(successResponse => {
     return {
@@ -85,7 +90,7 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
   .catch(error => console.log(error));
 });
 
-//**************************************//
+//*************** GET TRANSACTIONS FROM PLAID ***********************//
 exports.getTransactionsFromPlaid = functions.https.onRequest((request, response) => {
   const access_token = request.body.access_token;
   const uniqueUserId = request.body.uniqueUserId;
@@ -93,6 +98,9 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
   const today = now.format('YYYY-MM-DD');
   const thirtyDaysAgo = now.subtract(30, 'days').format('YYYY-MM-DD');
 
+  // Gets user's transactions from Plaid API,
+  // then saves transactions to user profile in db
+  // then invokes addCalendarEvents passing in uniqueUserId, calendarId, and OAuthToken
   plaidClient.getTransactions(access_token, thirtyDaysAgo, today)
   .then(successResponse => {
     let item_id = successResponse.item.item_id;
@@ -128,7 +136,7 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
   .catch(error => console.log(error));
 });
 
-//**************************************//
+//************** GET TRANSACTIONS FROM DATABASE ************************//
 exports.getTransactionsFromDatabase = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const uniqueUserId = request.body.uniqueUserId;
@@ -139,11 +147,14 @@ exports.getTransactionsFromDatabase = functions.https.onRequest((request, respon
   .then(snapshot => response.json(snapshot.val()));
 });
 
-//**************************************//
+//**************** CREATE NEW CALENDAR **********************//
 exports.createNewCalendar = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const OAuthToken = request.body.OAuthToken;
 
+  // Creates a new OAuth2 client, 
+  // then adds OAuthToken to OAuth2Client and invokes a callback passing in the oauth2Client, 
+  // in this case the callback is createCalendar
   function authorize(credentials, callback) {
     let _callback = Promise.promisify(callback);
     let clientSecret = credentials.installed.client_secret;
@@ -169,7 +180,8 @@ exports.createNewCalendar = functions.https.onRequest((request, response) => {
   }
 
   authorize(googleClient.APICredentials, createCalendar);
-
+  
+  // Creates new Where's My Money calendar in user's google calendar
   function createCalendar(auth) {
     let calendarCreate = Promise.promisify(google.calendar('v3').calendars.insert);
     let config = {
@@ -182,13 +194,17 @@ exports.createNewCalendar = functions.https.onRequest((request, response) => {
     }).catch(e => response.end('there was an error contacting Google Calendar ' + e));
   }
 });
-//**************************************//
+
+//**************** ADD CALENDAR EVENTS **********************//
 exports.addCalendarEvents = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const uniqueUserId = request.body.uniqueUserId;
   const calendarId = request.body.calendarId;
   const OAuthToken = request.body.OAuthToken;
 
+  // Creates a new OAuth2 client, 
+  // then adds OAuthToken to OAuth2Client and invokes a callback passing in the oauth2Client, 
+  // in this case the callback is createEvents
   function authorize(credentials, callback) {
     let _callback = Promise.promisify(callback);
     let clientSecret = credentials.installed.client_secret;
@@ -204,11 +220,11 @@ exports.addCalendarEvents = functions.https.onRequest((request, response) => {
     .catch(e => console.log(e));
   }
 
-  
+  authorize(googleClient.APICredentials, createEvents);
 
-  authorize(googleClient.APICredentials, createEvent);
-
-  function createEvent(auth) {
+  // Gets daily spending object from db
+  // then creates a new calendar event for each day's total spending
+  function createEvents(auth) {
     let config = {
       url: 'http://localhost:5000/testproject-6177f/us-central1/getDailySpending',
       payload: {uniqueUserId: uniqueUserId}
@@ -247,7 +263,7 @@ exports.addCalendarEvents = functions.https.onRequest((request, response) => {
   }
 });
 
-//**************************************//
+//************** GET DAILY SPENDING **********************//
 exports.getDailySpending = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const uniqueUserId = request.body.uniqueUserId;
@@ -255,6 +271,9 @@ exports.getDailySpending = functions.https.onRequest((request, response) => {
     url: 'http://localhost:5000/testproject-6177f/us-central1/getTransactionsFromDatabase',
     payload: {uniqueUserId: uniqueUserId}
   };
+
+  // Gets a user's transactions from db
+  // then sums the transaction amounts by date
   axios.post(config.url, config.payload)
     .then(transactions => {
       let sums = {};

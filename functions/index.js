@@ -103,7 +103,7 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
     let accounts = successResponse.accounts;
     let request_id = successResponse.request_id;
     let transactions = successResponse.transactions;
-    
+
     admin.database()
     .ref('users')
     .once('value', snapshot => {
@@ -245,7 +245,7 @@ exports.getDailySpendingAndTransactions = functions.https.onRequest((request, re
 //************** GET TRANSACTIONS FROM DATABASE ************************//
 exports.getTransactionsFromDatabase = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
-  const uniqueUserId = 'CqqM8GV2gDcRxmxQlcEpHRD1os12';//request.body.uniqueUserId;
+  const uniqueUserId = request.body.uniqueUserId;
 
   admin.database()
     .ref(`users/${uniqueUserId}/access_tokens/itemId/transactions`)

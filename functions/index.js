@@ -103,7 +103,7 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
     let accounts = successResponse.accounts;
     let request_id = successResponse.request_id;
     let transactions = successResponse.transactions;
-
+    
     admin.database()
     .ref('users')
     .once('value', snapshot => {
@@ -171,17 +171,20 @@ exports.addCalendarEvents = functions.https.onRequest((request, response) => {
   // then creates a new calendar event for each day's total spending
   function createEvents(auth) {
     let config = {
-      url: 'http://localhost:5000/testproject-6177f/us-central1/getDailySpending',
+      url: 'http://localhost:5000/testproject-6177f/us-central1/getDailySpendingAndTransactions',
       payload: { uniqueUserId: uniqueUserId}
     };
     axios.post(config.url, config.payload)
-    .then(sums => {
-      let dailySpending = sums.data;
+    .then(transactionsByDate => {
+      let dailySpending = transactionsByDate.data;
 
       for (let date in dailySpending) {
+        let sum = dailySpending[date].sum; 
+        let list = dailySpending[date].list.join('\n');
         let event = {
-          'summary': `Spent $${dailySpending[date]}`,
-          'description': '',
+          'summary': `Spent $${sum}`,
+          'location': 'See description for transaction details!',
+          'description': `Transactions: \n\  ${list}`,
           'start': {
             'date': date,
             'timeZone': 'America/Los_Angeles'
@@ -209,35 +212,40 @@ exports.addCalendarEvents = functions.https.onRequest((request, response) => {
 });
 
 //************** GET DAILY SPENDING **********************//
-exports.getDailySpending = functions.https.onRequest((request, response) => {
+exports.getDailySpendingAndTransactions = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const uniqueUserId = request.body.uniqueUserId;
   let config = {
     url: 'http://localhost:5000/testproject-6177f/us-central1/getTransactionsFromDatabase',
-    payload: {uniqueUserId: uniqueUserId}
+    payload: {
+      uniqueUserId: uniqueUserId
+    }
   };
 
   // Gets a user's transactions from db
   // then sums the transaction amounts by date
   axios.post(config.url, config.payload)
-  .then(transactions => {
-    let sums = {};
-    transactions.data.forEach(transaction => {
-      if (sums[transaction.date]) {
-        sums[transaction.date] += transaction.amount;
-      } else {
-        sums[transaction.date] = transaction.amount;
-      }
+    .then(transactions => {
+      let transactionsByDate = {}
+
+      transactions.data.forEach(transaction => {
+        transactionsByDate[transaction.date] = transactionsByDate[transaction.date] || { "list": [], "sum": 0 };
+
+        transactionsByDate[transaction.date].list.push(`${transaction.name}: $${transaction.amount}`);
+        transactionsByDate[transaction.date].sum += transaction.amount;
+      })
+      return transactionsByDate; 
+    }).then(transactionsByDate => response.json(transactionsByDate))
+    .catch(error => {
+      console.log(error);
     });
-    return sums;
-  }).then(sums => response.json(sums))
-  .catch(error => {console.log(error);});
+
 });
 
 //************** GET TRANSACTIONS FROM DATABASE ************************//
 exports.getTransactionsFromDatabase = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
-  const uniqueUserId = request.body.uniqueUserId;
+  const uniqueUserId = 'CqqM8GV2gDcRxmxQlcEpHRD1os12';//request.body.uniqueUserId;
 
   admin.database()
     .ref(`users/${uniqueUserId}/access_tokens/itemId/transactions`)

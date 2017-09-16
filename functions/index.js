@@ -179,7 +179,7 @@ exports.addCalendarEvents = functions.https.onRequest((request, response) => {
       let dailySpending = transactionsByDate.data;
 
       for (let date in dailySpending) {
-        let sum = dailySpending[date].sum; 
+        let sum = Math.round(dailySpending[date].sum); 
         let list = dailySpending[date].list.join('\n');
         let event = {
           'summary': `Spent $${sum}`,
@@ -211,7 +211,7 @@ exports.addCalendarEvents = functions.https.onRequest((request, response) => {
   }
 });
 
-//************** GET DAILY SPENDING **********************//
+//************** GET DAILY SPENDING AND TRANSACTION LISTS **********************//
 exports.getDailySpendingAndTransactions = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const uniqueUserId = request.body.uniqueUserId;

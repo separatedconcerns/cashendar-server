@@ -33,19 +33,9 @@ jobs:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
 
-      # run tests!
-      - run: npm run test
-
-      - run: npm run build
-
       - deploy:
           name: Deploy to Firebase
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               ./node_modules/.bin/firebase deploy --token=$FIREBASE_DEPLOY_TOKEN
             fi
-
-      - run:
-          name: Upload code coverage
-          command:  bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports"
-          when: on_success

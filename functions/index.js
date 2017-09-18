@@ -28,7 +28,7 @@ exports.addUser = functions.https.onRequest((request, response) => {
         // calendarId is saved in db
     ref.once('value')
     .then(snapshot => {
-      if (snapshot.exists()) { response.end(); } else {
+      if (snapshot.exists()) { response.json(); } else {
         admin.auth().getUser(uniqueUserId)
         .then(userRecord => {
               let user = userRecord.toJSON();
@@ -69,13 +69,14 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
   plaidClient.exchangePublicToken(publicToken)
   .then(successResponse => {
     return {
+      itemId: successResponse.item_id,
       access_token: successResponse.access_token,
       request_id: successResponse.request_id
     };
   }).then(payload => {
     admin.database()
-    .ref(`/users/${uniqueUserId}/access_tokens`)
-    .set(payload);
+    .ref(`/users/${uniqueUserId}/items/${payload.itemId}/`)
+    .set({access_token: payload.access_token});
     return payload;
   }).then(payload => {
     axios.post('http://localhost:5000/testproject-6177f/us-central1/getTransactionsFromPlaid', {
@@ -105,31 +106,24 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
     let transactions = successResponse.transactions;
 
     admin.database()
-    .ref('users')
-    .once('value', snapshot => {
-      snapshot.forEach(childSnapshot => {
-        let childKey = childSnapshot.key;
-        let childData = childSnapshot.val();
-
-        admin.database()
-        .ref(`users/${uniqueUserId}/access_tokens/itemId`)
-        .set({transactions});
+    .ref(`users/${uniqueUserId}/items/${item_id}/transactions`)
+    .set(transactions)
+    .then(() => {
+      let ref = admin.database().ref(`users/${uniqueUserId}`);
+      ref.once('value')
+      .then(snapshot => {
+        let calendarId = snapshot.val().calendarId;
+        let OAuthToken = snapshot.val().OAuthToken;
+        let config = {
+          url: 'http://localhost:5000/testproject-6177f/us-central1/addCalendarEvents',
+          payload: {uniqueUserId: uniqueUserId, calendarId: calendarId, OAuthToken: OAuthToken}
+        };
+        axios.post(config.url, config.payload)
+        .then(response.end())
+        .catch(error => console.log(error))
       });
-    });
-  }).then(() => {
-    let ref = admin.database().ref(`users/${uniqueUserId}/`);
-    ref.once('value')
-    .then(snapshot => {
-      let calendarId = snapshot.val().calendarId;
-      let OAuthToken = snapshot.val().OAuthToken;
-      let config = {
-        url: 'http://localhost:5000/testproject-6177f/us-central1/addCalendarEvents',
-        payload: {uniqueUserId: uniqueUserId, calendarId: calendarId, OAuthToken: OAuthToken}
-      };
-      axios.post(config.url, config.payload);
-    });
-  }).then(() => response.end())
-  .catch(error => console.log(error));
+    })
+  });
 });
 
 //**************** CREATE NEW CALENDAR **********************//
@@ -246,11 +240,19 @@ exports.getDailySpendingAndTransactions = functions.https.onRequest((request, re
 exports.getTransactionsFromDatabase = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const uniqueUserId = request.body.uniqueUserId;
+  let allTransactions = [];
 
   admin.database()
-    .ref(`users/${uniqueUserId}/access_tokens/itemId/transactions`)
-    .once('value')
-    .then(snapshot => response.json(snapshot.val()));
+  .ref(`users/${uniqueUserId}/items/`)
+  .once('value')
+  .then(snapshot => {
+    snapshot.forEach(childSnapshot => {
+      allTransactions = allTransactions.concat(childSnapshot.val().transactions)
+    })
+    return allTransactions
+  }).then(allTransactions => {
+    response.json(allTransactions);
+  }).catch(error => console.log(error))
 });
 
 // end point that requires USER ID

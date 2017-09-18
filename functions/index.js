@@ -116,7 +116,7 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
         let OAuthToken = snapshot.val().OAuthToken;
         let config = {
           url: 'http://localhost:5000/testproject-6177f/us-central1/addCalendarEvents',
-          payload: {uniqueUserId: uniqueUserId, calendarId: calendarId, OAuthToken: OAuthToken}
+          payload: {uniqueUserId, calendarId, OAuthToken}
         };
         axios.post(config.url, config.payload)
         .then(response.end())

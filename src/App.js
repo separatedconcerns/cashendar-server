@@ -20,6 +20,7 @@ class App extends Component {
     this.exchangePublicToken = this.exchangePublicToken.bind(this);
     this.getTransactionsFromDatabase = this.getTransactionsFromDatabase.bind(this);
     this.sumTransactions = this.sumTransactions.bind(this);
+    this.deleteProfile = this.deleteProfile.bind(this); 
   }
 
   componentDidMount() {
@@ -111,6 +112,17 @@ class App extends Component {
       });
   }
 
+  deleteProfile() {
+    let config = {
+      url: 'http://localhost:5000/testproject-6177f/us-central1/deleteUserProfile', 
+      payload: qs.stringify({uniqueUserId: this.state.user.uid}) 
+    }
+    axios.post(config.url, config.payload) 
+    .then(response => console.log(response))
+    .then(() => {this.logout()})
+    .catch(e => console.log(e)); 
+  }
+
   render() {
     return (
       <div className='App'>
@@ -136,6 +148,10 @@ class App extends Component {
           </div>
         :
         <div>Log in to link account</div>
+        }
+        {this.state.user ? 
+          <button onClick={this.deleteProfile}>Delete Profile</button> :
+          <div></div>
         }
         <div className='Transactions'>
           {this.state.transactions.map((transaction, idx) => (

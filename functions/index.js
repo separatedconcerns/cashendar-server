@@ -258,7 +258,6 @@ exports.getTransactionsFromDatabase = functions.https.onRequest((request, respon
 exports.deleteUserProfile = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const uniqueUserId = request.body.uniqueUserId;
-
   let ref = admin.database().ref(`users/${uniqueUserId}/`);
   ref.once('value')
   .then(snapshot => {
@@ -270,8 +269,9 @@ exports.deleteUserProfile = functions.https.onRequest((request, response) => {
       }
     }
     axios.post(config.url, config.payload)
-    .then(admin.database().ref(`users/${uniqueUserId}`).remove());
-  }).then(response.end('Profile Deleted'))
+    .then(admin.database().ref(`users/${uniqueUserId}`).remove())
+    .then(response.end('Profile Deleted'));
+  }).catch(e => console.log(e)); 
   // TODO: send delete request to plaid after deleting calendar and before deleting Profile
   // prevents unnecessary billing from plaid if going to production
 });

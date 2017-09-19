@@ -74,7 +74,7 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
       request_id: successResponse.request_id
     };
   }).then(payload => {
-    admin.database()
+    admin.database()       
     .ref(`/users/${uniqueUserId}/items/${payload.itemId}/access_token`)
     .set(payload.access_token);
     return payload;
@@ -107,7 +107,7 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
 
     admin.database()
     .ref(`users/${uniqueUserId}/items/${item_id}/transactions`)
-    .set(transactions)
+    .update(transactions)
     .then(() => {
       let ref = admin.database().ref(`users/${uniqueUserId}`);
       ref.once('value')

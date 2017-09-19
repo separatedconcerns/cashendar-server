@@ -57,15 +57,30 @@ exports.addUser = functions.https.onRequest((request, response) => {
   });
 });
 
+//**************** CREATE NEW CALENDAR **********************//
+exports.createNewCalendar = functions.https.onRequest((request, response) => {
+  response.header('Access-Control-Allow-Origin', '*');
+  const OAuthToken = request.body.OAuthToken;
+
+  googleClient.authorize(OAuthToken, createCalendar);
+  function createCalendar(auth) {
+    let calendarCreate = Promise.promisify(google.calendar('v3').calendars.insert);
+    let config = {
+      auth: auth,
+      resource: {summary: 'Wheres My Money!!!'}
+    };
+    calendarCreate(config)
+    .then(calendar => response.json(calendar))
+    .catch(e => response.end('there was an error contacting Google Calendar ' + e));
+  }
+});
+
 //************** EXCHANGE PUBLIC TOKEN ******************//
 exports.exchangePublicToken = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const publicToken = request.body.publicToken;
   const uniqueUserId = request.body.uniqueUserId;
 
-  // Exchanges publicToken with Plaid API for access_token,
-  //  then saves access-token to user's profile in db,
-  //  then invokes getTransactionsFromPlaid endpoint passing in uniqueUserId and access_token
   plaidClient.exchangePublicToken(publicToken)
   .then(successResponse => {
     let payload = {
@@ -79,8 +94,30 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
     admin.database()
     .ref(`/items/${payload.itemId}`)
     .set({access_token: payload.access_token, uniqueUserId: uniqueUserId})
-    return payload;
-  }).then(response.end()).catch(error => console.log(error));
+  }).then(response.end())
+  .catch(error => console.log(error));
+});
+
+exports.plaidWebHook = functions.https.onRequest((request, response) => {
+  response.header('Access-Control-Allow-Origin', '*');
+  let itemId = request.body.item_id;
+  let ref = admin.database().ref(`items/${itemId}`)
+  ref.once("value")
+  .then(snapshot => {
+    return {
+      url: 'http://localhost:5000/testproject-6177f/us-central1/getTransactionsFromPlaid',
+      payload: {
+        access_token: snapshot.val().access_token,
+        uniqueUserId: snapshot.val().uniqueUserId
+      }
+    }
+  }).then(config => {
+    axios.post(config.url, config.payload)
+    .then(() => { 
+      axios.post(`http://localhost:5000/testproject-6177f/us-central1/addCalendarEvents`, config.payload)
+      .then(response.end());
+    });
+  })
 });
 
 //*************** GET TRANSACTIONS FROM PLAID ***********************//
@@ -91,9 +128,6 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
   const today = now.format('YYYY-MM-DD');
   const thirtyDaysAgo = now.subtract(1000, 'days').format('YYYY-MM-DD');
 
-  // Gets user's transactions from Plaid API,
-  // then saves transactions to user profile in db
-  // then invokes addCalendarEvents passing in uniqueUserId, calendarId, and OAuthToken
   plaidClient.getTransactions(access_token, thirtyDaysAgo, today)
   .then(successResponse => {
     let item_id = successResponse.item.item_id;
@@ -102,63 +136,29 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
     let transactions = successResponse.transactions;
 
     admin.database()
-    .ref(`items/${item_id}/transactions`)
-    .update(transactions)
-    .then(() => {
-      let ref = admin.database().ref(`users/${uniqueUserId}`);
-      ref.once('value')
-      .then(snapshot => {
-        let calendarId = snapshot.val().calendarId;
-        let OAuthToken = snapshot.val().OAuthToken;
-        let config = {
-          url: 'http://localhost:5000/testproject-6177f/us-central1/addCalendarEvents',
-          payload: {uniqueUserId, calendarId, OAuthToken}
-        };
-        axios.post(config.url, config.payload)
-        .then(response.end())
-        .catch(error => console.log(error))
-      });
-    })
-  });
-});
+    .ref(`items/${item_id}/`)
+    .update({transactions: transactions})
+    .then(response.end());
+  })
 
-//**************** CREATE NEW CALENDAR **********************//
-exports.createNewCalendar = functions.https.onRequest((request, response) => {
-  response.header('Access-Control-Allow-Origin', '*');
-  const OAuthToken = request.body.OAuthToken;
-
-  // Creates a new OAuth2 client,
-  // then adds OAuthToken to OAuth2Client and invokes a callback passing in the oauth2Client,
-  // in this case the callback is createCalendar
-  googleClient.authorize(OAuthToken, createCalendar);
-
-  // Creates new Where's My Money calendar in user's google calendar
-  function createCalendar(auth) {
-    let calendarCreate = Promise.promisify(google.calendar('v3').calendars.insert);
-    let config = {
-      auth: auth,
-      resource: {summary: 'Wheres My Money!!!'}
-    };
-    calendarCreate(config)
-    .then(calendar => response.json(calendar))
-    .catch(e => response.end('there was an error contacting Google Calendar ' + e));
-  }
 });
 
 //**************** ADD CALENDAR EVENTS **********************//
 exports.addCalendarEvents = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const uniqueUserId = request.body.uniqueUserId;
-  const calendarId = request.body.calendarId;
-  const OAuthToken = request.body.OAuthToken;
+  let calendarId;
+  let OAuthToken;
 
-  // Creates a new OAuth2 client,
-  // then adds OAuthToken to OAuth2Client and invokes a callback passing in the oauth2Client,
-  // in this case the callback is createEvents
-  googleClient.authorize(OAuthToken, createEvents);
+  admin.database()
+  .ref(`users/${uniqueUserId}`)
+  .once('value').then(snapshot => {
+    calendarId = snapshot.val().calendarId;
+    OAuthToken = snapshot.val().OAuthToken;
+  }).then(() => {
+    googleClient.authorize(OAuthToken, createEvents);
+  })
 
-  // Gets daily spending object
-  // then creates a new calendar event for each day's total spending
   function createEvents(auth) {
     let config = {
       url: 'http://localhost:5000/testproject-6177f/us-central1/getDailySpendingAndTransactions',
@@ -201,7 +201,6 @@ exports.addCalendarEvents = functions.https.onRequest((request, response) => {
   }
 });
 
-//************** GET DAILY SPENDING AND TRANSACTION LISTS **********************//
 exports.getDailySpendingAndTransactions = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const uniqueUserId = request.body.uniqueUserId;
@@ -212,47 +211,35 @@ exports.getDailySpendingAndTransactions = functions.https.onRequest((request, re
     }
   };
 
-  // Gets a user's transactions from db
-  // then sums the transaction amounts by date
   axios.post(config.url, config.payload)
-    .then(transactions => {
-      let transactionsByDate = {}
-
-      transactions.data.forEach(transaction => {
-        transactionsByDate[transaction.date] = transactionsByDate[transaction.date] || { "list": [], "sum": 0 };
-
-        transactionsByDate[transaction.date].list.push(`${transaction.name}: $${transaction.amount}`);
-        transactionsByDate[transaction.date].sum += transaction.amount;
-      })
-      return transactionsByDate; 
-    }).then(transactionsByDate => response.json(transactionsByDate))
-    .catch(error => {
-      console.log(error);
-    });
-
+  .then(transactions => {
+    let transactionsByDate = {}
+    transactions.data.forEach(transaction => {
+      transactionsByDate[transaction.date] = transactionsByDate[transaction.date] || { "list": [], "sum": 0 };
+      transactionsByDate[transaction.date].list.push(`${transaction.name}: $${transaction.amount}`);
+      transactionsByDate[transaction.date].sum += transaction.amount;
+    })
+    return transactionsByDate; 
+  }).then(transactionsByDate => response.json(transactionsByDate))
+    .catch(error => console.log(error));
 });
 
-//************** GET TRANSACTIONS FROM DATABASE ************************//
 exports.getTransactionsFromDatabase = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const uniqueUserId = request.body.uniqueUserId;
   let allTransactions = [];
-
   admin.database()
-  .ref(`users/${uniqueUserId}/items/`)
-  .once('value')
+  .ref(`items/`)
+  .once(`value`)
   .then(snapshot => {
     snapshot.forEach(childSnapshot => {
-      allTransactions = allTransactions.concat(childSnapshot.val().transactions)
+      if(childSnapshot.val().uniqueUserId === uniqueUserId) {
+        allTransactions = allTransactions.concat(childSnapshot.val().transactions);
+      }
     })
-    return allTransactions
-  }).then(allTransactions => {
-    response.json(allTransactions);
-  }).catch(error => console.log(error))
+  }).then(response.json(allTransactions));
 });
 
-// end point that requires USER ID
-// returns "Profile deleted" message
 exports.deleteUserProfile = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const uniqueUserId = request.body.uniqueUserId;
@@ -274,11 +261,9 @@ exports.deleteUserProfile = functions.https.onRequest((request, response) => {
   // prevents unnecessary billing from plaid if going to production
 });
 
-// end point that requires USER ID and Auth Token
-// return "bank relationship deleted" message
-exports.deleteBankAccount = functions.https.onRequest((request, response) => {
+exports.deleteItem = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
-  response.end('Bank relationship deleted');
+  response.end('Bank item deleted');
 });
 // end point that requires USER ID
 // returns all accounts for that user
@@ -305,23 +290,4 @@ exports.deleteCalendar = functions.https.onRequest((request, response) => {
       response.json(calendar);
     }).catch(e => response.end('there was an error contacting Google Calendar ' + e));
   }
-});
-
-exports.plaidWebHook = functions.https.onRequest((request, response) => {
-  response.header('Access-Control-Allow-Origin', '*');
-  let itemId = request.body.item_id;
-  let ref = admin.database().ref(`items/${itemId}`)
-  ref.once("value")
-  .then(snapshot => {
-    return {
-      url: 'http://localhost:5000/testproject-6177f/us-central1/getTransactionsFromPlaid',
-      payload: {
-        access_token: snapshot.val().access_token,
-        uniqueUserId: snapshot.val().uniqueUserId
-      }
-    }
-  }).then(config => {
-    axios.post(config.url, config.payload)
-    .then(response.end('WEBHOOK!'));
-  })
 });

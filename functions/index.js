@@ -68,17 +68,18 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
   //  then invokes getTransactionsFromPlaid endpoint passing in uniqueUserId and access_token
   plaidClient.exchangePublicToken(publicToken)
   .then(successResponse => {
-    return {
+    let payload = {
       itemId: successResponse.item_id,
       access_token: successResponse.access_token,
       request_id: successResponse.request_id
     };
-  }).then(payload => {
+  
     admin.database()       
     .ref(`/users/${uniqueUserId}/items/${payload.itemId}/access_token`)
-    .set(payload.access_token);
-  }).then(response.end())
-  .catch(error => console.log(error));
+    .set(payload.access_token)
+    .then(response.end())
+    .catch(error => console.log(error));
+  })
 });
 
 //*************** GET TRANSACTIONS FROM PLAID ***********************//

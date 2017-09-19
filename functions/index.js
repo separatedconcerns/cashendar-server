@@ -310,3 +310,22 @@ exports.deleteCalendar = functions.https.onRequest((request, response) => {
     }).catch(e => response.end('there was an error contacting Google Calendar ' + e));
   }
 });
+
+exports.plaidWebHook = functions.https.onRequest((request, response) => {
+  response.header('Access-Control-Allow-Origin', '*');
+  let itemId = request.body.item_id;
+  //  admin.database()
+    // .ref(`users/${uniqueUserId}/items/${item_id}/transactions`)
+  // admin.database().ref('users').on('value', snapshot => {
+  //   snapshot.forEach(childSnapshot => {
+  //     console.log(childSnapshot.val().items);
+  //     // if (true) {
+  //     //   console.log(itemId);
+  //     //   console.log(childSnapshot.val().items);
+  //     // }
+  //   })
+  // })
+  // iterate through users to find item_id
+  // update item_id with new transactions
+  response.end('WEBHOOK!');
+});

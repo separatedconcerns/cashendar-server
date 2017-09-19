@@ -72,8 +72,7 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
       itemId: successResponse.item_id,
       access_token: successResponse.access_token,
       request_id: successResponse.request_id
-    };
-  }).then(payload => {
+    }
     admin.database()
     .ref(`/users/${uniqueUserId}/items/${payload.itemId}`)
     .set(payload.itemId)
@@ -81,13 +80,7 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
     .ref(`/items/${payload.itemId}`)
     .set({access_token: payload.access_token, uniqueUserId: uniqueUserId})
     return payload;
-  }).then(payload => {
-    axios.post('http://localhost:5000/testproject-6177f/us-central1/getTransactionsFromPlaid', {
-      access_token: payload.access_token,
-      uniqueUserId: uniqueUserId
-    })
-  }).then(response.end())
-  .catch(error => console.log(error));
+  }).then(response.end()).catch(error => console.log(error));
 });
 
 //*************** GET TRANSACTIONS FROM PLAID ***********************//
@@ -317,9 +310,18 @@ exports.deleteCalendar = functions.https.onRequest((request, response) => {
 exports.plaidWebHook = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   let itemId = request.body.item_id;
-  let ref = admin.database().ref(`users`)
+  let ref = admin.database().ref(`items/${itemId}`)
   ref.once("value")
   .then(snapshot => {
-  }).then(response.end('WEBHOOK!'));
-
+    return {
+      url: 'http://localhost:5000/testproject-6177f/us-central1/getTransactionsFromPlaid',
+      payload: {
+        access_token: snapshot.val().access_token,
+        uniqueUserId: snapshot.val().uniqueUserId
+      }
+    }
+  }).then(config => {
+    axios.post(config.url, config.payload)
+    .then(response.end('WEBHOOK!'));
+  })
 });

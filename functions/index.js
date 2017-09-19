@@ -73,15 +73,6 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
       access_token: successResponse.access_token,
       request_id: successResponse.request_id
     };
-<<<<<<< HEAD
-  
-    admin.database()       
-    .ref(`/users/${uniqueUserId}/items/${payload.itemId}/access_token`)
-    .set(payload.access_token)
-    .then(response.end())
-    .catch(error => console.log(error));
-  })
-=======
   }).then(payload => {
     admin.database()
     .ref(`/users/${uniqueUserId}/items/${payload.itemId}`)
@@ -97,7 +88,6 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
     })
   }).then(response.end())
   .catch(error => console.log(error));
->>>>>>> Add items collection
 });
 
 //*************** GET TRANSACTIONS FROM PLAID ***********************//
@@ -119,11 +109,7 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
     let transactions = successResponse.transactions;
 
     admin.database()
-<<<<<<< HEAD
-    .ref(`users/${uniqueUserId}/items/${item_id}/transactions`)
-=======
     .ref(`items/${item_id}/transactions`)
->>>>>>> Add items collection
     .update(transactions)
     .then(() => {
       let ref = admin.database().ref(`users/${uniqueUserId}`);
@@ -331,29 +317,9 @@ exports.deleteCalendar = functions.https.onRequest((request, response) => {
 exports.plaidWebHook = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   let itemId = request.body.item_id;
-<<<<<<< HEAD
-  //  admin.database()
-    // .ref(`users/${uniqueUserId}/items/${item_id}/transactions`)
-  // admin.database().ref('users').on('value', snapshot => {
-  //   snapshot.forEach(childSnapshot => {
-  //     console.log(childSnapshot.val().items);
-  //     // if (true) {
-  //     //   console.log(itemId);
-  //     //   console.log(childSnapshot.val().items);
-  //     // }
-  //   })
-  // })
-  // iterate through users to find item_id
-  // update item_id with new transactions
-  response.end('WEBHOOK!');
-=======
-  console.log(itemId);
-  // /users/:uniqueUserId/items/:itemID/access_token
   let ref = admin.database().ref(`users`)
   ref.once("value")
   .then(snapshot => {
-    // console.log(snapshot.val());
   }).then(response.end('WEBHOOK!'));
-  
->>>>>>> Add items collection
+
 });

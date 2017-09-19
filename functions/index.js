@@ -77,12 +77,6 @@ exports.exchangePublicToken = functions.https.onRequest((request, response) => {
     admin.database()       
     .ref(`/users/${uniqueUserId}/items/${payload.itemId}/access_token`)
     .set(payload.access_token);
-    return payload;
-  }).then(payload => {
-    axios.post('http://localhost:5000/testproject-6177f/us-central1/getTransactionsFromPlaid', {
-      access_token: payload.access_token,
-      uniqueUserId: uniqueUserId
-    })
   }).then(response.end())
   .catch(error => console.log(error));
 });

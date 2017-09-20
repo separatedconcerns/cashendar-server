@@ -131,19 +131,30 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
   plaidClient.getTransactions(access_token, thirtyDaysAgo, today)
   .then(successResponse => {
     let item_id = successResponse.item.item_id;
+    let institution_id = successResponse.item.institution_id
     let accounts = successResponse.accounts;
     let request_id = successResponse.request_id;
     let transactions = successResponse.transactions;
 
-    admin.database()
-    .ref(`items/${item_id}/`)
-    .update({transactions: transactions})
-    .then(() => {
-      accounts.forEach(account => {
-        admin.database().ref(`/accounts/${account.account_id}`).update(account);
-      })
+    plaidClient.getInstitutionById(institution_id)
+    .then(result => {return result.institution.name})
+    .then(institution_name => {
 
-    }).then(response.end());
+      admin.database()
+      .ref(`items/${item_id}/`)
+      .update({
+        transactions: transactions,
+        institutionName: institution_name,
+        institutionId: institution_id})
+      .then(() => {
+        accounts.forEach(account => {
+          admin.database().ref(`/accounts/${account.account_id}`).update(account);
+        })
+
+      }).then(response.end());
+
+    })
+
   })
 
 });
@@ -315,7 +326,31 @@ exports.deleteCalendar = functions.https.onRequest((request, response) => {
   }
 });
 
-exports.getAllUserAccounts = functions.https.onRequest((request, response) => {
+exports.getAllUserInstitutions = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
-  response.end('Returns all accounts for user');
+  const uniqueUserId = request.body.uniqueUserId;
+  let allInstitutions = {};
+  let counter = 0;
+  let total;
+  //track if we've iterated through each item
+
+  admin.database()
+  .ref(`users/${uniqueUserId}/items`)
+  .once(`value`)
+  .then(snapshot => {
+    total = Object.keys(snapshot.val()).length;
+    snapshot.forEach(childSnap => {
+      admin.database()
+      .ref(`items/${childSnap.key}/institutionName`)
+      .once(`value`)
+      .then(snap => {
+        let institution = snap.val();
+        allInstitutions[institution] = true;
+        counter++;
+        if (counter === total) {
+          response.json(allInstitutions)
+        }
+      })
+    })
+  })
 });

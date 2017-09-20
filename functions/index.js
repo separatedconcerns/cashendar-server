@@ -113,7 +113,7 @@ exports.plaidWebHook = functions.https.onRequest((request, response) => {
     }
   }).then(config => {
     axios.post(config.url, config.payload)
-    .then(() => { 
+    .then(() => {
       axios.post(`http://localhost:5000/testproject-6177f/us-central1/addCalendarEvents`, config.payload)
       .then(response.end());
     });
@@ -138,7 +138,12 @@ exports.getTransactionsFromPlaid = functions.https.onRequest((request, response)
     admin.database()
     .ref(`items/${item_id}/`)
     .update({transactions: transactions})
-    .then(response.end());
+    .then(() => {
+      accounts.forEach(account => {
+        admin.database().ref(`/accounts/${account.account_id}`).update(account);
+      })
+
+    }).then(response.end());
   })
 
 });
@@ -169,7 +174,7 @@ exports.addCalendarEvents = functions.https.onRequest((request, response) => {
       let dailySpending = transactionsByDate.data;
 
       for (let date in dailySpending) {
-        let sum = Math.round(dailySpending[date].sum); 
+        let sum = Math.round(dailySpending[date].sum);
         let list = dailySpending[date].list.join('\n');
         let event = {
           'summary': `Spent $${sum}`,
@@ -219,7 +224,7 @@ exports.getDailySpendingAndTransactions = functions.https.onRequest((request, re
       transactionsByDate[transaction.date].list.push(`${transaction.name}: $${transaction.amount}`);
       transactionsByDate[transaction.date].sum += transaction.amount;
     })
-    return transactionsByDate; 
+    return transactionsByDate;
   }).then(transactionsByDate => response.json(transactionsByDate))
     .catch(error => console.log(error));
 });
@@ -278,7 +283,7 @@ exports.deleteUserProfile = functions.https.onRequest((request, response) => {
       .then(admin.database().ref(`users/${uniqueUserId}`).remove())
       .then(response.end('Profile Deleted'));
     })
-  }).catch(e => console.log(e)); 
+  }).catch(e => console.log(e));
 });
 
 exports.deleteItem = functions.https.onRequest((request, response) => {

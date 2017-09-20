@@ -1,5 +1,5 @@
-const dotenv = require('dotenv');
-dotenv.config();
+// const dotenv = require('dotenv');
+// dotenv.config();
 const functions = require('firebase-functions');
 const google = require('googleapis');
 const Promise = require('bluebird');

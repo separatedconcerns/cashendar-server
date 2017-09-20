@@ -245,6 +245,16 @@ exports.getTransactionsFromDatabase = functions.https.onRequest((request, respon
 exports.deleteUserProfile = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const uniqueUserId = request.body.uniqueUserId;
+  let itemsRef = admin.database().ref(`users/${uniqueUserId}/items`);
+  itemsRef.once(`value`)
+  .then(snapshot => {
+    snapshot.forEach(childSnapshot => {
+      admin.database().ref(`items/${childSnapshot.val()}`).remove()
+    })
+  })
+
+
+
   let ref = admin.database().ref(`users/${uniqueUserId}/`);
   ref.once('value')
   .then(snapshot => {

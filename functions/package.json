@@ -14,7 +14,8 @@
     "plaid": "^2.0.5"
   },
   "scripts": {
-    "start": "firebase serve --port 5000 --only functions"
+    "start": "firebase serve --port 5000 --only functions",
+    "lint": "./node_modules/.bin/eslint index.js"
   },
   "private": true,
   "devDependencies": {

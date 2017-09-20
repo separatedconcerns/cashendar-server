@@ -10,70 +10,10 @@ const googleClient = require('./apiClients/googleClient.js');
 const plaidClient = require('./apiClients/plaidClient.js');
 
 //* **************** ADD USER *********************//
-exports.addUser = functions.https.onRequest((request, response) => {
-  response.header('Access-Control-Allow-Origin', '*');
-  const idToken = request.body.idToken;
-  const OAuthToken = request.body.OAuthToken;
-
-  // verifies firebase idToken
-  admin.auth().verifyIdToken(idToken)
-    .then((decodedToken) => {
-      const uniqueUserId = decodedToken.uid;
-      const ref = admin.database().ref(`users/${uniqueUserId}`);
-
-      // searches for uniqueUserId in db
-      // if user exists response is ended
-      // otherwise a new user is created in db,
-      // a new calendar is created,
-      // calendarId is saved in db
-      ref.once('value')
-        .then((snapshot) => {
-          if (snapshot.exists()) { response.json(); } else {
-            admin.auth().getUser(uniqueUserId)
-              .then((userRecord) => {
-                const user = userRecord.toJSON();
-                const payload = {
-                  email: user.email,
-                  name: user.displayName,
-                  OAuthToken,
-                };
-                admin.database().ref(`users/${uniqueUserId}`).set(payload)
-                  .then(() => {
-                    const config = {
-                      url: 'http://localhost:5000/testproject-6177f/us-central1/createNewCalendar',
-                      payload: { OAuthToken },
-                    };
-                    axios.post(config.url, config.payload)
-                      .then((calendar) => {
-                        const calId = calendar.data.id;
-                        const calName = calendar.data.summary;
-                        admin.database().ref(`users/${uniqueUserId}`).update({ calendarId: calId, calendarName: calName });
-                      });
-                  });
-              }).then(response.end(''))
-              .catch(error => console.log('Error fetching user data:', error));
-          }
-        });
-    });
-});
+exports.addUser = require('./addUser.js');
 
 //* *************** CREATE NEW CALENDAR **********************//
-exports.createNewCalendar = functions.https.onRequest((request, response) => {
-  response.header('Access-Control-Allow-Origin', '*');
-  const OAuthToken = request.body.OAuthToken;
-
-  googleClient.authorize(OAuthToken, createCalendar);
-  function createCalendar(auth) {
-    const calendarCreate = Promise.promisify(google.calendar('v3').calendars.insert);
-    const config = {
-      auth,
-      resource: { summary: 'Wheres My Money!!!' },
-    };
-    calendarCreate(config)
-      .then(calendar => response.json(calendar))
-      .catch(e => response.end(`there was an error contacting Google Calendar ${e}`));
-  }
-});
+exports.createNewCalendar = require('./createNewCalendar.js');
 
 //* ************* EXCHANGE PUBLIC TOKEN ******************//
 exports.exchangePublicToken = functions.https.onRequest((request, response) => {

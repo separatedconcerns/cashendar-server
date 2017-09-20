@@ -249,39 +249,45 @@ exports.deleteUserProfile = functions.https.onRequest((request, response) => {
   itemsRef.once(`value`)
   .then(snapshot => {
     snapshot.forEach(childSnapshot => {
-      admin.database().ref(`items/${childSnapshot.val()}`).remove()
+      admin.database()
+      .ref(`items/${childSnapshot.val()}/`)
+      .once(`value`)
+      .then(snap => {
+        let config = {
+          url: `http://localhost:5000/testproject-6177f/us-central1/deleteItem`,
+          payload: {
+            access_token: snap.val().access_token
+          }
+        }
+        axios.post(config.url, config.payload)
+      })
+      .then(() => admin.database().ref(`items/${childSnapshot.val()}`).remove())
     })
-  })
-
-
-
-  let ref = admin.database().ref(`users/${uniqueUserId}/`);
-  ref.once('value')
-  .then(snapshot => {
-    let config = {
-      url: 'http://localhost:5000/testproject-6177f/us-central1/deleteCalendar',
-      payload: {
-        calendarId: snapshot.val().calendarId,
-        OAuthToken: snapshot.val().OAuthToken
+  }).then(() => {
+    let ref = admin.database().ref(`users/${uniqueUserId}/`);
+    ref.once('value')
+    .then(snapshot => {
+      let config = {
+        url: 'http://localhost:5000/testproject-6177f/us-central1/deleteCalendar',
+        payload: {
+          calendarId: snapshot.val().calendarId,
+          OAuthToken: snapshot.val().OAuthToken
+        }
       }
-    }
-    axios.post(config.url, config.payload)
-    .then(admin.database().ref(`users/${uniqueUserId}`).remove())
-    .then(response.end('Profile Deleted'));
+      axios.post(config.url, config.payload)
+      .then(admin.database().ref(`users/${uniqueUserId}`).remove())
+      .then(response.end('Profile Deleted'));
+    })
   }).catch(e => console.log(e)); 
-  // TODO: send delete request to plaid after deleting calendar and before deleting Profile
-  // prevents unnecessary billing from plaid if going to production
 });
 
 exports.deleteItem = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
-  response.end('Bank item deleted');
-});
-// end point that requires USER ID
-// returns all accounts for that user
-exports.getAllUserAccounts = functions.https.onRequest((request, response) => {
-  response.header('Access-Control-Allow-Origin', '*');
-  response.end('Returns all accounts for user');
+  const access_token = request.body.access_token;
+  plaidClient.deleteItem(access_token)
+  .then(result => {
+    response.end('Bank Item Deleted', result);
+  });
 });
 
 exports.deleteCalendar = functions.https.onRequest((request, response) => {
@@ -302,4 +308,9 @@ exports.deleteCalendar = functions.https.onRequest((request, response) => {
       response.json(calendar);
     }).catch(e => response.end('there was an error contacting Google Calendar ' + e));
   }
+});
+
+exports.getAllUserAccounts = functions.https.onRequest((request, response) => {
+  response.header('Access-Control-Allow-Origin', '*');
+  response.end('Returns all accounts for user');
 });

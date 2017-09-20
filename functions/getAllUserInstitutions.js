@@ -1,5 +1,3 @@
-const dotenv = require('dotenv');
-dotenv.config();
 const functions = require('firebase-functions');
 const admin = require('./apiClients/firebaseClient.js');
 

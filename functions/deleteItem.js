@@ -1,5 +1,3 @@
-const dotenv = require('dotenv');
-dotenv.config();
 const functions = require('firebase-functions');
 const plaidClient = require('./apiClients/plaidClient.js');
 

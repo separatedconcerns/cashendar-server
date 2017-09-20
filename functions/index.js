@@ -237,7 +237,9 @@ exports.getTransactionsFromDatabase = functions.https.onRequest((request, respon
         allTransactions = allTransactions.concat(childSnapshot.val().transactions);
       }
     })
-  }).then(response.json(allTransactions));
+  }).then(() => {
+    response.json(allTransactions);
+  });
 });
 
 exports.deleteUserProfile = functions.https.onRequest((request, response) => {

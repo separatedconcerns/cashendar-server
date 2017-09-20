@@ -332,7 +332,6 @@ exports.getAllUserInstitutions = functions.https.onRequest((request, response) =
   let allInstitutions = {};
   let counter = 0;
   let total;
-  //track if we've iterated through each item
 
   admin.database()
   .ref(`users/${uniqueUserId}/items`)
@@ -347,9 +346,7 @@ exports.getAllUserInstitutions = functions.https.onRequest((request, response) =
         let institution = snap.val();
         allInstitutions[institution] = true;
         counter++;
-        if (counter === total) {
-          response.json(allInstitutions)
-        }
+        if (counter === total) { response.json(allInstitutions) }
       })
     })
   })

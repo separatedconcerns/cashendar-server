@@ -22,6 +22,7 @@ const exchangePublicToken = functions.https.onRequest((request, response) => {
         .set({ access_token: payload.access_token, uniqueUserId });
     })
     .then(() => {
+      // set bool to indicate data is being fetched from Plaid
       admin.database()
         .ref(`/users/${uniqueUserId}/`)
         .update({ fetchingBanks: true })

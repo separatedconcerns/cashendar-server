@@ -16,7 +16,7 @@ const APICredentials = {
   },
 };
 
-function authorize(OAuthToken, callback, calendarId, uniqueUserId) {
+const authorize = (OAuthToken, callback, calendarId, uniqueUserId) => {
   const callbackPromise = Promise.promisify(callback);
   const clientSecret = APICredentials.installed.client_secret;
   const clientId = APICredentials.installed.client_id;
@@ -29,7 +29,7 @@ function authorize(OAuthToken, callback, calendarId, uniqueUserId) {
   };
   callbackPromise(oauth2Client, calendarId, uniqueUserId)
     .catch(e => console.log(e));
-}
+};
 
 /*     We will eventually need to use something like this to get 
         a new token if a user's token is expired

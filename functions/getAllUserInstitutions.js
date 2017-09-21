@@ -8,22 +8,29 @@ const getAllUserInstitutions = functions.https.onRequest((request, response) => 
   let counter = 0;
   let total;
 
-  admin.database()
-    .ref(`users/${uniqueUserId}/items`)
-    .once('value')
-    .then((snapshot) => {
-      total = Object.keys(snapshot.val()).length;
-      snapshot.forEach((childSnap) => {
+  // listen whether Plaid data is being fetched
+  admin.database().ref(`users/${uniqueUserId}/fetchingBanks`)
+    .on('value', (snapshot) => {
+      // if not fecthing from Plaid
+      if (!snapshot.val()) {
         admin.database()
-          .ref(`items/${childSnap.key}/institutionName`)
+          .ref(`users/${uniqueUserId}/items`)
           .once('value')
-          .then((snap) => {
-            const institution = snap.val();
-            allInstitutions[institution] = true;
-            counter += 1;
-            if (counter === total) { response.json(allInstitutions); }
+          .then((snapshot) => {
+            total = Object.keys(snapshot.val()).length;
+            snapshot.forEach((childSnap) => {
+              admin.database()
+                .ref(`items/${childSnap.key}/institutionName`)
+                .once('value')
+                .then((snap) => {
+                  const institution = snap.val();
+                  allInstitutions[institution] = true;
+                  counter += 1;
+                  if (counter === total) { response.json(allInstitutions); }
+                });
+            });
           });
-      });
+      }
     });
 });
 

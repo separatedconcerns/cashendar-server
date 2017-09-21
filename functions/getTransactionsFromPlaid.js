@@ -34,8 +34,8 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
                 uniqueUserId = snapshot.val();
               })
                 .then(() => {
+                  // set bool to indicate data is no longer being fetched from Plaid
                   admin.database().ref(`users/${uniqueUserId}/`).update({ fetchingBanks: false });
-                    // .then(response.end());
                 });
             })
             .then(() => {

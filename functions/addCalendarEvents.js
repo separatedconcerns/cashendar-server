@@ -29,14 +29,14 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
     axios.post(config.url, config.payload)
       .then((transactionsByDate) => {
         const dailySpending = transactionsByDate.data;
-
+        // eslint-disable-next-line
         for (const date in dailySpending) {
           const sum = Math.round(dailySpending[date].sum);
           const list = dailySpending[date].list.join('\n');
           const event = {
             summary: `Spent $${sum}`,
             location: 'See description for transaction details!',
-            description: `Transactions: \n\  ${list}`,
+            description: `Transactions:\n${list}`,
             start: {
               date,
               timeZone: 'America/Los_Angeles',

@@ -21,7 +21,7 @@ const addUser = functions.https.onRequest((request, response) => {
       // calendarId is saved in db
       ref.once('value')
         .then((snapshot) => {
-          if (snapshot.exists()) { response.json(); } else {
+          if (snapshot.exists()) { response.send({ userExists: true }); } else {
             admin.auth().getUser(uniqueUserId)
               .then((userRecord) => {
                 const user = userRecord.toJSON();

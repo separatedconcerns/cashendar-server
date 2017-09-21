@@ -1,8 +1,8 @@
 const functions = require('firebase-functions');
 const admin = require('./apiClients/firebaseClient.js');
-const axios = require('axios');
-const google = require('googleapis');
-const Promise = require('bluebird');
+// const axios = require('axios');
+// const google = require('googleapis');
+// const Promise = require('bluebird');
 const createEvents = require('./utils/createEvents.js');
 const googleClient = require('./apiClients/googleClient.js');
 
@@ -18,9 +18,7 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
       calendarId = snapshot.val().calendarId;
       OAuthToken = snapshot.val().OAuthToken;
     })
-    .then(() => {
-      return googleClient.authorize(OAuthToken, createEvents, calendarId, uniqueUserId);
-    })
+    .then(() => googleClient.authorize(OAuthToken, createEvents, calendarId, uniqueUserId))
     .then((result) => {
       response.end(result);
     });
@@ -33,7 +31,6 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
   //   axios.post(config.url, config.payload)
   //     .then((transactionsByDate) => {
   //       const dailySpending = transactionsByDate.data;
-        
   //       for (const date in dailySpending) {
   //         const sum = Math.round(dailySpending[date].sum);
   //         const list = dailySpending[date].list.join('\n');

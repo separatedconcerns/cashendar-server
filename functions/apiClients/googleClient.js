@@ -1,34 +1,34 @@
 const Promise = require('bluebird');
-const googleAuth = require('google-auth-library');
+const GoogleAuth = require('google-auth-library');
 
-var APICredentials = {
-        "installed": {
-            "client_id": process.env.GCAL_CLIENT_ID,
-            "project_id": process.env.GCAL_PROJECT_ID,
-            "auth_uri": process.env.GCAL_AUTH_URI,
-            "token_uri": process.env.GCAL_TOKEN_URI,
-            "auth_provider_x509_cert_url": process.env.GCAL_AUTH_PROVIDER,
-            "client_secret": process.env.GCAL_CLIENT_SECRET,
-            "redirect_uris": [
-                process.env.GCAL_URN,
-                process.env.GCAL_LOCALHOST
-            ]
-        }
-    }
+const APICredentials = {
+  installed: {
+    client_id: process.env.GCAL_CLIENT_ID,
+    project_id: process.env.GCAL_PROJECT_ID,
+    auth_uri: process.env.GCAL_AUTH_URI,
+    token_uri: process.env.GCAL_TOKEN_URI,
+    auth_provider_x509_cert_url: process.env.GCAL_AUTH_PROVIDER,
+    client_secret: process.env.GCAL_CLIENT_SECRET,
+    redirect_uris: [
+      process.env.GCAL_URN,
+      process.env.GCAL_LOCALHOST,
+    ],
+  },
+};
 
 function authorize(OAuthToken, callback, calendarId, uniqueUserId) {
-    let _callback = Promise.promisify(callback);
-    let clientSecret = APICredentials.installed.client_secret;
-    let clientId = APICredentials.installed.client_id;
-    let redirectUrl = APICredentials.installed.redirect_uris[0];
-    let auth = new googleAuth();
-    let oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
+  const callbackPromise = Promise.promisify(callback);
+  const clientSecret = APICredentials.installed.client_secret;
+  const clientId = APICredentials.installed.client_id;
+  const redirectUrl = APICredentials.installed.redirect_uris[0];
+  const auth = new GoogleAuth();
+  const oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
 
-    oauth2Client.credentials = {
-        'access_token': OAuthToken
-    };
-    _callback(oauth2Client, calendarId, uniqueUserId)
-        .catch(e => console.log(e));
+  oauth2Client.credentials = {
+    access_token: OAuthToken,
+  };
+  callbackPromise(oauth2Client, calendarId, uniqueUserId)
+    .catch(e => console.log(e));
 }
 
 /*     We will eventually need to use something like this to get 
@@ -47,5 +47,5 @@ function authorize(OAuthToken, callback, calendarId, uniqueUserId) {
 //   }
 
 module.exports = {
-    authorize
-}
+  authorize,
+};

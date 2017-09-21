@@ -15,9 +15,11 @@ const getDailySpendingAndTransactions = functions.https.onRequest((request, resp
     .then((transactions) => {
       const transactionsByDate = {};
       transactions.data.forEach((transaction) => {
-        transactionsByDate[transaction.date] = transactionsByDate[transaction.date] || { list: [], sum: 0 };
-        transactionsByDate[transaction.date].list.push(`${transaction.name}: $${transaction.amount}`);
-        transactionsByDate[transaction.date].sum += transaction.amount;
+        let txn = transactionsByDate[transaction.date];
+        txn = txn || { list: [], sum: 0 };
+        txn.list
+          .push(`${transaction.name}: $${transaction.amount}`);
+        txn.sum += transaction.amount;
       });
       return transactionsByDate;
     }).then(transactionsByDate => response.json(transactionsByDate))

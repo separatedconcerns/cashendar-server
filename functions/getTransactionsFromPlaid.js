@@ -5,29 +5,29 @@ const plaidClient = require('./apiClients/plaidClient.js');
 
 
 const getTransactionsFromPlaid = functions.https.onRequest((request, response) => {
-  const access_token = request.body.access_token;
-  const uniqueUserId = request.body.uniqueUserId;
+  const accessToken = request.body.access_token;
+  // const uniqueUserId = request.body.uniqueUserId;
   const now = moment();
   const today = now.format('YYYY-MM-DD');
   const thirtyDaysAgo = now.subtract(1000, 'days').format('YYYY-MM-DD');
 
-  plaidClient.getTransactions(access_token, thirtyDaysAgo, today)
+  plaidClient.getTransactions(accessToken, thirtyDaysAgo, today)
     .then((successResponse) => {
-      const item_id = successResponse.item.item_id;
-      const institution_id = successResponse.item.institution_id;
+      const itemId = successResponse.item.item_id;
+      const institutionId = successResponse.item.institution_id;
       const accounts = successResponse.accounts;
-      const request_id = successResponse.request_id;
+      // const requestId = successResponse.request_id;
       const transactions = successResponse.transactions;
 
-      plaidClient.getInstitutionById(institution_id)
+      plaidClient.getInstitutionById(institutionId)
         .then(result => result.institution.name)
-        .then((institution_name) => {
+        .then((institutionName) => {
           admin.database()
-            .ref(`items/${item_id}/`)
+            .ref(`items/${itemId}/`)
             .update({
               transactions,
-              institutionName: institution_name,
-              institutionId: institution_id })
+              institutionName,
+              institutionId })
             .then(() => {
               accounts.forEach((account) => {
                 admin.database().ref(`/accounts/${account.account_id}`).update(account);

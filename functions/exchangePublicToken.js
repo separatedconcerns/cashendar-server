@@ -20,7 +20,13 @@ const exchangePublicToken = functions.https.onRequest((request, response) => {
       admin.database()
         .ref(`/items/${payload.itemId}`)
         .set({ access_token: payload.access_token, uniqueUserId });
-    }).then(response.end())
+    })
+    .then(() => {
+      admin.database()
+        .ref(`/users/${uniqueUserId}/`)
+        .update({ fetchingBanks: true })
+        .then(response.end());
+    })
     .catch(error => console.log(error));
 });
 

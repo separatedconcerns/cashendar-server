@@ -13,6 +13,7 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
 
   plaidClient.getTransactions(accessToken, thirtyDaysAgo, today)
     .then((successResponse) => {
+      let uniqueUserId;
       const itemId = successResponse.item.item_id;
       const institutionId = successResponse.item.institution_id;
       const accounts = successResponse.accounts;
@@ -28,6 +29,15 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
               transactions,
               institutionName,
               institutionId })
+            .then(() => {
+              admin.database().ref(`/items/${itemId}/uniqueUserId`).once('value').then((snapshot) => {
+                uniqueUserId = snapshot.val();
+              })
+                .then(() => {
+                  admin.database().ref(`users/${uniqueUserId}/`).update({ fetchingBanks: false });
+                    // .then(response.end());
+                });
+            })
             .then(() => {
               accounts.forEach((account) => {
                 admin.database().ref(`/accounts/${account.account_id}`).update(account);

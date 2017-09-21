@@ -16,7 +16,7 @@ var APICredentials = {
         }
     }
 
-function authorize(OAuthToken, callback) {
+function authorize(OAuthToken, callback, calendarId, uniqueUserId) {
     let _callback = Promise.promisify(callback);
     let clientSecret = APICredentials.installed.client_secret;
     let clientId = APICredentials.installed.client_id;
@@ -27,7 +27,7 @@ function authorize(OAuthToken, callback) {
     oauth2Client.credentials = {
         'access_token': OAuthToken
     };
-    _callback(oauth2Client)
+    _callback(oauth2Client, calendarId, uniqueUserId)
         .catch(e => console.log(e));
 }
 

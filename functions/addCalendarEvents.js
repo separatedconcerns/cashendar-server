@@ -3,6 +3,7 @@ const admin = require('./apiClients/firebaseClient.js');
 const axios = require('axios');
 const google = require('googleapis');
 const Promise = require('bluebird');
+const createEvents = require('./utils/createEvents.js');
 const googleClient = require('./apiClients/googleClient.js');
 
 const addCalendarEvents = functions.https.onRequest((request, response) => {
@@ -18,49 +19,52 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
       OAuthToken = snapshot.val().OAuthToken;
     })
     .then(() => {
-      googleClient.authorize(OAuthToken, createEvents);
+      return googleClient.authorize(OAuthToken, createEvents, calendarId, uniqueUserId);
+    })
+    .then((result) => {
+      response.end(result);
     });
 
-  function createEvents(auth) {
-    const config = {
-      url: 'http://localhost:5000/testproject-6177f/us-central1/getDailySpendingAndTransactions',
-      payload: { uniqueUserId },
-    };
-    axios.post(config.url, config.payload)
-      .then((transactionsByDate) => {
-        const dailySpending = transactionsByDate.data;
+  // function createEvents(auth) {
+  //   const config = {
+  //     url: 'http://localhost:5000/testproject-6177f/us-central1/getDailySpendingAndTransactions',
+  //     payload: { uniqueUserId },
+  //   };
+  //   axios.post(config.url, config.payload)
+  //     .then((transactionsByDate) => {
+  //       const dailySpending = transactionsByDate.data;
         
-        for (const date in dailySpending) {
-          const sum = Math.round(dailySpending[date].sum);
-          const list = dailySpending[date].list.join('\n');
-          const event = {
-            summary: `Spent $${sum}`,
-            location: 'See description for transaction details!',
-            description: `Transactions: \n\  ${list}`,
-            start: {
-              date,
-              timeZone: 'America/Los_Angeles',
-            },
-            end: {
-              date,
-              timeZone: 'America/Los_Angeles',
-            },
-          };
+  //       for (const date in dailySpending) {
+  //         const sum = Math.round(dailySpending[date].sum);
+  //         const list = dailySpending[date].list.join('\n');
+  //         const event = {
+  //           summary: `Spent $${sum}`,
+  //           location: 'See description for transaction details!',
+  //           description: `Transactions: \n\  ${list}`,
+  //           start: {
+  //             date,
+  //             timeZone: 'America/Los_Angeles',
+  //           },
+  //           end: {
+  //             date,
+  //             timeZone: 'America/Los_Angeles',
+  //           },
+  //         };
 
-          const targetCal = {
-            auth,
-            calendarId,
-            resource: event,
-          };
+  //         const targetCal = {
+  //           auth,
+  //           calendarId,
+  //           resource: event,
+  //         };
 
-          const eventInsert = Promise.promisify(google.calendar('v3').events.insert);
+  //         const eventInsert = Promise.promisify(google.calendar('v3').events.insert);
 
-          eventInsert(targetCal)
-            .catch(e => response.end(`there was an error contacting Google Calendar${e}`));
-        }
-      }).then(response.end(''))
-      .catch(e => console.log(e));
-  }
+  //         eventInsert(targetCal)
+  //           .catch(e => response.end(`there was an error contacting Google Calendar${e}`));
+  //       }
+  //     }).then(response.end(''))
+  //     .catch(e => console.log(e));
+  // }
 });
 
 module.exports = addCalendarEvents;

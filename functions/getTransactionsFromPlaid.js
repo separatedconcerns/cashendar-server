@@ -45,7 +45,8 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
             })
             .then(response.end());
         });
-    });
+    })
+    .catch(error => console.log('getTransactionsFromPlaid', error));
 });
 
 module.exports = getTransactionsFromPlaid;

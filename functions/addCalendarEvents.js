@@ -2,7 +2,7 @@ const functions = require('firebase-functions');
 const admin = require('./apiClients/firebaseClient.js');
 // const axios = require('axios');
 // const google = require('googleapis');
-// const Promise = require('bluebird');
+const Promise = require('bluebird');
 const createEvents = require('./utils/createEvents.js');
 const googleClient = require('./apiClients/googleClient.js');
 
@@ -18,9 +18,14 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
       calendarId = snapshot.val().calendarId;
       OAuthToken = snapshot.val().OAuthToken;
     })
-    .then(() => googleClient.authorize(OAuthToken, createEvents, calendarId, uniqueUserId))
-    .then((result) => {
-      response.end(result);
+    .then(() => {
+      console.log('22');
+      const googleClientAuthorize = Promise.promisify(googleClient.authorize);
+      googleClientAuthorize(OAuthToken, createEvents, calendarId, uniqueUserId)
+        .then((result) => {
+          console.log('26', result);
+          response.end(result);
+        });
     });
 
   // function createEvents(auth) {

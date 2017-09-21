@@ -3,8 +3,8 @@ const plaidClient = require('./apiClients/plaidClient.js');
 
 const deleteItem = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
-  const access_token = request.body.access_token;
-  plaidClient.deleteItem(access_token)
+  const accessToken = request.body.access_token;
+  plaidClient.deleteItem(accessToken)
     .then((result) => {
       response.end('Bank Item Deleted', result);
     });

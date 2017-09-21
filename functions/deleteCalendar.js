@@ -8,9 +8,7 @@ const deleteCalendar = functions.https.onRequest((request, response) => {
   const OAuthToken = request.body.OAuthToken;
   const calendarId = request.body.calendarId;
 
-  googleClient.authorize(OAuthToken, deleteCalendar);
-
-  function deleteCalendar(auth) {
+  const deleteGoogleCalendar = (auth) => {
     const calendarDelete = Promise.promisify(google.calendar('v3').calendars.delete);
     const config = {
       auth,
@@ -20,7 +18,8 @@ const deleteCalendar = functions.https.onRequest((request, response) => {
       .then((calendar) => {
         response.json(calendar);
       }).catch(e => response.end(`there was an error contacting Google Calendar ${e}`));
-  }
+  };
+  googleClient.authorize(OAuthToken, deleteGoogleCalendar);
 });
 
 module.exports = deleteCalendar;

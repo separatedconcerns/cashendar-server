@@ -20,7 +20,7 @@ const getAllUserInstitutions = functions.https.onRequest((request, response) => 
           .then((snap) => {
             const institution = snap.val();
             allInstitutions[institution] = true;
-            counter++;
+            counter += 1;
             if (counter === total) { response.json(allInstitutions); }
           });
       });

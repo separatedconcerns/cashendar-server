@@ -1,4 +1,5 @@
 const dotenv = require('dotenv');
+
 dotenv.config();
 
 exports.addUser = require('./addUser.js');

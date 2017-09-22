@@ -9,8 +9,6 @@ class App extends Component {
     super();
     this.state = {
       user: null,
-      transactions: [],
-      transactionSums: {},
       OAuthToken: null
     };
 
@@ -18,7 +16,6 @@ class App extends Component {
     this.logout = this.logout.bind(this);
     this.handleOnSuccess = this.handleOnSuccess.bind(this);
     this.exchangePublicToken = this.exchangePublicToken.bind(this);
-    this.getTransactionsFromDatabase = this.getTransactionsFromDatabase.bind(this);
     this.deleteProfile = this.deleteProfile.bind(this);
   }
 
@@ -72,22 +69,6 @@ class App extends Component {
     .then(() => this.getTransactionsFromDatabase())
     .catch(error => { console.log(error);});
   }
-
-  getTransactionsFromDatabase() {
-    let config = {
-      url: 'http://localhost:5000/testproject-6177f/us-central1/getTransactionsFromDatabase',
-      payload: qs.stringify({
-        uniqueUserId: auth.currentUser.uid
-      })
-    };
-    axios.post(config.url, config.payload)
-    .then((response) => {
-      this.setState({transactions: response.data});
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-  };
 
   logout() {
     auth.signOut()

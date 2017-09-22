@@ -18,6 +18,7 @@ const plaidWebHook = functions.https.onRequest((request, response) => {
         payload: {
           access_token: snapshot.val().access_token,
           uniqueUserId: snapshot.val().uniqueUserId,
+          newTransactions: newTransactions
         },
       })).then((config) => {
         axios.post(config.url, config.payload)

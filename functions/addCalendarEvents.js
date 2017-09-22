@@ -28,6 +28,9 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
     };
     axios.post(config.url, config.payload)
       .then((transactionsByDate) => {
+        console.log('line 32', Object.keys(transactionsByDate.data).length);
+        let total = Object.keys(transactionsByDate.data).length;
+        let counter = 0;
         const dailySpending = transactionsByDate.data;
         // eslint-disable-next-line
         for (const date in dailySpending) {
@@ -53,12 +56,21 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
             resource: event,
           };
 
-          const eventInsert = Promise.promisify(google.calendar('v3').events.insert);
-
-          eventInsert(targetCal)
-            .catch(e => response.end(`there was an error contacting Google Calendar${e}`));
+          setTimeout(() => { // eslint-disable-line
+            console.log('setTimeout called!');
+            const eventInsert = Promise.promisify(google.calendar('v3').events.insert);
+            eventInsert(targetCal)
+            .then(() => { // eslint-disable-line
+                counter += 1;
+                console.log(counter);
+                if (counter >= total) {
+                  response.end();
+                }
+              })
+              .catch(e => console.log(`there was an error contacting Google Calendar${e}`));
+          }, 200);
         }
-      }).then(response.end(''))
+      })
       .catch(e => console.log(e));
   }
 });

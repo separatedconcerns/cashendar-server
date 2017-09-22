@@ -11,7 +11,7 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
   const today = now.format('YYYY-MM-DD');
   const thirtyDaysAgo = now.subtract(1000, 'days').format('YYYY-MM-DD');
 
-  plaidClient.getTransactions(accessToken, thirtyDaysAgo, today)
+  plaidClient.getTransactions(accessToken, thirtyDaysAgo, today, { count: 250 })
     .then((successResponse) => {
       let uniqueUserId;
       const itemId = successResponse.item.item_id;
@@ -23,6 +23,7 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
       plaidClient.getInstitutionById(institutionId)
         .then(result => result.institution.name)
         .then((institutionName) => {
+          console.log(transactions.length);
           admin.database()
             .ref(`items/${itemId}/`)
             .update({

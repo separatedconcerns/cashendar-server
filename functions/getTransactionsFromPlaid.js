@@ -6,12 +6,14 @@ const plaidClient = require('./apiClients/plaidClient.js');
 
 const getTransactionsFromPlaid = functions.https.onRequest((request, response) => {
   const accessToken = request.body.access_token;
+  const newTransactions = request.body.newTransactions;
+  console.log('10', request.body);
   // const uniqueUserId = request.body.uniqueUserId;
   const now = moment();
   const today = now.format('YYYY-MM-DD');
   const thirtyDaysAgo = now.subtract(1000, 'days').format('YYYY-MM-DD');
 
-  plaidClient.getTransactions(accessToken, thirtyDaysAgo, today, { count: 250 })
+  plaidClient.getTransactions(accessToken, thirtyDaysAgo, today, { count: newTransactions })
     .then((successResponse) => {
       let uniqueUserId;
       const itemId = successResponse.item.item_id;
@@ -19,6 +21,7 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
       const accounts = successResponse.accounts;
       // const requestId = successResponse.request_id;
       const transactions = successResponse.transactions;
+      console.log('24', transactions.length);
 
       plaidClient.getInstitutionById(institutionId)
         .then(result => result.institution.name)

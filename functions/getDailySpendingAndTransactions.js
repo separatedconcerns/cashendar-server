@@ -5,7 +5,7 @@ const getDailySpendingAndTransactions = functions.https.onRequest((request, resp
   response.header('Access-Control-Allow-Origin', '*');
   const uniqueUserId = request.body.uniqueUserId;
   const config = {
-    url: 'http://localhost:5000/testproject-6177f/us-central1/getTransactionsFromDatabase',
+    url: `${process.env.HOST}getTransactionsFromDatabase`,
     payload: {
       uniqueUserId,
     },

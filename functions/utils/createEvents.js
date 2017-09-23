@@ -4,7 +4,7 @@ const Promise = require('bluebird');
 
 const createEvents = (auth, calendarId, uniqueUserId) => {
   const config = {
-    url: 'http://localhost:5000/testproject-6177f/us-central1/getDailySpendingAndTransactions',
+    url: `${process.env.HOST}getDailySpendingAndTransactions`,
     payload: { uniqueUserId },
   };
   axios.post(config.url, config.payload)

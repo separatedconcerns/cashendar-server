@@ -14,7 +14,7 @@ const deleteUserProfile = functions.https.onRequest((request, response) => {
           .once('value')
           .then((snap) => {
             const config = {
-              url: 'http://localhost:5000/testproject-6177f/us-central1/deleteItem',
+              url: `${process.env.HOST}deleteItem`,
               payload: {
                 access_token: snap.val().access_token,
               },
@@ -28,7 +28,7 @@ const deleteUserProfile = functions.https.onRequest((request, response) => {
       ref.once('value')
         .then((snapshot) => {
           const config = {
-            url: 'http://localhost:5000/testproject-6177f/us-central1/deleteCalendar',
+            url: `${process.env.HOST}deleteCalendar`,
             payload: {
               calendarId: snapshot.val().calendarId,
               OAuthToken: snapshot.val().OAuthToken,

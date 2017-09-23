@@ -23,13 +23,13 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
 
   function createEvents(auth) {
     const config = {
-      url: 'http://localhost:5000/testproject-6177f/us-central1/getDailySpendingAndTransactions',
+      url: `${process.env.HOST}getDailySpendingAndTransactions`,
       payload: { uniqueUserId },
     };
     axios.post(config.url, config.payload)
       .then((transactionsByDate) => {
         console.log('line 32', Object.keys(transactionsByDate.data).length);
-        let total = Object.keys(transactionsByDate.data).length;
+        const total = Object.keys(transactionsByDate.data).length;
         let counter = 0;
         const dailySpending = transactionsByDate.data;
         // eslint-disable-next-line

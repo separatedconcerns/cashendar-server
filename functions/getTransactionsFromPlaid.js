@@ -40,14 +40,9 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
                 .then(() => {
                   // set bool to indicate data is no longer being fetched from Plaid
                   admin.database().ref(`users/${uniqueUserId}/`).update({ fetchingBanks: false });
-                });
-            })
-            .then(() => {
-              accounts.forEach((account) => {
-                admin.database().ref(`/accounts/${account.account_id}`).update(account);
-              });
-            })
-            .then(response.end());
+                })
+                .then(response.end());
+            });
         });
     })
     .catch(error => console.log('getTransactionsFromPlaid', error));

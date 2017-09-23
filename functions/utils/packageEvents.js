@@ -29,7 +29,6 @@ const packageEvents = (auth, calendarId, transactionsByDate) => {
 
     calEvents.push(targetCal);
   }
-
   return calEvents;
 };
 

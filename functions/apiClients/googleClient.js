@@ -27,8 +27,8 @@ const authorize = (OAuthToken, callback, calendarId, uniqueUserId) => {
   oauth2Client.credentials = {
     access_token: OAuthToken,
   };
-  callbackPromise(oauth2Client, calendarId, uniqueUserId)
-    .catch(e => console.log(e));
+  return callback(oauth2Client, calendarId, uniqueUserId);
+  // .catch(e => console.log(`authorize function line 32 ${e}`));
 };
 
 /*     We will eventually need to use something like this to get 

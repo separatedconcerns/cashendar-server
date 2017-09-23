@@ -14,16 +14,16 @@ const plaidWebHook = functions.https.onRequest((request, response) => {
     const ref = admin.database().ref(`items/${itemId}`);
     ref.once('value')
       .then(snapshot => ({
-        url: 'http://localhost:5000/testproject-6177f/us-central1/getTransactionsFromPlaid',
+        url: `${process.env.HOST}getTransactionsFromPlaid`,
         payload: {
           access_token: snapshot.val().access_token,
           uniqueUserId: snapshot.val().uniqueUserId,
-          newTransactions: newTransactions
+          newTransactions,
         },
       })).then((config) => {
         axios.post(config.url, config.payload)
           .then(() => {
-            axios.post('http://localhost:5000/testproject-6177f/us-central1/addCalendarEvents', config.payload)
+            axios.post(`${process.env.HOST}addCalendarEvents`, config.payload)
               .then(response.end());
           });
       });

@@ -39,7 +39,7 @@ const addUser = functions.https.onRequest((request, response) => {
     })
     .then(() => {
       const config = {
-        url: 'http://localhost:5000/testproject-6177f/us-central1/createNewCalendar',
+        url: `${process.env.HOST}createNewCalendar`,
         payload: { OAuthToken, uniqueUserId },
       };
       return config;

@@ -1,10 +1,6 @@
-const functions = require('firebase-functions');
-const admin = require('../apiClients/firebaseClient.js');
 
 const packageEvents = (auth, calendarId, transactionsByDate) => {
   const dailySpending = transactionsByDate.data;
-  // const dailySpendingKeys = Object.keys(transactionsByDate.data);
-  // const total = dailySpendingKeys.length;
   const calEvents = [];
   // eslint-disable-next-line
   for (const date in dailySpending) {

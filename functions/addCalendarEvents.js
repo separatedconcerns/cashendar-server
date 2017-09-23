@@ -19,35 +19,41 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
       OAuthToken = snapshot.val().OAuthToken;
     })
     .then(() => {
-      googleClient.authorize(OAuthToken, createEvents);
+      // googleClient.authorize(OAuthToken, createEvents); 
+      const googleClientAuthorize = Promise.promisify(googleClient.authorize);
+      googleClientAuthorize(OAuthToken, createEvents)
+        .then(response.end())
+        .catch(e => console.log('line 24 inside addCalendarEvents', e));
     });
 
-  function createEvents(auth) {
+  const createEvents = (auth) => {
     const config = {
       url: `${process.env.HOST}getDailySpendingAndTransactions`,
       payload: { uniqueUserId },
     };
     axios.post(config.url, config.payload)
-      .then((transactionsByDate) => { return packageEvents(auth, calendarId, transactionsByDate); })
+      .then(transactionsByDate => packageEvents(auth, calendarId, transactionsByDate))
       .then((events) => {
-        console.log(events.length);
+        // console.log(events[events.length - 1].resource);
         const eventInsert = Promise.promisify(google.calendar('v3').events.insert);
         let i = 0;
+
         const scheduleEvents = setInterval(() => {
-          eventInsert(events[i])
-            .then(() => {
-              console.log(i);
-              if (i >= events.length) {
-                clearInterval(scheduleEvents);
-                response.end();
-              }
-              i += 1;
-            })
-            .catch(e => console.log('line 46', e));
+          console.log(i);
+          if (i <= events.length - 1) {
+            eventInsert(events[i])
+              .catch((e) => {
+                console.log(`Error on event: ${events[i].resource.start.date} ----> ${e}`);
+              });
+            i += 1;
+          } else {
+            console.log(`${i} of ${events.length} events have been scheduled!`);
+            clearInterval(scheduleEvents);
+          }
         }, 300);
       })
       .catch(e => console.log('line 49', e));
-  }
+  };
 });
 // const eventInsert = Promise.promisify(google.calendar('v3').events.insert);
 // eventInsert(targetCal)

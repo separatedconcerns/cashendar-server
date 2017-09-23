@@ -4,6 +4,7 @@ const axios = require('axios');
 const google = require('googleapis');
 const Promise = require('bluebird');
 const googleClient = require('./apiClients/googleClient.js');
+const packageEvents = require('./utils/packageEvents.js');
 
 const addCalendarEvents = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
@@ -27,52 +28,29 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
       payload: { uniqueUserId },
     };
     axios.post(config.url, config.payload)
-      .then((transactionsByDate) => {
-        console.log('line 32', Object.keys(transactionsByDate.data).length);
-        const total = Object.keys(transactionsByDate.data).length;
-        let counter = 0;
-        const dailySpending = transactionsByDate.data;
-        // eslint-disable-next-line
-        for (const date in dailySpending) {
-          const sum = Math.round(dailySpending[date].sum);
-          const list = dailySpending[date].list.join('\n');
-          const event = {
-            summary: `Spent $${sum}`,
-            location: 'See description for transaction details!',
-            description: `Transactions:\n${list}`,
-            start: {
-              date,
-              timeZone: 'America/Los_Angeles',
-            },
-            end: {
-              date,
-              timeZone: 'America/Los_Angeles',
-            },
-          };
-
-          const targetCal = {
-            auth,
-            calendarId,
-            resource: event,
-          };
-
-          setTimeout(() => { // eslint-disable-line
-            console.log('setTimeout called!');
-            const eventInsert = Promise.promisify(google.calendar('v3').events.insert);
-            eventInsert(targetCal)
-            .then(() => { // eslint-disable-line
-                counter += 1;
-                console.log(counter);
-                if (counter >= total) {
-                  response.end();
-                }
-              })
-              .catch(e => console.log(`there was an error contacting Google Calendar${e}`));
-          }, 200);
-        }
+      .then((transactionsByDate) => { return packageEvents(auth, calendarId, transactionsByDate); })
+      .then((events) => {
+        console.log(events.length);
+        const eventInsert = Promise.promisify(google.calendar('v3').events.insert);
+        let i = 0;
+        const scheduleEvents = setInterval(() => {
+          eventInsert(events[i])
+            .then(() => {
+              console.log(i);
+              if (i >= events.length) {
+                clearInterval(scheduleEvents);
+                response.end();
+              }
+              i += 1;
+            })
+            .catch(e => console.log('line 46', e));
+        }, 300);
       })
-      .catch(e => console.log(e));
+      .catch(e => console.log('line 49', e));
   }
 });
+// const eventInsert = Promise.promisify(google.calendar('v3').events.insert);
+// eventInsert(targetCal)
+//   .catch(e => console.log(`there was an error contacting Google Calendar${e}`));
 
 module.exports = addCalendarEvents;

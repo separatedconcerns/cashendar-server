@@ -35,10 +35,13 @@ const deleteUserProfile = functions.https.onRequest((request, response) => {
             },
           };
           axios.post(config.url, config.payload)
-            .then(admin.database().ref(`users/${uniqueUserId}`).remove())
-            .then(response.end('Profile Deleted'));
+            .then(admin.database().ref(`users/${uniqueUserId}`).remove());
         });
-    }).catch(e => console.log(e));
+    }).then(() => {
+      admin.auth().deleteUser(uniqueUserId)
+        .then(response.end('Profile Deleted'));
+    })
+    .catch(e => console.log(e));
 });
 
 

@@ -9,8 +9,7 @@ class App extends Component {
   constructor() {
     super();
     this.state = {
-      user: null,
-      OAuthToken: null,
+      user: null
     };
 
     this.login = this.login.bind(this);
@@ -33,7 +32,7 @@ class App extends Component {
       .then((result) => {
         const user = result.user;
         const OAuthToken = result.credential.accessToken;
-        this.setState({ user, OAuthToken });
+        this.setState({ user });
         this.verifyUser(OAuthToken);
       });
   }

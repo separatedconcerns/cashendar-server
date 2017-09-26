@@ -1,6 +1,4 @@
-const dotenv = require('dotenv');
-
-dotenv.config();
+require('envkey');
 
 exports.addUser = require('./addUser.js');
 exports.createNewCalendar = require('./createNewCalendar.js');

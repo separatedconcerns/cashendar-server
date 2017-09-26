@@ -4,3 +4,4 @@ node_js:
 before_script: 
   - cd functions
   - npm install
+  - firebase deploy --only functions

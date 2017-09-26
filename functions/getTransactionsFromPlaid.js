@@ -18,7 +18,7 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
       let uniqueUserId;
       const itemId = successResponse.item.item_id;
       const institutionId = successResponse.item.institution_id;
-      const accounts = successResponse.accounts;
+      // const accounts = successResponse.accounts;
       // const requestId = successResponse.request_id;
       const transactions = successResponse.transactions;
       console.log('24', transactions.length);

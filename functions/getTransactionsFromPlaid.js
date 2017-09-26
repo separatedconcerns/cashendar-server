@@ -21,7 +21,7 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
       // const accounts = successResponse.accounts;
       // const requestId = successResponse.request_id;
       const transactions = successResponse.transactions;
-      console.log('24', transactions.length);
+      console.log('24, Total transactions:', transactions.length);
 
       plaidClient.getInstitutionById(institutionId)
         .then(result => result.institution.name)

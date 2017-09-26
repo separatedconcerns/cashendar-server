@@ -15,7 +15,8 @@
   },
   "scripts": {
     "start": "firebase serve --port 5000 --only functions",
-    "lint": "./node_modules/.bin/eslint index.js"
+    "lint": "./node_modules/.bin/eslint index.js",
+    "deploy": "firebase deploy --only functions"
   },
   "private": true,
   "devDependencies": {

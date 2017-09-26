@@ -16,7 +16,8 @@
   "scripts": {
     "start": "firebase serve --port 5000 --only functions",
     "lint": "./node_modules/.bin/eslint index.js",
-    "deploy": "firebase deploy --only functions"
+    "deploy": "firebase deploy --only functions",
+    "test": "jest"
   },
   "private": true,
   "devDependencies": {
@@ -25,6 +26,7 @@
     "eslint-config-airbnb": "^15.1.0",
     "eslint-plugin-import": "^2.7.0",
     "eslint-plugin-jsx-a11y": "^5.1.1",
-    "eslint-plugin-react": "^7.3.0"
+    "eslint-plugin-react": "^7.3.0",
+    "jest": "^21.2.0"
   }
 }

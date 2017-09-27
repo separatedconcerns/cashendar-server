@@ -6,4 +6,4 @@ before_script:
   - npm install
 
 after_success:
-- ./functions/node_modules/.bin/firebase deploy --only functions
+- ./node_modules/.bin/firebase deploy --only functions

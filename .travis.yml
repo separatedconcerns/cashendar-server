@@ -1,9 +1,12 @@
 language: node_js
 node_js:
-  - "lts/*"
-before_script: 
-  - cd functions
-  - npm install
-
+- lts/*
+before_script:
+- cd functions
+- npm install
+cache:
+  bundler: true
+  directories:
+  - functions/node_modules
 after_success:
-- ./node_modules/.bin/firebase deploy --token=process.env.REACT_APP_FIREBASE_DEPLOY_TOKEN
+- ./node_modules/.bin/firebase deploy --only functions --token process.env.FIREBASE_DEPLOY_TOKEN

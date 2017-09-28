@@ -7,7 +7,7 @@
     "cors": "^2.8.4",
     "envkey": "^1.0.0",
     "firebase-admin": "~5.2.1",
-    "firebase-functions": "^0.6.2",
+    "firebase-functions": "^0.6.3",
     "google-auth-library": "^0.11.0",
     "googleapis": "^21.3.0",
     "moment": "^2.18.1",
@@ -27,7 +27,6 @@
     "eslint-plugin-import": "^2.7.0",
     "eslint-plugin-jsx-a11y": "^5.1.1",
     "eslint-plugin-react": "^7.3.0",
-    "firebase-tools": "^3.12.0",
     "jest": "^21.2.0"
   }
 }

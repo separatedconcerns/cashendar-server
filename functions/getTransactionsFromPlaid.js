@@ -23,26 +23,26 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
       const transactions = successResponse.transactions;
       console.log('24, Total transactions:', transactions.length);
 
-      plaidClient.getInstitutionById(institutionId)
-        .then(result => result.institution.name)
-        .then((institutionName) => {
-          console.log(transactions.length);
+      console.log(transactions.length);
+      admin.database()
+        .ref(`items/${itemId}/`)
+        .update({
+          transactions,
+        })
+        .then(() => {
           admin.database()
-            .ref(`items/${itemId}/`)
-            .update({
-              transactions,
-              institutionName,
-              institutionId })
+            .ref(`/items/${itemId}/uniqueUserId`)
+            .once('value')
+            .then((snapshot) => {
+              uniqueUserId = snapshot.val();
+            })
             .then(() => {
-              admin.database().ref(`/items/${itemId}/uniqueUserId`).once('value').then((snapshot) => {
-                uniqueUserId = snapshot.val();
-              })
-                .then(() => {
-                  // set bool to indicate data is no longer being fetched from Plaid
-                  admin.database().ref(`users/${uniqueUserId}/`).update({ fetchingBanks: false });
-                })
+              // set bool to indicate data is no longer being fetched from Plaid
+              admin.database()
+                .ref(`users/${uniqueUserId}/`)
+                .update({ fetchingBanks: false })
                 .then(response.end());
-            });
+            })
         });
     })
     .catch(error => console.log('getTransactionsFromPlaid', error));

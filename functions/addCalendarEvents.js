@@ -27,6 +27,7 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
     });
 
   const createEvents = (auth) => {
+    console.log(auth); 
     const config = {
       url: `${process.env.HOST}getDailySpendingAndTransactions`,
       payload: { uniqueUserId },
@@ -37,17 +38,19 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
         // console.log(events[events.length - 1].resource);
         const eventInsert = Promise.promisify(google.calendar('v3').events.insert);
         let i = 0;
-
+        let eventsToBeScheduled = events.length;
+        console.log(eventsToBeScheduled, ' events to be scheduled');
         const scheduleEvents = setInterval(() => {
           console.log(i);
           if (i <= events.length - 1) {
             eventInsert(events[i])
               .catch((e) => {
-                console.log(`Error on event: ${events[i].resource.start.date} ----> ${e}`);
+                eventsToBeScheduled -= 1;
+                console.log(`Error on event: ${events[i]} ----> ${e}`);
               });
             i += 1;
           } else {
-            console.log(`${i} of ${events.length} events have been scheduled!`);
+            console.log(`${eventsToBeScheduled} of ${events.length} events have been scheduled`);
             clearInterval(scheduleEvents);
           }
         }, 300);

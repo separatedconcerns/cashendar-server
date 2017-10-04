@@ -21,7 +21,7 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
       // const accounts = successResponse.accounts;
       // const requestId = successResponse.request_id;
       const transactions = successResponse.transactions;
-      console.log('24, Total transactions:', transactions.length);
+      console.log('getTransactionsFromPlaid total transactions:', transactions.length);
 
       console.log(transactions.length);
       admin.database()

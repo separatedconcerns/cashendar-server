@@ -9,7 +9,8 @@ class App extends Component {
   constructor() {
     super();
     this.state = {
-      user: null
+      user: null,
+      idToken: null,
     };
 
     this.login = this.login.bind(this);
@@ -40,6 +41,7 @@ class App extends Component {
   verifyUser(OAuthToken) {
     auth.currentUser.getIdToken()
       .then((idToken) => {
+        this.setState({ idToken });
         const config = {
           url: `${process.env.REACT_APP_HOST}addUser`,
           payload: qs.stringify({ idToken, OAuthToken }),
@@ -56,11 +58,12 @@ class App extends Component {
   }
 
   exchangePublicToken(publicToken, institution) {
+    console.log(this.state.idToken);
     const config = {
       url: `${process.env.REACT_APP_HOST}exchangePublicToken`,
       payload: qs.stringify({
         publicToken,
-        uniqueUserId: auth.currentUser.uid,
+        idToken: this.state.idToken,
         institution,
       }),
     };
@@ -75,6 +78,7 @@ class App extends Component {
           user: null,
           transactions: [],
           transactionSums: {},
+          idToken: null,
         });
       });
   }
@@ -82,7 +86,7 @@ class App extends Component {
   deleteProfile() {
     const config = {
       url: `${process.env.REACT_APP_HOST}deleteUserProfile`,
-      payload: qs.stringify({ uniqueUserId: this.state.user.uid }),
+      payload: qs.stringify({ idToken: this.state.idToken }),
     };
     axios.post(config.url, config.payload)
       .then(response => console.log(response))

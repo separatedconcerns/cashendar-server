@@ -1,11 +1,19 @@
 const functions = require('firebase-functions');
 const admin = require('./apiClients/firebaseClient.js');
+const verifyIdToken = require('./utils/verifyIdToken.js');
 const axios = require('axios');
 
 const deleteUserProfile = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
-  const uniqueUserId = request.body.uniqueUserId;
+  const idToken = request.body.idToken;
+  let uniqueUserId;
+
+  verifyIdToken(idToken).then((result) => {
+    uniqueUserId = result;
+  });
   const itemsRef = admin.database().ref(`users/${uniqueUserId}/items`);
+
+
   itemsRef.once('value')
     .then((snapshot) => {
       snapshot.forEach((childSnapshot) => {

@@ -1,11 +1,17 @@
 const functions = require('firebase-functions');
 const admin = require('./apiClients/firebaseClient.js');
+const verifyIdToken = require('./utils/verifyIdToken.js');
 const plaidClient = require('./apiClients/plaidClient.js');
 
 const exchangePublicToken = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const publicToken = request.body.publicToken;
-  const uniqueUserId = request.body.uniqueUserId;
+  const idToken = request.body.idToken;
+  let uniqueUserId;
+
+  verifyIdToken(idToken).then((result) => {
+    uniqueUserId = result;
+  });
 
   plaidClient.exchangePublicToken(publicToken)
     .then((successResponse) => {

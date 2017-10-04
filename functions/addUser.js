@@ -1,4 +1,5 @@
 const functions = require('firebase-functions');
+const verifyIdToken = require('./utils/verifyIdToken.js');
 const admin = require('./apiClients/firebaseClient.js');
 const axios = require('axios');
 
@@ -8,15 +9,14 @@ const addUser = functions.https.onRequest((request, response) => {
   const OAuthToken = request.body.OAuthToken;
   let uniqueUserId;
 
-  admin.auth()
-    .verifyIdToken(idToken)
-    .then((decodedToken) => {
-      uniqueUserId = decodedToken.uid;
+  verifyIdToken(idToken)
+    .then((result) => {
+      uniqueUserId = result;
+      admin.database()
+        .ref(`users/${uniqueUserId}`)
+        .once('value')
+        .then(snapshot => snapshot.exists());
     })
-    .then(() => admin.database()
-      .ref(`users/${uniqueUserId}`)
-      .once('value')
-      .then(snapshot => snapshot.exists()))
     .then((exists) => {
       if (exists) {
         response.send({ userExists: true });

@@ -8,7 +8,6 @@ const packageTransactionsById = Promise.method(require('./utils/packageTransacti
 const getTransactionsFromPlaid = functions.https.onRequest((request, response) => {
   const accessToken = request.body.access_token;
   const newTransactions = request.body.newTransactions;
-  console.log('10', request.body);
   // const uniqueUserId = request.body.uniqueUserId;
   const now = moment();
   const today = now.format('YYYY-MM-DD');
@@ -26,7 +25,6 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
  
       packageTransactionsById(transactions)
         .then((transactionsById) => {
-          console.log(transactionsById);
           admin.database()
             .ref(`items/${itemId}/transactions`)
             .update(transactionsById)

@@ -27,7 +27,6 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
     });
 
   const createEvents = (auth) => {
-    console.log(auth); 
     const config = {
       url: `${process.env.HOST}getDailySpendingAndTransactions`,
       payload: { uniqueUserId },

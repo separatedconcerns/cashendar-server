@@ -10,20 +10,25 @@ const getDailySpendingAndTransactions = functions.https.onRequest((request, resp
       uniqueUserId,
     },
   };
-  const transactionsByDate = {};
   axios.post(config.url, config.payload)
     .then((transactions) => {
-      console.log(transactions.data.length);
-      transactions.data.forEach((transaction) => {
+      const transKeys = Object.keys(transactions.data);
+      const transactionsByDate = {};
+      let counter = 0;
+      transKeys.forEach((key) => {
+        const transaction = transactions.data[key];
         if (transaction) {
           transactionsByDate[transaction.date] = transactionsByDate[transaction.date] || { list: [], sum: 0 };
           transactionsByDate[transaction.date].list.push(`${transaction.name}: $${transaction.amount}`);
           transactionsByDate[transaction.date].sum += transaction.amount;
         }
+
+        if (counter >= transKeys.length - 1) {
+          response.json(transactionsByDate);
+        }
+        counter += 1;
       });
-      return transactionsByDate;
     })
-    .then(transactionsByDate => response.json(transactionsByDate))
     .catch(error => console.log(error));
 });
 

@@ -26,7 +26,7 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
       packageTransactionsById(transactions)
         .then((transactionsById) => {
           admin.database()
-            .ref(`items/${itemId}/transactions`)
+            .ref(`items/${itemId}/unscheduled_transactions`)
             .update(transactionsById)
             .then(() => {
               admin.database()

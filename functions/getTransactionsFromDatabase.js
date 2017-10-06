@@ -11,7 +11,7 @@ const getTransactionsFromDatabase = functions.https.onRequest((request, response
     .then((snapshot) => {
       snapshot.forEach((childSnapshot) => {
         if (childSnapshot.val().uniqueUserId === uniqueUserId) {
-          Object.assign(allTransactions, childSnapshot.val().transactions);
+          Object.assign(allTransactions, childSnapshot.val().unscheduled_transactions);
         }
       });
     })

@@ -17,7 +17,7 @@ const APICredentials = {
 };
 
 const authorize = (OAuthToken, callback, calendarId, uniqueUserId) => {
-  const callbackPromise = Promise.promisify(callback);
+  const callbackPromise = Promise.method(callback);
   const clientSecret = APICredentials.installed.client_secret;
   const clientId = APICredentials.installed.client_id;
   const redirectUrl = APICredentials.installed.redirect_uris[0];
@@ -27,8 +27,9 @@ const authorize = (OAuthToken, callback, calendarId, uniqueUserId) => {
   oauth2Client.credentials = {
     access_token: OAuthToken,
   };
-  return callback(oauth2Client, calendarId, uniqueUserId);
-  // .catch(e => console.log(`authorize function line 32 ${e}`));
+  callbackPromise(oauth2Client, calendarId, uniqueUserId)
+    .then(val => val)
+    .catch(e => e);
 };
 
 /*     We will eventually need to use something like this to get 

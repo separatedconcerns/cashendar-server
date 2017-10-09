@@ -3,7 +3,7 @@ const admin = require('./apiClients/firebaseClient.js');
 const moment = require('moment');
 const plaidClient = require('./apiClients/plaidClient.js');
 const Promise = require('bluebird');
-const packageTransactionsById = Promise.method(require('./utils/packageTransactionsById.js'));
+const packageTransactionsByDate = Promise.method(require('./utils/packageTransactionsByDate.js'));
 
 const getTransactionsFromPlaid = functions.https.onRequest((request, response) => {
   const accessToken = request.body.access_token;
@@ -23,11 +23,14 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
       // const requestId = successResponse.request_id;
       console.log('getTransactionsFromPlaid total transactions:', transactions.length);
  
-      packageTransactionsById(transactions)
-        .then((transactionsById) => {
+      packageTransactionsByDate(transactions)
+        .then((transactionsByDate) => {
           admin.database()
-            .ref(`items/${itemId}/unscheduled_transactions`)
-            .update(transactionsById)
+            .ref(`items/${itemId}`)
+            .update({
+              dates_to_schedule: Object.keys(transactionsByDate),
+              transactions: transactionsByDate,
+            })
             .then(() => {
               admin.database()
                 .ref(`/items/${itemId}/uniqueUserId`)

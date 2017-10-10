@@ -14,7 +14,8 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
 
   admin.database()
     .ref(`users/${uniqueUserId}`)
-    .once('value').then((snapshot) => {
+    .once('value')
+    .then((snapshot) => {
       calendarId = snapshot.val().calendarId;
       OAuthToken = snapshot.val().OAuthToken;
     })
@@ -40,8 +41,8 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
         let eventsToBeScheduled = events.length;
         console.log(eventsToBeScheduled, ' events to be scheduled');
         const scheduleEvents = setInterval(() => {
-          console.log(i);
           if (i <= events.length - 1) {
+            console.log(i);
             eventInsert(events[i])
               .catch((e) => {
                 eventsToBeScheduled -= 1;
@@ -50,15 +51,24 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
             i += 1;
           } else {
             console.log(`${eventsToBeScheduled} of ${events.length} events have been scheduled`);
+            moveTransactions();
             clearInterval(scheduleEvents);
           }
         }, 300);
       })
       .catch(e => console.log('line 49', e));
   };
+
+  const moveTransactions = () => {
+    const config = {
+      url: `${process.env.HOST}moveTransactionsFromUnscheduledToScheduled`,
+      payload: { uniqueUserId },
+    };
+    axios.post(config.url, config.payload)
+      .then(response.end())
+      .catch(e => console.log('moveTransactions error!:', e));
+  };
 });
-// const eventInsert = Promise.promisify(google.calendar('v3').events.insert);
-// eventInsert(targetCal)
-//   .catch(e => console.log(`there was an error contacting Google Calendar${e}`));
+
 
 module.exports = addCalendarEvents;

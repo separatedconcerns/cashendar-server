@@ -25,26 +25,36 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
  
       packageTransactionsByDate(transactions)
         .then((transactionsByDate) => {
+          const payload = {
+            dates: Object.keys(transactionsByDate),
+            transactions: transactionsByDate,
+          };
           admin.database()
-            .ref(`items/${itemId}`)
-            .update({
-              dates_to_schedule: Object.keys(transactionsByDate),
-              transactions: transactionsByDate,
+            .ref(`/items/${itemId}/dates_to_schedule`)
+            .set(payload.dates);
+          return payload;
+        })
+        .then((payload) => {
+          const transactionsRef = admin.database();
+          payload.dates.forEach((date) => {
+            transactionsRef
+              .ref(`/items/${itemId}/transactions/${date}`)
+              .update(payload.transactions[date]);
+          });
+        })
+        .then(() => {
+          admin.database()
+            .ref(`/items/${itemId}/uniqueUserId`)
+            .once('value')
+            .then((snapshot) => {
+              uniqueUserId = snapshot.val();
             })
             .then(() => {
+              // set bool to indicate data is no longer being fetched from Plaid
               admin.database()
-                .ref(`/items/${itemId}/uniqueUserId`)
-                .once('value')
-                .then((snapshot) => {
-                  uniqueUserId = snapshot.val();
-                })
-                .then(() => {
-                  // set bool to indicate data is no longer being fetched from Plaid
-                  admin.database()
-                    .ref(`users/${uniqueUserId}/`)
-                    .update({ fetchingBanks: false })
-                    .then(response.end());
-                });
+                .ref(`users/${uniqueUserId}/`)
+                .update({ fetchingBanks: false })
+                .then(response.end());
             });
         });
     })

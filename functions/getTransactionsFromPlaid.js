@@ -29,9 +29,6 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
             dates: Object.keys(transactionsByDate),
             transactions: transactionsByDate,
           };
-          admin.database()
-            .ref(`/items/${itemId}/dates_to_schedule`)
-            .set(payload.dates);
           return payload;
         })
         .then((payload) => {
@@ -39,10 +36,12 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
           payload.dates.forEach((date) => {
             transactionsRef
               .ref(`/items/${itemId}/transactions/${date}`)
-              .update(payload.transactions[date]);
+              .update(payload.transactions[date])
+              .catch(e => console.log(e, 'NOT UPDATED IN DB!'));
           });
+          return payload;
         })
-        .then(() => {
+        .then((payload) => {
           admin.database()
             .ref(`/items/${itemId}/uniqueUserId`)
             .once('value')
@@ -53,7 +52,7 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
               // set bool to indicate data is no longer being fetched from Plaid
               admin.database()
                 .ref(`users/${uniqueUserId}/`)
-                .update({ fetchingBanks: false })
+                .update({ fetchingBanks: false, datesToSchedule: payload.dates })
                 .then(response.end());
             });
         });

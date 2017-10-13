@@ -16,8 +16,9 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
     .ref(`users/${uniqueUserId}`)
     .once('value')
     .then((snapshot) => {
-      calendarId = snapshot.val().calendarId;
-      OAuthToken = snapshot.val().OAuthToken;
+      const vals = snapshot.val(); 
+      calendarId = vals.calendarId;
+      OAuthToken = vals.OAuthToken;
     })
     .then(() => {
       // googleClient.authorize(OAuthToken, createEvents); 
@@ -51,7 +52,7 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
             i += 1;
           } else {
             console.log(`${eventsToBeScheduled} of ${events.length} events have been scheduled`);
-            moveTransactions();
+            deleteDatesToSchedule();
             clearInterval(scheduleEvents);
           }
         }, 300);
@@ -59,14 +60,10 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
       .catch(e => console.log('line 49', e));
   };
 
-  const moveTransactions = () => {
-    const config = {
-      url: `${process.env.HOST}moveTransactionsFromUnscheduledToScheduled`,
-      payload: { uniqueUserId },
-    };
-    axios.post(config.url, config.payload)
-      .then(response.end())
-      .catch(e => console.log('moveTransactions error!:', e));
+  const deleteDatesToSchedule = () => {
+    admin.database()
+      .ref(`users/${uniqueUserId}/datesToSchedule`)
+      .remove();
   };
 });
 

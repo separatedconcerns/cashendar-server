@@ -12,4 +12,3 @@ exports.deleteUserProfile = require('./deleteUserProfile.js');
 exports.deleteItem = require('./deleteItem.js');
 exports.deleteCalendar = require('./deleteCalendar.js');
 exports.getAllUserInstitutions = require('./getAllUserInstitutions');
-exports.moveTransactionsFromUnscheduledToScheduled = require('./moveTransactionsFromUnscheduledToScheduled.js')

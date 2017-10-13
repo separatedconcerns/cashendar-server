@@ -13,6 +13,11 @@ const getTransactionsFromDatabase = functions.https.onRequest((request, response
         datesToSchedule: vals.datesToSchedule,
         itemIds: Object.keys(vals.items),
       };
+      snapshot.forEach((childSnapshot) => {
+        if (childSnapshot.val().uniqueUserId === uniqueUserId) {
+          Object.assign(allTransactions, childSnapshot.val().transactions);
+        }
+      });
     })
     .then((payload) => {
       let allTransactions = {};

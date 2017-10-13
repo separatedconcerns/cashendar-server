@@ -4,7 +4,6 @@ const moment = require('moment');
 const plaidClient = require('./apiClients/plaidClient.js');
 const Promise = require('bluebird');
 const packageTransactionsByDate = Promise.method(require('./utils/packageTransactionsByDate.js'));
-
 const getTransactionsFromPlaid = functions.https.onRequest((request, response) => {
   const accessToken = request.body.access_token;
   const newTransactions = request.body.newTransactions;
@@ -22,7 +21,7 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
       // const accounts = successResponse.accounts;
       // const requestId = successResponse.request_id;
       console.log('getTransactionsFromPlaid total transactions:', transactions.length);
- 
+    
       packageTransactionsByDate(transactions)
         .then((transactionsByDate) => {
           const payload = {

@@ -3,8 +3,7 @@ const admin = require('./apiClients/firebaseClient.js');
 const moment = require('moment');
 const plaidClient = require('./apiClients/plaidClient.js');
 const Promise = require('bluebird');
-const packageTransactionsById = Promise.method(require('./utils/packageTransactionsById.js'));
-
+const packageTransactionsByDate = Promise.method(require('./utils/packageTransactionsByDate.js'));
 const getTransactionsFromPlaid = functions.https.onRequest((request, response) => {
   const accessToken = request.body.access_token;
   const newTransactions = request.body.newTransactions;
@@ -23,25 +22,37 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
       // const requestId = successResponse.request_id;
       console.log('getTransactionsFromPlaid total transactions:', transactions.length);
  
-      packageTransactionsById(transactions)
-        .then((transactionsById) => {
+      packageTransactionsByDate(transactions)
+        .then((transactionsByDate) => {
+          const payload = {
+            dates: Object.keys(transactionsByDate),
+            transactions: transactionsByDate,
+          };
+          return payload;
+        })
+        .then((payload) => {
+          const transactionsRef = admin.database();
+          payload.dates.forEach((date) => {
+            transactionsRef
+              .ref(`/items/${itemId}/transactions/${date}`)
+              .update(payload.transactions[date])
+              .catch(e => console.log(e, 'NOT UPDATED IN DB!'));
+          });
+          return payload;
+        })
+        .then((payload) => {
           admin.database()
-            .ref(`items/${itemId}/transactions`)
-            .update(transactionsById)
+            .ref(`/items/${itemId}/uniqueUserId`)
+            .once('value')
+            .then((snapshot) => {
+              uniqueUserId = snapshot.val();
+            })
             .then(() => {
+              // set bool to indicate data is no longer being fetched from Plaid
               admin.database()
-                .ref(`/items/${itemId}/uniqueUserId`)
-                .once('value')
-                .then((snapshot) => {
-                  uniqueUserId = snapshot.val();
-                })
-                .then(() => {
-                  // set bool to indicate data is no longer being fetched from Plaid
-                  admin.database()
-                    .ref(`users/${uniqueUserId}/`)
-                    .update({ fetchingBanks: false })
-                    .then(response.end());
-                });
+                .ref(`users/${uniqueUserId}/`)
+                .update({ fetchingBanks: false, datesToSchedule: payload.dates })
+                .then(response.end());
             });
         });
     })

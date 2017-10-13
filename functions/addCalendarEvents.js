@@ -14,9 +14,11 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
 
   admin.database()
     .ref(`users/${uniqueUserId}`)
-    .once('value').then((snapshot) => {
-      calendarId = snapshot.val().calendarId;
-      OAuthToken = snapshot.val().OAuthToken;
+    .once('value')
+    .then((snapshot) => {
+      const vals = snapshot.val(); 
+      calendarId = vals.calendarId;
+      OAuthToken = vals.OAuthToken;
     })
     .then(() => {
       // googleClient.authorize(OAuthToken, createEvents); 
@@ -40,8 +42,8 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
         let eventsToBeScheduled = events.length;
         console.log(eventsToBeScheduled, ' events to be scheduled');
         const scheduleEvents = setInterval(() => {
-          console.log(i);
           if (i <= events.length - 1) {
+            console.log(i);
             eventInsert(events[i])
               .catch((e) => {
                 eventsToBeScheduled -= 1;
@@ -50,15 +52,20 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
             i += 1;
           } else {
             console.log(`${eventsToBeScheduled} of ${events.length} events have been scheduled`);
+            deleteDatesToSchedule();
             clearInterval(scheduleEvents);
           }
         }, 300);
       })
       .catch(e => console.log('line 49', e));
   };
+
+  const deleteDatesToSchedule = () => {
+    admin.database()
+      .ref(`users/${uniqueUserId}/datesToSchedule`)
+      .remove();
+  };
 });
-// const eventInsert = Promise.promisify(google.calendar('v3').events.insert);
-// eventInsert(targetCal)
-//   .catch(e => console.log(`there was an error contacting Google Calendar${e}`));
+
 
 module.exports = addCalendarEvents;

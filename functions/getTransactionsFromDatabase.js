@@ -4,19 +4,34 @@ const admin = require('./apiClients/firebaseClient.js');
 const getTransactionsFromDatabase = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const uniqueUserId = request.body.uniqueUserId;
-  const allTransactions = {};
   admin.database()
-    .ref('items/')
+    .ref(`users/${uniqueUserId}`)
     .once('value')
     .then((snapshot) => {
-      snapshot.forEach((childSnapshot) => {
-        if (childSnapshot.val().uniqueUserId === uniqueUserId) {
-          Object.assign(allTransactions, childSnapshot.val().transactions);
-        }
-      });
+      const vals = snapshot.val();
+      return {
+        datesToSchedule: vals.datesToSchedule,
+        itemIds: Object.keys(vals.items),
+      };
     })
-    .then(() => {
-      response.json(allTransactions);
+    .then((payload) => {
+      let allTransactions = {};
+      const db = admin.database();
+      const lastDate = payload.datesToSchedule[payload.datesToSchedule.length - 1];
+      payload.itemIds.forEach((itemId) => {
+        db.ref(`items/${itemId}/transactions`)
+          .once('value')
+          .then((snapshot) => {
+            const transactions = snapshot.val();
+            payload.datesToSchedule.forEach((date) => {
+              allTransactions = Object.assign(allTransactions, transactions[date]);
+              if (date === lastDate) {
+                console.log(Object.keys(allTransactions));
+                response.json(allTransactions);
+              }
+            });
+          });
+      });
     });
 });
 

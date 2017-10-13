@@ -36,3 +36,5 @@ const getTransactionsFromDatabase = functions.https.onRequest((request, response
 });
 
 module.exports = getTransactionsFromDatabase;
+
+

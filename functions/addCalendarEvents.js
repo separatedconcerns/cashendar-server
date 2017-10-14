@@ -5,6 +5,7 @@ const google = require('googleapis');
 const Promise = require('bluebird');
 const googleClient = require('./apiClients/googleClient.js');
 const packageEvents = require('./utils/packageEvents.js');
+const deleteDuplicateEventsFlow = require('./utils/deleteDuplicateEventsFlow');
 
 const addCalendarEvents = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
@@ -52,18 +53,12 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
             i += 1;
           } else {
             console.log(`${eventsToBeScheduled} of ${events.length} events have been scheduled`);
-            deleteDatesToSchedule();
+            deleteDuplicateEventsFlow(uniqueUserId);
             clearInterval(scheduleEvents);
           }
         }, 300);
       })
       .catch(e => console.log('line 49', e));
-  };
-
-  const deleteDatesToSchedule = () => {
-    admin.database()
-      .ref(`users/${uniqueUserId}/datesToSchedule`)
-      .remove();
   };
 });
 

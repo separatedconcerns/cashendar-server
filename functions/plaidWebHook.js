@@ -7,6 +7,7 @@ const plaidWebHook = functions.https.onRequest((request, response) => {
   const itemId = request.body.item_id;
   const webHookCode = request.body.webhook_code;
   const newTransactions = request.body.new_transactions;
+  console.log('WEBHOOK HIT:', itemId, webHookCode, newTransactions);
 
   if (webHookCode === 'INITIAL_UPDATE') {
     response.end();

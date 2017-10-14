@@ -17,6 +17,7 @@ const getTransactionsFromDatabase = functions.https.onRequest((request, response
     .then((payload) => {
       let allTransactions = {};
       const db = admin.database();
+      const lastItemId = payload.itemIds[payload.itemIds.length - 1];
       const lastDate = payload.datesToSchedule[payload.datesToSchedule.length - 1];
       payload.itemIds.forEach((itemId) => {
         db.ref(`items/${itemId}/transactions`)
@@ -24,9 +25,9 @@ const getTransactionsFromDatabase = functions.https.onRequest((request, response
           .then((snapshot) => {
             const transactions = snapshot.val();
             payload.datesToSchedule.forEach((date) => {
-              allTransactions = Object.assign(allTransactions, transactions[date]);
-              if (date === lastDate) {
-                console.log(Object.keys(allTransactions));
+              const mergeObj = Object.assign(allTransactions, transactions[date]);
+              allTransactions = mergeObj;
+              if (itemId === lastItemId && date === lastDate) {
                 response.json(allTransactions);
               }
             });
@@ -36,5 +37,3 @@ const getTransactionsFromDatabase = functions.https.onRequest((request, response
 });
 
 module.exports = getTransactionsFromDatabase;
-
-

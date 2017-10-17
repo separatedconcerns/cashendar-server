@@ -1,9 +1,14 @@
 const admin = require('../apiClients/firebaseClient');
 
-const doesUserExist = uniqueUserId => admin.database()
-  .ref(`users/${uniqueUserId}`)
-  .once('value')
-  .then(snapshot => snapshot.exists());
+const doesUserExist = uniqueUserId =>
+  new Promise((resolve, reject) => {
+    admin.database()
+      .ref(`users/${uniqueUserId}`)
+      .once('value')
+      .then(snapshot => resolve(snapshot.exists()))
+      .catch(err => reject(err));
+  });
+
 
 const getUserProfile = uniqueUserId => admin.auth().getUser(uniqueUserId);
 

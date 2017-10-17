@@ -2,6 +2,7 @@ const functions = require('firebase-functions');
 const user = require('./controllers/userController');
 const verifyIdToken = require('./utils/verifyIdToken.js');
 const axios = require('axios');
+const admin = require('./apiClients/firebaseClient');
 
 let idToken;
 let OAuthToken;
@@ -18,6 +19,7 @@ const addUser = functions.https.onRequest((request, response) => {
       user.doesUserExist(uniqueUserId)
         .then((userExists) => {
           if (userExists) {
+            // end response if user already exists
             response.send({ uniqueUserId });
           } else {
             addUserToDB(response); // eslint-disable-line
@@ -27,9 +29,11 @@ const addUser = functions.https.onRequest((request, response) => {
 });
 
 function addUserToDB(response) {
-  user.getUserProfile(uniqueUserId)
+  console.log('addUserToDB called');
+  admin.auth().getUser(uniqueUserId)
     .then((userRecord) => {
-    // todo: move userRecord.toJSON to controller also? 
+      console.log(35);
+      // todo: move userRecord.toJSON to controller also? 
       const userProfile = userRecord.toJSON();
       return {
         email: userProfile.email,
@@ -38,21 +42,24 @@ function addUserToDB(response) {
       };
     })
     .then((payload) => {
-    // add user to db
-      user.initializeUser(uniqueUserId, payload);
-    })
-    .then(() => {
-      const config = {
-        url: `${process.env.HOST}createNewCalendar`,
-        payload: { OAuthToken, uniqueUserId },
-      };
-      return config;
-    })
-    .then(config => axios.post(config.url, config.payload)
-      .then(calendar => ({
-        calId: calendar.data.id,
-        calName: calendar.data.summary,
-      })))
+      // add user to db
+      console.log(45);
+      admin.database().ref(`users/${uniqueUserId}`).set(payload)
+        .then(() => createGoogleCalendar(response)); // eslint-disable-line
+    });
+}
+
+function createGoogleCalendar(response) {
+  const config = {
+    url: `${process.env.HOST}createNewCalendar`,
+    payload: { OAuthToken, uniqueUserId },
+  };
+
+  axios.post(config.url, config.payload)
+    .then(calendar => ({
+      calId: calendar.data.id,
+      calName: calendar.data.summary,
+    }))
     .then((configCal) => {
       const userCalendarDetails = { calendarId: configCal.calId, calendarName: configCal.calName };
       user.updateUser(uniqueUserId, userCalendarDetails);
@@ -60,8 +67,5 @@ function addUserToDB(response) {
     .then(response.end())
     .catch(error => console.log('Error fetching user data:', error));
 }
-
-// function createGoogleCalendar(config, response) {
-// }
 
 module.exports = addUser;

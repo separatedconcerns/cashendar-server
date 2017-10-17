@@ -12,7 +12,7 @@ const createNewCalendar = functions.https.onRequest((request, response) => {
     const calendarCreate = Promise.promisify(google.calendar('v3').calendars.insert);
     const config = {
       auth,
-      resource: { summary: 'Wheres My Money!!!' },
+      resource: { summary: 'Cashendar' },
     };
     calendarCreate(config)
       .then(calendar => response.json(calendar))

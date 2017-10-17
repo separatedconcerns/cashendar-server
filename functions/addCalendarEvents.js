@@ -5,21 +5,23 @@ const google = require('googleapis');
 const Promise = require('bluebird');
 const googleClient = require('./apiClients/googleClient.js');
 const packageEvents = require('./utils/packageEvents.js');
-const deleteDuplicateEventsFlow = require('./utils/deleteDuplicateEventsFlow');
+const updateScheduledEvents = require('./utils/updateScheduledEvents.js');
 
 const addCalendarEvents = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const uniqueUserId = request.body.uniqueUserId;
   let calendarId;
   let OAuthToken;
-
+  let datesToSchedule;
+  let newEvents = {};
   admin.database()
     .ref(`users/${uniqueUserId}`)
     .once('value')
     .then((snapshot) => {
-      const vals = snapshot.val(); 
+      const vals = snapshot.val();
       calendarId = vals.calendarId;
       OAuthToken = vals.OAuthToken;
+      datesToSchedule = vals.datesToSchedule;
     })
     .then(() => {
       // googleClient.authorize(OAuthToken, createEvents); 
@@ -46,15 +48,18 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
           if (i <= events.length - 1) {
             console.log(i);
             eventInsert(events[i])
+              .then((event) => { newEvents[event.start.date] = event.id; })
               .catch((e) => {
                 eventsToBeScheduled -= 1;
-                console.log(`Error on event: ${events[i]} ----> ${e}`);
+                console.log(`Error on event: ${events[i].date} ----> ${e}`);
               });
             i += 1;
           } else {
             console.log(`${eventsToBeScheduled} of ${events.length} events have been scheduled`);
-            deleteDuplicateEventsFlow(uniqueUserId);
-            clearInterval(scheduleEvents);
+            setTimeout(() => {
+              updateScheduledEvents(uniqueUserId, newEvents);
+              clearInterval(scheduleEvents);
+            }, 200);
           }
         }, 300);
       })

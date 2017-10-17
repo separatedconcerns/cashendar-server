@@ -25,6 +25,28 @@ const plaidWebHook = functions.https.onRequest((request, response) => {
             },
           };
           axios.post(config.url, config.payload)
+            .then((datesToSchedule) => {
+              admin.database()
+                .ref(`users/${config.payload.uniqueUserId}/scheduledEvents`)
+                .once('value')
+                .then((userSnapshot) => {
+                  if (userSnapshot.exists()) {
+                    const scheduledEvents = userSnapshot.val().scheduledEvents;
+                    const eventsToDelete = [];
+
+                    for (let i = 0; i < datesToSchedule.length; i += 1) {
+                      const date = datesToSchedule[i];
+                      if (scheduledEvents[date]) {
+                        eventsToDelete.push(scheduledEvents[date]);
+                      }
+                      if (i === datesToSchedule.length - 1) {
+                        return eventsToDelete;
+                      }
+                    }
+                  }
+                })
+
+            })
             .then(() => {
               axios.post(`${process.env.HOST}addCalendarEvents`, config.payload)
                 .then(response.end());

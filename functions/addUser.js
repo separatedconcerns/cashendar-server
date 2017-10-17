@@ -1,6 +1,6 @@
 const functions = require('firebase-functions');
+const user = require('./controllers/userController');
 const verifyIdToken = require('./utils/verifyIdToken.js');
-const admin = require('./apiClients/firebaseClient.js');
 const axios = require('axios');
 
 const addUser = functions.https.onRequest((request, response) => {
@@ -12,30 +12,26 @@ const addUser = functions.https.onRequest((request, response) => {
   verifyIdToken(idToken)
     .then((result) => {
       uniqueUserId = result;
-      admin.database()
-        .ref(`users/${uniqueUserId}`)
-        .once('value')
-        .then(snapshot => snapshot.exists());
+      user.doesUserExist(uniqueUserId);
     })
     .then((exists) => {
       if (exists) {
         response.send({ userExists: true });
       } else {
-        return admin.auth().getUser(uniqueUserId);
+        return user.getUserProfile(uniqueUserId);
       }
     })
     .then((userRecord) => {
-      const user = userRecord.toJSON();
+      // todo: move userRecord.toJSON to controller also? 
+      const userProfile = userRecord.toJSON();
       return {
-        email: user.email,
-        name: user.displayName,
+        email: userProfile.email,
+        name: userProfile.displayName,
         OAuthToken,
       };
     })
     .then((payload) => {
-      admin.database()
-        .ref(`users/${uniqueUserId}`)
-        .set(payload);
+      user.initializeUser(uniqueUserId, payload);
     })
     .then(() => {
       const config = {
@@ -50,9 +46,8 @@ const addUser = functions.https.onRequest((request, response) => {
         calName: calendar.data.summary,
       })))
     .then((configCal) => {
-      admin.database()
-        .ref(`users/${uniqueUserId}`)
-        .update({ calendarId: configCal.calId, calendarName: configCal.calName });
+      const userCalendarDetails = { calendarId: configCal.calId, calendarName: configCal.calName };
+      user.updateUser(uniqueUserId, userCalendarDetails);
     })
     .then(response.end())
     .catch(error => console.log('Error fetching user data:', error));

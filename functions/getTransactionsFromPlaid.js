@@ -53,7 +53,7 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
               admin.database()
                 .ref(`users/${uniqueUserId}/`)
                 .update({ fetchingBanks: false, datesToSchedule: payload.dates })
-                .then(response.end());
+                .then(response.end(payload.dates));
             });
         });
     })

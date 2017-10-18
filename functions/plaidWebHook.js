@@ -1,6 +1,8 @@
 const functions = require('firebase-functions');
 const admin = require('./apiClients/firebaseClient.js');
 const axios = require('axios');
+const Promise = require('bluebird');
+
 
 const plaidWebHook = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
@@ -26,26 +28,17 @@ const plaidWebHook = functions.https.onRequest((request, response) => {
           };
           axios.post(config.url, config.payload)
             .then((datesToSchedule) => {
-              admin.database()
-                .ref(`users/${config.payload.uniqueUserId}/scheduledEvents`)
-                .once('value')
-                .then((userSnapshot) => {
-                  if (userSnapshot.exists()) {
-                    const scheduledEvents = userSnapshot.val().scheduledEvents;
-                    const eventsToDelete = [];
-
-                    for (let i = 0; i < datesToSchedule.length; i += 1) {
-                      const date = datesToSchedule[i];
-                      if (scheduledEvents[date]) {
-                        eventsToDelete.push(scheduledEvents[date]);
-                      }
-                      if (i === datesToSchedule.length - 1) {
-                        return eventsToDelete;
-                      }
-                    }
-                  }
-                })
-
+              return {
+                url: `${process.env.HOST}createEventsToDeleteArrayInDb`,
+                payload: {
+                  datesToSchedule,
+                  uniqueUserId: config.payload.uniqueUserId,
+                },
+              };
+            })
+            .then((config2) => {
+              axios.post(config2.url, config2.payload)
+                .catch(e => console.log('Events to delete array not created!:', e));
             })
             .then(() => {
               axios.post(`${process.env.HOST}addCalendarEvents`, config.payload)

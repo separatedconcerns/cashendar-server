@@ -13,6 +13,5 @@ exports.deleteItem = require('./deleteItem.js');
 exports.deleteCalendar = require('./deleteCalendar.js');
 exports.getAllUserInstitutions = require('./getAllUserInstitutions');
 exports.createEventsToDeleteArrayInDb = require('./createEventsToDeleteArrayInDb.js');
-exports.getExistingEvents = require('./getExistingEvents.js');
-exports.deleteDuplicateEvents = require('./deleteDuplicateEvents.js');
+exports.deleteDuplicateEventsInCalendar = require('./deleteDuplicateEventsInCalendar.js');
 

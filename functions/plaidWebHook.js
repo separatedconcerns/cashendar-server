@@ -1,7 +1,6 @@
 const functions = require('firebase-functions');
 const admin = require('./apiClients/firebaseClient.js');
 const axios = require('axios');
-const Promise = require('bluebird');
 
 
 const plaidWebHook = functions.https.onRequest((request, response) => {
@@ -27,23 +26,11 @@ const plaidWebHook = functions.https.onRequest((request, response) => {
             },
           };
           axios.post(config.url, config.payload)
-            .then((datesToSchedule) => {
-              return {
-                url: `${process.env.HOST}createEventsToDeleteArrayInDb`,
-                payload: {
-                  datesToSchedule,
-                  uniqueUserId: config.payload.uniqueUserId,
-                },
-              };
-            })
-            .then((config2) => {
-              axios.post(config2.url, config2.payload)
-                .catch(e => console.log('Events to delete array not created!:', e));
-            })
             .then(() => {
               axios.post(`${process.env.HOST}addCalendarEvents`, config.payload)
                 .then(response.end());
-            });
+            })
+            .catch(e => console.log('plaidWebHook Error!:', e));
         } else {
           response.end();
         }

@@ -1,28 +1,30 @@
-
-const admin = require('../apiClients/firebaseClient.js');
 const axios = require('axios');
-const google = require('googleapis');
 const Promise = require('bluebird');
-const googleClient = require('./apiClients/googleClient.js');
+const updateScheduledEvents = require('./updateScheduledEvents.js');
 
-const deleteDuplicateEventsFlow = (uniqueUserId) => {
-  admin.database()
-    .ref(`users/${uniqueUserId}/datesToSchedule`)
-    .once('value')
-    .then((snapshot) => {
+const deleteDuplicateEventsFlow = (uniqueUserId, newEvents) => {
+  const config = {
+    url: `${process.env.HOST}createEventsToDeleteArrayInDb`,
+    payload: {
+      newEventDates: Object.keys(newEvents),
+      uniqueUserId,
+    },
+  };
+  axios.post(config.url, config.payload)
+    .catch(e => console.log('Events to delete array not created!:', e))
+    .then((calId_eventsToDelete_OAuthToken) => {
       return {
-        url: `${process.env.HOST}getExistingEvents`,
-        payload: {
-          datesToSchedule: snapshot.val(),
-          uniqueUserId,
-        },
+        url: `${process.env.HOST}deleteDuplicateEventsInCalendar`,
+        payload: calId_eventsToDelete_OAuthToken.data,
       };
     })
-    .then((config) => {
-     return { axios.post(config.url, config.payload)
-        .then((existingEvents) => {
-          return existingEvents
-        }), }
+    .then((config2) => {
+      axios.post(config2.url, config2.payload)
+        .then(() => {
+          const updateScheduledEventsProm = Promise.promisify(updateScheduledEvents);
+          updateScheduledEventsProm(uniqueUserId, newEvents)
+            .catch(e => console.log('deleteDuplicateEventsFlow ERROR:', e));
+        });
     });
 };
 

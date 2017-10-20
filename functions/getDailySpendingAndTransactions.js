@@ -19,7 +19,7 @@ const getDailySpendingAndTransactions = functions.https.onRequest((request, resp
         const transaction = transactions.data[key];
         if (transaction) {
           transactionsByDate[transaction.date] = transactionsByDate[transaction.date] || { list: [], sum: 0 };
-          transactionsByDate[transaction.date].list.push(`${transaction.name}: $${transaction.amount}`);
+          transactionsByDate[transaction.date].list.push(` $ ${transaction.amount}   ${transaction.name}`);
           transactionsByDate[transaction.date].sum += transaction.amount;
         }
 

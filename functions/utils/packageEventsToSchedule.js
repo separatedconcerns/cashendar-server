@@ -10,7 +10,7 @@ const packageEvents = (auth, calendarId, transactionsByDate) => {
     const color = spentOrEarned === 'Spent' ? '4' : '2';
 
     const event = {
-      summary: `${spentOrEarned} $${sum}`,
+      summary: `${spentOrEarned} $${Math.abs(sum)}`,
       description: `Transactions:\n${list}`,
       colorId: color,
       start: {

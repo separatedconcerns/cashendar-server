@@ -7,10 +7,12 @@ const packageEvents = (auth, calendarId, transactionsByDate) => {
     const sum = Math.round(dailySpending[date].sum);
     const list = dailySpending[date].list.join('\n');
     const spentOrEarned = sum >= 0 ? 'Spent' : 'Earned';
+    const color = spentOrEarned === 'Spent' ? '4' : '2';
 
     const event = {
       summary: `${spentOrEarned} $${sum}`,
       description: `Transactions:\n${list}`,
+      colorId: color,
       start: {
         date,
         timeZone: 'America/Los_Angeles',

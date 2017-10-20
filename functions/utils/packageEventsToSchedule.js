@@ -6,10 +6,10 @@ const packageEvents = (auth, calendarId, transactionsByDate) => {
   for (const date in dailySpending) {
     const sum = Math.round(dailySpending[date].sum);
     const list = dailySpending[date].list.join('\n');
+    const spentOrEarned = sum >= 0 ? 'Spent' : 'Earned';
 
     const event = {
-      summary: `Spent $${sum}`,
-      location: 'See description for transaction details!',
+      summary: `${spentOrEarned} $${sum}`,
       description: `Transactions:\n${list}`,
       start: {
         date,

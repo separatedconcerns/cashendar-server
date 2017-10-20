@@ -8,9 +8,10 @@ const packageEvents = (auth, calendarId, transactionsByDate) => {
     const list = dailySpending[date].list.join('\n');
     const spentOrEarned = sum >= 0 ? 'Spent' : 'Earned';
     const color = spentOrEarned === 'Spent' ? '4' : '2';
+    const emoji = spentOrEarned === 'Spent' ? `💸` : `👏`;
 
     const event = {
-      summary: `${spentOrEarned} $${Math.abs(sum)}`,
+      summary: `${emoji} ${spentOrEarned} $${Math.abs(sum)} `,
       description: `Transactions:\n${list}`,
       colorId: color,
       start: {

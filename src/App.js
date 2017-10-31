@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import qs from 'qs';
+import PlaidLink from 'react-plaid-link';
 import { auth, provider } from './firebase';
 
-const PlaidLink = require('react-plaid-link');
+// const PlaidLink = require('react-plaid-link');
 
 class App extends Component {
   constructor() {

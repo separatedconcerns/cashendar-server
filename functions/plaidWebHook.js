@@ -7,11 +7,23 @@ const plaidWebHook = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const itemId = request.body.item_id;
   const webHookCode = request.body.webhook_code;
-  const newTransactions = request.body.new_transactions;
+  const newTransactions = request.body.new_transactions || null;
   console.log('WEBHOOK HIT:', itemId, webHookCode, newTransactions);
 
   if (webHookCode === 'INITIAL_UPDATE') {
     response.end();
+  } else if (webHookCode === 'TRANSACTIONS_REMOVED') {
+    const config = {
+      url: `${process.env.HOST}removeTransactionsFromDb`,
+      payload: {
+        itemId,
+        removedTransactions: request.body.removed_transactions,
+      },
+    };
+
+    axios.post(config.url, config.payload)
+      .then(response.end())
+      .catch(e => console.log(e, 'line 26 plaidWebHook'));
   } else {
     const ref = admin.database().ref(`items/${itemId}`);
     ref.once('value')

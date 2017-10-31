@@ -3,15 +3,15 @@
   "description": "Cloud Functions for Firebase",
   "dependencies": {
     "axios": "^0.16.2",
-    "bluebird": "^3.5.0",
+    "bluebird": "^3.5.1",
     "cors": "^2.8.4",
     "envkey": "^1.0.0",
     "firebase-admin": "~5.2.1",
     "firebase-functions": "^0.6.3",
     "google-auth-library": "^0.11.0",
     "googleapis": "^21.3.0",
-    "moment": "^2.18.1",
-    "plaid": "^2.0.5"
+    "moment": "^2.19.1",
+    "plaid": "^2.1.0"
   },
   "scripts": {
     "start": "firebase serve --port 5000 --only functions",
@@ -22,9 +22,9 @@
   "private": true,
   "devDependencies": {
     "babel-eslint": "^8.0.0",
-    "eslint": "^4.7.1",
+    "eslint": "^4.10.0",
     "eslint-config-airbnb": "^15.1.0",
-    "eslint-plugin-import": "^2.7.0",
+    "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-jsx-a11y": "^5.1.1",
     "eslint-plugin-react": "^7.3.0",
     "jest": "^21.2.0"

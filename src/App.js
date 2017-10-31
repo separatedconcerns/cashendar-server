@@ -113,7 +113,7 @@ class App extends Component {
               publicKey={process.env.REACT_APP_PLAID_PUBLIC_KEY}
               product="connect"
               webhook={process.env.REACT_APP_WEBHOOK}
-              env="sandbox"
+              env={process.env.REACT_APP_PLAID_ENV}
               clientName="Wheres My Money"
               onSuccess={this.handleOnSuccess}
             />

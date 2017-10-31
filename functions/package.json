@@ -16,7 +16,8 @@
   "scripts": {
     "start": "firebase serve --port 5000 --only functions",
     "lint": "./node_modules/.bin/eslint index.js",
-    "deploy": "firebase deploy --only functions",
+    "deploy-production": "firebase deploy --only functions -P production",
+    "deploy-dev": "firebase deploy --only functions -P dev",
     "test": "jest"
   },
   "private": true,

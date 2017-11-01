@@ -4,7 +4,9 @@
 
 Wheres My Money
 
-Powered by React, Firebase, Google Cloud Functions, Plaid, Google Calendar, and Google maps
+Visualize your financial behavior in your Google Calendar.
+
+Powered by React, Firebase, Google Cloud Functions, Plaid, and Google Calendar.
 
 
 To setup:

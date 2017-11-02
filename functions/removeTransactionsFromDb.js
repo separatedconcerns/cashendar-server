@@ -7,6 +7,11 @@ const removeTransactionsFromDb = functions.https.onRequest((request, response) =
   const itemId = request.body.itemId;
   const plaidRemovedTransactions = request.body.plaidRemovedTransactions;
   const ref = admin.database().ref(`items/${itemId}/transactions`);
+  const uniqueUserId; 
+  
+  // admin.database().ref(`items/${itemId}/uniqueUserId`)
+  //   .once('value')
+  //   .then(snapshot => uniqueUserId = snapshot.val());
 
   ref.once('value')
     .then((snapshot) => {
@@ -35,7 +40,11 @@ const removeTransactionsFromDb = functions.https.onRequest((request, response) =
           .then(counter -= 1);
 
         if (counter <= 0) {
-          console.log(transactionDatesToRemove.length, 'transactions have been removed from database.')
+          console.log(transactionDatesToRemove.length, 'transactions have been removed from database.');
+          // admin.database().ref(`users/${uniqueUserId}/datesToSchedule`)
+          //   .once('value')
+          //   .set(transactionDates)
+          //   .then(response.end())
           response.end();
         }
       });

@@ -9,4 +9,5 @@ cache:
   directories:
   - functions/node_modules
 after_success:
+- pwd
 - firebase deploy --only functions -P production --token $FIREBASE_DEPLOY_TOKEN

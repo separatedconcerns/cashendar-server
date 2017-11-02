@@ -9,4 +9,4 @@ cache:
   directories:
   - functions/node_modules
 after_success:
-- npm run deploy-production
+- firebase deploy --only functions -P production --token $FIREBASE_DEPLOY_TOKEN

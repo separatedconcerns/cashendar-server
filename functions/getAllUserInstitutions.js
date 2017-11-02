@@ -16,14 +16,14 @@ const getAllUserInstitutions = functions.https.onRequest((request, response) => 
         admin.database()
           .ref(`users/${uniqueUserId}/items`)
           .once('value')
-          .then((snapshot) => {
-            total = Object.keys(snapshot.val()).length;
+          .then((chSnapShot) => {
+            total = Object.keys(chSnapShot.val()).length;
             snapshot.forEach((childSnap) => {
               admin.database()
                 .ref(`items/${childSnap.key}/institutionName`)
                 .once('value')
-                .then((snap) => {
-                  const institution = snap.val();
+                .then((chSnapshot2) => {
+                  const institution = chSnapshot2.val();
                   allInstitutions[institution] = true;
                   counter += 1;
                   if (counter === total) { response.json(allInstitutions); }

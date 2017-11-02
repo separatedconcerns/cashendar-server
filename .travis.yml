@@ -3,7 +3,7 @@ node_js:
 - lts/*
 before_script:
 - cd functions
-- npm install -g firebase tools
+- npm install -g firebase-tools
 - npm install
 cache:
   directories:

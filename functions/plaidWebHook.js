@@ -22,7 +22,11 @@ const plaidWebHook = functions.https.onRequest((request, response) => {
     };
 
     axios.post(config.url, config.payload)
-      .then(response.end())
+      .then((uniqueUserId) => {
+        axios.post(`${process.env.HOST}addCalendarEvents`, { uniqueUserId })
+          .then(response.end())
+          .catch(e => console.log('TRANSACTIONS_REMOVED ERROR!:', e));
+      })
       .catch(e => console.log(e, 'line 26 plaidWebHook'));
   } else {
     const ref = admin.database().ref(`items/${itemId}`);

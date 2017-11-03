@@ -7,7 +7,7 @@ const removeTransactionsFromDb = functions.https.onRequest((request, response) =
   const itemId = request.body.itemId;
   const plaidRemovedTransactions = request.body.plaidRemovedTransactions;
   const ref = admin.database().ref(`items/${itemId}/transactions`);
-  const uniqueUserId; 
+  let uniqueUserId;
   
   admin.database().ref(`items/${itemId}/uniqueUserId`)
     .once('value')

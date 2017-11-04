@@ -44,7 +44,7 @@ const removeTransactionsFromDb = functions.https.onRequest((request, response) =
           admin.database().ref(`users/${uniqueUserId}/datesToSchedule`)
             .once('value')
             .set(transactionDates)
-            .then(response.end());
+            .then(response.end(uniqueUserId));
         }
       });
     });

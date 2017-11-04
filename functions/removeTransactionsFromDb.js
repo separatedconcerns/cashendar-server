@@ -29,21 +29,21 @@ const removeTransactionsFromDb = functions.https.onRequest((request, response) =
         }
       });
 
-      return transactionDatesToRemove;
+      return { transactionDatesToRemove, transactionDates };
     })
-    .then((transactionDatesToRemove) => {
-      let counter = transactionDatesToRemove.length;
-      transactionDatesToRemove.forEach((dateAndId) => {
+    .then((transactionInfo) => {
+      let counter = transactionInfo.transactionDatesToRemove.length;
+      transactionInfo.transactionDatesToRemove.forEach((dateAndId) => {
         console.log(dateAndId);
         admin.database().ref(`items/${itemId}/transactions/${dateAndId[0]}/${dateAndId[1]}`)
           .remove()
           .then(counter -= 1);
 
         if (counter <= 0) {
-          console.log(transactionDatesToRemove.length, 'transactions have been removed from database.');
+          console.log(transactionInfo.transactionDatesToRemove.length, 'transactions have been removed from database.');
           admin.database().ref(`users/${uniqueUserId}/datesToSchedule`)
             .once('value')
-            .set(transactionDates)
+            .set(transactionInfo.transactionDates)
             .then(response.end(uniqueUserId));
         }
       });

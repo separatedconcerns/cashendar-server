@@ -23,7 +23,7 @@ const plaidWebHook = functions.https.onRequest((request, response) => {
 
     axios.post(config.url, config.payload)
       .then((uniqueUserId) => {
-        axios.post(`${process.env.HOST}addCalendarEvents`, { uniqueUserId })
+        axios.post(`${process.env.HOST}addCalendarEvents`, { uniqueUserId: uniqueUserId.data })
           .then(response.end())
           .catch(e => console.log('TRANSACTIONS_REMOVED ERROR!:', e));
       })

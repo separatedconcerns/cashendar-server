@@ -5,7 +5,7 @@ const axios = require('axios');
 const removeTransactionsFromDb = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const itemId = request.body.itemId;
-  const plaidRemovedTransactions = request.body.plaidRemovedTransactions;
+  const plaidRemovedTransactions = request.body.removedTransactions;
   const ref = admin.database().ref(`items/${itemId}/transactions`);
   let uniqueUserId;
   
@@ -15,7 +15,8 @@ const removeTransactionsFromDb = functions.https.onRequest((request, response) =
 
   ref.once('value')
     .then((snapshot) => {
-      const transactionDatesToRemove = [];
+      const transactionsToRemove = [];
+      const transactionsToRemoveDates = {};
       const transactions = snapshot.val();
       const transactionDates = Object.keys(transactions);
 
@@ -23,28 +24,27 @@ const removeTransactionsFromDb = functions.https.onRequest((request, response) =
         for (let i = 0; i < transactionDates.length; i += 1) {
           const date = transactionDates[i];
           if (transactions[date][transactionId]) {
-            transactionDatesToRemove.push([date, transactionId]);
+            transactionsToRemove.push([date, transactionId]);
+            transactionsToRemoveDates[date] = true;
             break;
           }
         }
       });
 
-      return { transactionDatesToRemove, transactionDates };
+      return { transactionsToRemove, transactionsToRemoveDates };
     })
     .then((transactionInfo) => {
-      let counter = transactionInfo.transactionDatesToRemove.length;
-      transactionInfo.transactionDatesToRemove.forEach((dateAndId) => {
-        console.log(dateAndId);
+      let counter = transactionInfo.transactionsToRemove.length;
+      transactionInfo.transactionsToRemove.forEach((dateAndId) => {
         admin.database().ref(`items/${itemId}/transactions/${dateAndId[0]}/${dateAndId[1]}`)
           .remove()
           .then(counter -= 1);
 
         if (counter <= 0) {
-          console.log(transactionInfo.transactionDatesToRemove.length, 'transactions have been removed from database.');
+          console.log(transactionInfo.transactionsToRemove.length, 'transactions have been removed from database.');
           admin.database().ref(`users/${uniqueUserId}/datesToSchedule`)
-            .once('value')
-            .set(transactionInfo.transactionDates)
-            .then(response.end(uniqueUserId));
+            .set(Object.keys(transactionInfo.transactionsToRemoveDates))
+            .then(response.send(uniqueUserId));
         }
       });
     });

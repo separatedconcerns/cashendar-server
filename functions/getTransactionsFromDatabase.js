@@ -25,7 +25,7 @@ const getTransactionsFromDatabase = functions.https.onRequest((request, response
           .then((snapshot) => {
             const transactions = snapshot.val();
             payload.datesToSchedule.forEach((date) => {
-              const mergeObj = Object.assign(allTransactions, transactions[date]);
+              const mergeObj = Object.assign(allTransactions, transactions[date] || {});
               allTransactions = mergeObj;
               if (itemId === lastItemId && date === lastDate) {
                 response.json(allTransactions);

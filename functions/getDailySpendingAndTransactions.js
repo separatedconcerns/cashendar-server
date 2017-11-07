@@ -15,9 +15,10 @@ const getDailySpendingAndTransactions = functions.https.onRequest((request, resp
       const transKeys = Object.keys(transactions.data);
       const transactionsByDate = {};
       let counter = 0;
+      if (transKeys.length < 1) { response.json(transactionsByDate); }
       transKeys.forEach((key) => {
         const transaction = transactions.data[key];
-        if (transaction) {
+        if (transaction.date) {
           transactionsByDate[transaction.date] = transactionsByDate[transaction.date] || { list: [], sum: 0 };
           transactionsByDate[transaction.date].list.push(` $ ${transaction.amount}   ${transaction.name}`);
           transactionsByDate[transaction.date].sum += transaction.amount;

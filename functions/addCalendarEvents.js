@@ -37,7 +37,6 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
     };
     axios.post(config.url, config.payload)
       .then((transactionsByDate) => {
-        console.log('transactionsByDate', transactionsByDate.data)
         return packageEventsToSchedule(auth, calendarId, transactionsByDate)
       })
       .then((events) => {
@@ -45,7 +44,7 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
         const insertEvent = Promise.promisify(google.calendar('v3').events.insert);
         let i = 0;
         let eventsToBeScheduled = events.length;
-        console.log(`${eventsToBeScheduled} events to be scheduled`);
+        console.log(`${eventsToBeScheduled} new events to be scheduled`);
         const scheduleEvents = setInterval(() => {
           if (i <= events.length - 1) {
             insertEvent(events[i])

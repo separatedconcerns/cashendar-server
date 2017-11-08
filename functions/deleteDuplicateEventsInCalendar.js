@@ -33,7 +33,7 @@ const deleteDuplicateEventsInCalendar = functions.https.onRequest((request, resp
             i += 1;
             console.log(i);
           } else {
-            console.log(`${eventsToBeDeleted} of ${packagedEvents.length} events have been deleted`);
+            console.log(`${eventsToBeDeleted} of ${packagedEvents.length} new events have been deleted`);
             console.log('EVENTS UP-TO-DATE AND PROGRAM LOOP COMPLETE!');
             clearInterval(deleteEvents);
           }

@@ -10,12 +10,25 @@ const deleteUserProfile = functions.https.onRequest((request, response) => {
 
   verifyIdToken(idToken).then((result) => {
     uniqueUserId = result;
-  });
-  const itemsRef = admin.database().ref(`users/${uniqueUserId}/items`);
+  })
+    .then(() => {
+      deleteBankItems(uniqueUserId);
+    })
+    .then(() => {
+      deleteCalendar(uniqueUserId);
+    })
+    .then(() => {
+      admin.auth().deleteUser(uniqueUserId)
+        .then(response.end('Profile Deleted'));
+    })
+    .catch(e => console.log(e));
+});
 
-
-  itemsRef.once('value')
-    .then((snapshot) => {
+const deleteBankItems = (uniqueUserId) => {
+  admin.database()
+    .ref(`users/${uniqueUserId}/items`)
+    .once('value')
+    .then((snapshot) => { // currently returns null
       snapshot.forEach((childSnapshot) => {
         admin.database()
           .ref(`items/${childSnapshot.val()}/`)
@@ -27,30 +40,29 @@ const deleteUserProfile = functions.https.onRequest((request, response) => {
                 access_token: snap.val().access_token,
               },
             };
-            axios.post(config.url, config.payload);
+            axios.post(config.url, config.payload).then(plaidRes => console.log('29', plaidRes.data));
           })
           .then(() => admin.database().ref(`items/${childSnapshot.val()}`).remove());
       });
-    }).then(() => {
-      const ref = admin.database().ref(`users/${uniqueUserId}/`);
-      ref.once('value')
-        .then((snapshot) => {
-          const config = {
-            url: `${process.env.HOST}deleteCalendar`,
-            payload: {
-              calendarId: snapshot.val().calendarId,
-              OAuthToken: snapshot.val().OAuthToken,
-            },
-          };
-          axios.post(config.url, config.payload)
-            .then(admin.database().ref(`users/${uniqueUserId}`).remove());
-        });
-    }).then(() => {
-      admin.auth().deleteUser(uniqueUserId)
-        .then(response.end('Profile Deleted'));
-    })
-    .catch(e => console.log(e));
-});
+    });
+};
+
+const deleteCalendar = (uniqueUserId) => {
+  const ref = admin.database().ref(`users/${uniqueUserId}/`);
+  ref.once('value')
+    .then((snapshot) => {
+      const config = {
+        url: `${process.env.HOST}deleteCalendar`,
+        payload: {
+          calendarId: snapshot.val().calendarId,
+          OAuthToken: snapshot.val().OAuthToken,
+        },
+      };
+      axios.post(config.url, config.payload)
+        .then(response => console.log('62 Gcal Deletion Response', response.data))
+        .then(admin.database().ref(`users/${uniqueUserId}`).remove());
+    });
+};
 
 
 module.exports = deleteUserProfile;

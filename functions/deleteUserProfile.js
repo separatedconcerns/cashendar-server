@@ -1,4 +1,6 @@
 const functions = require('firebase-functions');
+const user = require('./controllers/userController');
+const item = require('./controllers/itemController');
 const admin = require('./apiClients/firebaseClient.js');
 const verifyIdToken = require('./utils/verifyIdToken.js');
 const axios = require('axios');
@@ -18,17 +20,15 @@ const deleteUserProfile = functions.https.onRequest((request, response) => {
       deleteCalendar(uniqueUserId);
     })
     .then(() => {
-      admin.auth().deleteUser(uniqueUserId)
+      user.deleteUserInAuth(uniqueUserId)
         .then(response.end('Profile Deleted'));
     })
     .catch(e => console.log(e));
 });
 
 const deleteBankItems = (uniqueUserId) => {
-  admin.database()
-    .ref(`users/${uniqueUserId}/items`)
-    .once('value')
-    .then((snapshot) => { // currently returns null
+  user.getUserItems(uniqueUserId)
+    .then((snapshot) => {
       snapshot.forEach((childSnapshot) => {
         admin.database()
           .ref(`items/${childSnapshot.val()}/`)
@@ -42,25 +42,24 @@ const deleteBankItems = (uniqueUserId) => {
             };
             axios.post(config.url, config.payload).then(plaidRes => console.log('29', plaidRes.data));
           })
-          .then(() => admin.database().ref(`items/${childSnapshot.val()}`).remove());
+          .then(() => item.deleteItemFromDB(childSnapshot.val()));
       });
     });
 };
 
 const deleteCalendar = (uniqueUserId) => {
-  const ref = admin.database().ref(`users/${uniqueUserId}/`);
-  ref.once('value')
-    .then((snapshot) => {
+  user.getUserFromDB(uniqueUserId)
+    .then((userData) => {
       const config = {
         url: `${process.env.HOST}deleteCalendar`,
         payload: {
-          calendarId: snapshot.val().calendarId,
-          OAuthToken: snapshot.val().OAuthToken,
+          calendarId: userData.calendarId,
+          OAuthToken: userData.OAuthToken,
         },
       };
       axios.post(config.url, config.payload)
         .then(response => console.log('62 Gcal Deletion Response', response.data))
-        .then(admin.database().ref(`users/${uniqueUserId}`).remove());
+        .then(user.deleteUserFromDB(uniqueUserId));
     });
 };
 

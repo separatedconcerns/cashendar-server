@@ -1,5 +1,5 @@
 const functions = require('firebase-functions');
-const admin = require('./apiClients/firebaseClient.js');
+const user = require('./controllers/userController');
 const axios = require('axios');
 const google = require('googleapis');
 const Promise = require('bluebird');
@@ -14,16 +14,13 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
   let calendarId;
   let OAuthToken;
   const newEvents = {};
-  admin.database()
-    .ref(`users/${uniqueUserId}`)
-    .once('value')
-    .then((snapshot) => {
-      const vals = snapshot.val();
-      calendarId = vals.calendarId;
-      OAuthToken = vals.OAuthToken;
+  user.getUserFromDB(uniqueUserId)
+    .then((userData) => {
+      calendarId = userData.calendarId;
+      OAuthToken = userData.OAuthToken;
     })
     .then(() => {
-      // googleClient.authorize(OAuthToken, createEvents); 
+      // googleClient.authorize(OAuthToken, createEvents);
       const googleClientAuthorize = Promise.promisify(googleClient.authorize);
       googleClientAuthorize(OAuthToken, createEvents)
         .then(response.end())
@@ -36,9 +33,7 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
       payload: { uniqueUserId },
     };
     axios.post(config.url, config.payload)
-      .then((transactionsByDate) => {
-        return packageEventsToSchedule(auth, calendarId, transactionsByDate)
-      })
+      .then(transactionsByDate => packageEventsToSchedule(auth, calendarId, transactionsByDate))
       .then((events) => {
         // console.log(events[events.length - 1].resource);
         const insertEvent = Promise.promisify(google.calendar('v3').events.insert);

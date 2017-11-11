@@ -1,7 +1,6 @@
 const functions = require('firebase-functions');
 const user = require('./controllers/userController');
 const item = require('./controllers/itemController');
-const admin = require('./apiClients/firebaseClient.js');
 const verifyIdToken = require('./utils/verifyIdToken.js');
 const axios = require('axios');
 
@@ -30,17 +29,16 @@ const deleteBankItems = (uniqueUserId) => {
   user.getUserItems(uniqueUserId)
     .then((snapshot) => {
       snapshot.forEach((childSnapshot) => {
-        admin.database()
-          .ref(`items/${childSnapshot.val()}/`)
-          .once('value')
-          .then((snap) => {
+        item.getItemFromDB(childSnapshot.val())
+          .then((itemData) => {
             const config = {
               url: `${process.env.HOST}deleteItem`,
               payload: {
-                access_token: snap.val().access_token,
+                access_token: itemData.access_token,
               },
             };
-            axios.post(config.url, config.payload).then(plaidRes => console.log('29', plaidRes.data));
+            axios.post(config.url, config.payload)
+              .then(plaidRes => console.log('29', plaidRes.data));
           })
           .then(() => item.deleteItemFromDB(childSnapshot.val()));
       });

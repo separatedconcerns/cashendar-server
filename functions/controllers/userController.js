@@ -20,7 +20,7 @@ const getUserFromDB = uniqueUserId =>
       .catch(err => reject(err));
   });
 
-const getUserItems= uniqueUserId =>
+const getUserItems = uniqueUserId =>
   new Promise((resolve, reject) => {
     admin.database()
       .ref(`users/${uniqueUserId}/items`).once('value')
@@ -65,6 +65,13 @@ const deleteUserFromDB = uniqueUserId =>
       .catch(err => reject(err));
   });
 
+const getDatesToScheduleFromDB = uniqueUserId =>
+  new Promise((resolve, reject) => {
+    admin.database().ref(`users/${uniqueUserId}/datesToSchedule`).once('value')
+      .then(snapshot => resolve(snapshot.val()))
+      .catch(err => reject(err));
+  });
+
 
 module.exports = { doesUserExist,
   getUserFromDB,
@@ -74,4 +81,5 @@ module.exports = { doesUserExist,
   updateUser,
   deleteUserInAuth,
   deleteUserFromDB,
+  getDatesToScheduleFromDB,
 };

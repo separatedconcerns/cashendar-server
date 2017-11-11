@@ -9,7 +9,8 @@ const getAllUserInstitutions = functions.https.onRequest((request, response) => 
   let total;
 
   // listen whether Plaid data is being fetched
-  admin.database().ref(`users/${uniqueUserId}/fetchingBanks`)
+  admin.database()
+    .ref(`users/${uniqueUserId}/fetchingBanks`)
     .on('value', (snapshot) => {
       // if not fecthing from Plaid
       if (!snapshot.val()) {

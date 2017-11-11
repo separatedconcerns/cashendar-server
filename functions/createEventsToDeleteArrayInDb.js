@@ -1,5 +1,6 @@
 const functions = require('firebase-functions');
-const admin = require('./apiClients/firebaseClient.js');
+const user = require('./controllers/userController');
+// const admin = require('./apiClients/firebaseClient.js');
 const getEventsToDeleteArray = require('./utils/getEventsToDeleteArray.js');
 
 
@@ -10,13 +11,11 @@ const createEventsToDeleteArrayInDb = functions.https.onRequest((request, respon
   let calendarId;
   let OAuthToken;
 
-  admin.database()
-    .ref(`users/${uniqueUserId}`)
-    .once('value')
-    .then((snapshot) => {
-      calendarId = snapshot.val().calendarId;
-      OAuthToken = snapshot.val().OAuthToken;
-      const scheduledEvents = snapshot.val().scheduledEvents || [];
+  user.getUserFromDB(uniqueUserId)
+    .then((userData) => {
+      calendarId = userData.calendarId;
+      OAuthToken = userData.OAuthToken;
+      const scheduledEvents = userData.scheduledEvents || [];
       return getEventsToDeleteArray(newEventDates, scheduledEvents);
     })
     .then((eventsToDelete) => {
@@ -25,9 +24,7 @@ const createEventsToDeleteArrayInDb = functions.https.onRequest((request, respon
         calendarId,
         OAuthToken,
       };
-      admin.database()
-        .ref(`users/${uniqueUserId}/eventsToDelete`)
-        .set(eventsToDelete)
+      user.updateEventsToDelete(uniqueUserId, eventsToDelete)
         .then(response.json(responseObj))
         .catch(e => console.log('Error in createEventsToDeleteArrayInDb', e));
     });

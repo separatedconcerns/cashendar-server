@@ -1,5 +1,6 @@
 const functions = require('firebase-functions');
-const admin = require('./apiClients/firebaseClient.js');
+const user = require('./controllers/userController');
+const item = require('./controllers/itemController');
 const verifyIdToken = require('./utils/verifyIdToken.js');
 const plaidClient = require('./apiClients/plaidClient.js');
 
@@ -20,18 +21,12 @@ const exchangePublicToken = functions.https.onRequest((request, response) => {
         access_token: successResponse.access_token,
         request_id: successResponse.request_id,
       };
-      admin.database()
-        .ref(`/users/${uniqueUserId}/items/${payload.itemId}`)
-        .set(payload.itemId);
-      admin.database()
-        .ref(`/items/${payload.itemId}`)
-        .set({ access_token: payload.access_token, uniqueUserId });
+      user.addItemsToUser(uniqueUserId, payload.itemId);
+      item.addDataToItem(payload.itemId, { access_token: payload.access_token, uniqueUserId });
     })
     .then(() => {
       // set bool to indicate data is being fetched from Plaid
-      admin.database()
-        .ref(`/users/${uniqueUserId}/`)
-        .update({ fetchingBanks: true })
+      user.updateUser(uniqueUserId, { fetchingBanks: true })
         .then(response.end());
     })
     .catch(error => console.log(error));

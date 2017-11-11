@@ -2,7 +2,6 @@ const functions = require('firebase-functions');
 const user = require('./controllers/userController');
 const verifyIdToken = require('./utils/verifyIdToken.js');
 const axios = require('axios');
-const admin = require('./apiClients/firebaseClient');
 
 let idToken;
 let OAuthToken;
@@ -30,21 +29,14 @@ const addUser = functions.https.onRequest((request, response) => {
 
 function addUserToDB(response) {
   console.log('addUserToDB called');
-  admin.auth().getUser(uniqueUserId)
-    .then((userRecord) => {
-      console.log(35);
-      // todo: move userRecord.toJSON to controller also? 
-      const userProfile = userRecord.toJSON();
-      return {
-        email: userProfile.email,
-        name: userProfile.displayName,
-        OAuthToken,
-      };
-    })
+  user.getUserProfile(uniqueUserId)
+    .then(userProfile => ({
+      email: userProfile.email,
+      name: userProfile.displayName,
+      OAuthToken,
+    }))
     .then((payload) => {
-      // add user to db
-      console.log(45);
-      admin.database().ref(`users/${uniqueUserId}`).set(payload)
+      user.initializeUser(uniqueUserId, payload)
         .then(() => createGoogleCalendar(response)); // eslint-disable-line
     });
 }
@@ -54,12 +46,13 @@ function createGoogleCalendar(response) {
     url: `${process.env.HOST}createNewCalendar`,
     payload: { OAuthToken, uniqueUserId },
   };
-
   axios.post(config.url, config.payload)
-    .then(calendar => ({
-      calId: calendar.data.id,
-      calName: calendar.data.summary,
-    }))
+    .then((calendar) => {
+      return {
+        calId: calendar.data.id,
+        calName: calendar.data.summary,
+      };
+    })
     .then((configCal) => {
       const userCalendarDetails = { calendarId: configCal.calId, calendarName: configCal.calName };
       user.updateUser(uniqueUserId, userCalendarDetails);

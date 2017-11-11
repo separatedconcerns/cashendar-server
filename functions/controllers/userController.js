@@ -1,8 +1,5 @@
 const admin = require('../apiClients/firebaseClient');
 
-// const userRef = admin.database()
-//   .ref(`users/${uniqueUserId}`);
-
 const userRef = uniqueUserId => admin.database()
   .ref(`users/${uniqueUserId}`);
 
@@ -15,7 +12,8 @@ const doesUserExist = uniqueUserId =>
 
 const getUserFromDB = uniqueUserId =>
   new Promise((resolve, reject) => {
-    userRef(uniqueUserId).once('value')
+    userRef(uniqueUserId)
+      .once('value')
       .then(snapshot => resolve(snapshot.val()))
       .catch(err => reject(err));
   });
@@ -23,7 +21,8 @@ const getUserFromDB = uniqueUserId =>
 const getUserItems = uniqueUserId =>
   new Promise((resolve, reject) => {
     admin.database()
-      .ref(`users/${uniqueUserId}/items`).once('value')
+      .ref(`users/${uniqueUserId}/items`)
+      .once('value')
       .then(snapshot => resolve(snapshot))
       .catch(err => reject(err));
   });
@@ -38,14 +37,16 @@ const getUserProfile = uniqueUserId =>
 
 const initializeUser = (uniqueUserId, payload) =>
   new Promise((resolve, reject) => {
-    userRef(uniqueUserId).set(payload)
+    userRef(uniqueUserId)
+      .set(payload)
       .then(resolve())
       .catch(err => reject(err));
   });
 
 const updateUser = (uniqueUserId, newData) =>
   new Promise((resolve, reject) => {
-    userRef(uniqueUserId).update(newData)
+    userRef(uniqueUserId)
+      .update(newData)
       .then(resolve())
       .catch(err => reject(err));
   });
@@ -60,15 +61,55 @@ const deleteUserInAuth = uniqueUserId =>
 
 const deleteUserFromDB = uniqueUserId =>
   new Promise((resolve, reject) => {
-    userRef(uniqueUserId).remove()
+    userRef(uniqueUserId)
+      .remove()
       .then(resolve())
       .catch(err => reject(err));
   });
 
 const getDatesToScheduleFromDB = uniqueUserId =>
   new Promise((resolve, reject) => {
-    admin.database().ref(`users/${uniqueUserId}/datesToSchedule`).once('value')
+    admin.database()
+      .ref(`users/${uniqueUserId}/datesToSchedule`)
+      .once('value')
       .then(snapshot => resolve(snapshot.val()))
+      .catch(err => reject(err));
+  });
+
+
+const updateScheduledEvents = (uniqueUserId, newEvents) =>
+  new Promise((resolve, reject) => {
+    admin.database()
+      .ref(`users/${uniqueUserId}/scheduledEvents`)
+      .update(newEvents)
+      .then(resolve())
+      .catch(err => reject(err));
+  });
+
+const updateEventsToDelete = (uniqueUserId, eventsToDelete) =>
+  new Promise((resolve, reject) => {
+    admin.database()
+      .ref(`users/${uniqueUserId}/eventsToDelete`)
+      .set(eventsToDelete)
+      .then(resolve())
+      .catch(err => reject(err));
+  });
+
+const addItemsToUser = (uniqueUserId, itemId) =>
+  new Promise((resolve, reject) => {
+    admin.database()
+      .ref(`users/${uniqueUserId}/items/${itemId}`)
+      .set(itemId)
+      .then(resolve())
+      .catch(err => reject(err));
+  });
+
+const updateDatesToSchedule = (uniqueUserId, transactionsToRemove) =>
+  new Promise((resolve, reject) => {
+    admin.database()
+      .ref(`users/${uniqueUserId}/datesToSchedule`)
+      .set(transactionsToRemove)
+      .then(resolve())
       .catch(err => reject(err));
   });
 
@@ -82,4 +123,8 @@ module.exports = { doesUserExist,
   deleteUserInAuth,
   deleteUserFromDB,
   getDatesToScheduleFromDB,
+  updateScheduledEvents,
+  updateEventsToDelete,
+  addItemsToUser,
+  updateDatesToSchedule,
 };

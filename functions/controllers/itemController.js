@@ -1,10 +1,6 @@
 const admin = require('../apiClients/firebaseClient');
 
-// const itemRef = (itemId) => {
-//   admin.database().ref(`items/${itemId}`);
-// };
-
-const deleteItemFromDB = itemId =>
+exports.deleteItemFromDB = itemId =>
   new Promise((resolve, reject) => {
     admin.database()
       .ref(`items/${itemId}`)
@@ -13,7 +9,7 @@ const deleteItemFromDB = itemId =>
       .catch(err => reject(err));
   });
 
-const getItemFromDB = itemId =>
+exports.getItemFromDB = itemId =>
   new Promise((resolve, reject) => {
     admin.database()
       .ref(`items/${itemId}`)
@@ -22,7 +18,7 @@ const getItemFromDB = itemId =>
       .catch(err => reject(err));
   });
 
-const getItemTransactionsFromDB = itemId =>
+exports.getItemTransactionsFromDB = itemId =>
   new Promise((resolve, reject) => {
     admin.database()
       .ref(`items/${itemId}/transactions`)
@@ -31,7 +27,7 @@ const getItemTransactionsFromDB = itemId =>
       .catch(err => reject(err));
   });
 
-const addTransactionsByDate = (itemId, date, transactions) =>
+exports.addTransactionsByDate = (itemId, date, transactions) =>
   new Promise((resolve, reject) => {
     admin.database()
       .ref(`/items/${itemId}/transactions/${date}`)
@@ -40,7 +36,7 @@ const addTransactionsByDate = (itemId, date, transactions) =>
       .catch(err => reject(err));
   });
 
-const getUserIdByItemFromDB = itemId =>
+exports.getUserIdByItemFromDB = itemId =>
   new Promise((resolve, reject) => {
     admin.database()
       .ref(`items/${itemId}/uniqueUserId`)
@@ -49,7 +45,7 @@ const getUserIdByItemFromDB = itemId =>
       .catch(err => reject(err));
   });
 
-const addDataToItem = (itemId, dataToAdd) =>
+exports.addDataToItem = (itemId, dataToAdd) =>
   new Promise((resolve, reject) => {
     admin.database()
       .ref(`items/${itemId}`)
@@ -58,7 +54,7 @@ const addDataToItem = (itemId, dataToAdd) =>
       .catch(err => reject(err));
   });
 
-const removeTransactions = (itemId, dateAndId1, dateAndId2) =>
+exports.removeTransactions = (itemId, dateAndId1, dateAndId2) =>
   new Promise((resolve, reject) => {
     admin.database()
       .ref(`items/${itemId}/transactions/${dateAndId1}/${dateAndId2}`)
@@ -66,14 +62,3 @@ const removeTransactions = (itemId, dateAndId1, dateAndId2) =>
       .then(resolve())
       .catch(err => reject(err));
   });
-
-
-module.exports = {
-  deleteItemFromDB,
-  getItemFromDB,
-  getItemTransactionsFromDB,
-  addTransactionsByDate,
-  getUserIdByItemFromDB,
-  addDataToItem,
-  removeTransactions,
-};

@@ -16,7 +16,7 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
 
   plaidClient.getTransactions(accessToken, daysAgo, today, { count: newTransactions })
     .then((successResponse) => {
-      let uniqueUserId;
+      // let uniqueUserId;
       const itemId = successResponse.item.item_id;
       // const institutionId = successResponse.item.institution_id;
       const transactions = successResponse.transactions;
@@ -40,15 +40,11 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
           return payload;
         })
         .then((payload) => {
-          // console.log('44', item.getUserIdByItemFromDB(itemId));
-          // If above returns uniqueUserId, streamline this then block.
-
           item.getUserIdByItemFromDB(itemId)
-            .then((userID) => {
-              uniqueUserId = userID;
-            })
-            .then(() => {
-              user.updateUser(uniqueUserId, { fetchingBanks: false, datesToSchedule: payload.dates })
+            .then((uniqueUserId) => {
+              const pollStatusAndDatesToSchedule =
+              { fetchingBanks: false, datesToSchedule: payload.dates };
+              user.updateUser(uniqueUserId, pollStatusAndDatesToSchedule)
                 .then(response.json(payload.dates));
             });
         });

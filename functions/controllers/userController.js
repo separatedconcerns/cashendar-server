@@ -3,14 +3,14 @@ const admin = require('../apiClients/firebaseClient');
 const userRef = uniqueUserId => admin.database()
   .ref(`users/${uniqueUserId}`);
 
-const doesUserExist = uniqueUserId =>
+exports.doesUserExist = uniqueUserId =>
   new Promise((resolve, reject) => {
     userRef(uniqueUserId).once('value')
       .then(snapshot => resolve(snapshot.exists()))
       .catch(err => reject(err));
   });
 
-const getUserFromDB = uniqueUserId =>
+exports.getUserFromDB = uniqueUserId =>
   new Promise((resolve, reject) => {
     userRef(uniqueUserId)
       .once('value')
@@ -18,7 +18,7 @@ const getUserFromDB = uniqueUserId =>
       .catch(err => reject(err));
   });
 
-const getUserItems = uniqueUserId =>
+exports.getUserItems = uniqueUserId =>
   new Promise((resolve, reject) => {
     admin.database()
       .ref(`users/${uniqueUserId}/items`)
@@ -27,7 +27,7 @@ const getUserItems = uniqueUserId =>
       .catch(err => reject(err));
   });
 
-const getUserProfile = uniqueUserId =>
+exports.getUserProfile = uniqueUserId =>
   new Promise((resolve, reject) => {
     admin.auth()
       .getUser(uniqueUserId)
@@ -35,7 +35,7 @@ const getUserProfile = uniqueUserId =>
       .catch(err => reject(err));
   });
 
-const initializeUser = (uniqueUserId, payload) =>
+exports.initializeUser = (uniqueUserId, payload) =>
   new Promise((resolve, reject) => {
     userRef(uniqueUserId)
       .set(payload)
@@ -43,7 +43,7 @@ const initializeUser = (uniqueUserId, payload) =>
       .catch(err => reject(err));
   });
 
-const updateUser = (uniqueUserId, newData) =>
+exports.updateUser = (uniqueUserId, newData) =>
   new Promise((resolve, reject) => {
     userRef(uniqueUserId)
       .update(newData)
@@ -51,7 +51,7 @@ const updateUser = (uniqueUserId, newData) =>
       .catch(err => reject(err));
   });
 
-const deleteUserInAuth = uniqueUserId =>
+exports.deleteUserInAuth = uniqueUserId =>
   new Promise((resolve, reject) => {
     admin.auth()
       .deleteUser(uniqueUserId)
@@ -59,7 +59,7 @@ const deleteUserInAuth = uniqueUserId =>
       .catch(err => reject(err));
   });
 
-const deleteUserFromDB = uniqueUserId =>
+exports.deleteUserFromDB = uniqueUserId =>
   new Promise((resolve, reject) => {
     userRef(uniqueUserId)
       .remove()
@@ -67,7 +67,7 @@ const deleteUserFromDB = uniqueUserId =>
       .catch(err => reject(err));
   });
 
-const getDatesToScheduleFromDB = uniqueUserId =>
+exports.getDatesToScheduleFromDB = uniqueUserId =>
   new Promise((resolve, reject) => {
     admin.database()
       .ref(`users/${uniqueUserId}/datesToSchedule`)
@@ -77,7 +77,7 @@ const getDatesToScheduleFromDB = uniqueUserId =>
   });
 
 
-const updateScheduledEvents = (uniqueUserId, newEvents) =>
+exports.updateScheduledEvents = (uniqueUserId, newEvents) =>
   new Promise((resolve, reject) => {
     admin.database()
       .ref(`users/${uniqueUserId}/scheduledEvents`)
@@ -86,7 +86,7 @@ const updateScheduledEvents = (uniqueUserId, newEvents) =>
       .catch(err => reject(err));
   });
 
-const updateEventsToDelete = (uniqueUserId, eventsToDelete) =>
+exports.updateEventsToDelete = (uniqueUserId, eventsToDelete) =>
   new Promise((resolve, reject) => {
     admin.database()
       .ref(`users/${uniqueUserId}/eventsToDelete`)
@@ -95,7 +95,7 @@ const updateEventsToDelete = (uniqueUserId, eventsToDelete) =>
       .catch(err => reject(err));
   });
 
-const addItemsToUser = (uniqueUserId, itemId) =>
+exports.addItemsToUser = (uniqueUserId, itemId) =>
   new Promise((resolve, reject) => {
     admin.database()
       .ref(`users/${uniqueUserId}/items/${itemId}`)
@@ -104,7 +104,7 @@ const addItemsToUser = (uniqueUserId, itemId) =>
       .catch(err => reject(err));
   });
 
-const updateDatesToSchedule = (uniqueUserId, transactionsToRemove) =>
+exports.updateDatesToSchedule = (uniqueUserId, transactionsToRemove) =>
   new Promise((resolve, reject) => {
     admin.database()
       .ref(`users/${uniqueUserId}/datesToSchedule`)
@@ -114,17 +114,17 @@ const updateDatesToSchedule = (uniqueUserId, transactionsToRemove) =>
   });
 
 
-module.exports = { doesUserExist,
-  getUserFromDB,
-  getUserItems,
-  getUserProfile,
-  initializeUser,
-  updateUser,
-  deleteUserInAuth,
-  deleteUserFromDB,
-  getDatesToScheduleFromDB,
-  updateScheduledEvents,
-  updateEventsToDelete,
-  addItemsToUser,
-  updateDatesToSchedule,
-};
+// module.exports = { doesUserExist,
+//   getUserFromDB,
+//   getUserItems,
+//   getUserProfile,
+//   initializeUser,
+//   updateUser,
+//   deleteUserInAuth,
+//   deleteUserFromDB,
+//   getDatesToScheduleFromDB,
+//   updateScheduledEvents,
+//   updateEventsToDelete,
+//   addItemsToUser,
+//   updateDatesToSchedule,
+// };

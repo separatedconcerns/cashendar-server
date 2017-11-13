@@ -5,8 +5,9 @@ const userRef = uniqueUserId => admin.database()
 
 exports.doesUserExist = uniqueUserId =>
   new Promise((resolve, reject) => {
+    console.log('does user exist called');
     userRef(uniqueUserId).once('value')
-      .then(snapshot => resolve(snapshot.exists()))
+      .then(snapshot => resolve(snapshot))
       .catch(err => reject(err));
   });
 
@@ -95,11 +96,11 @@ exports.updateEventsToDelete = (uniqueUserId, eventsToDelete) =>
       .catch(err => reject(err));
   });
 
-exports.addItemsToUser = (uniqueUserId, itemId) =>
+exports.addItemsToUser = (uniqueUserId, itemId, institutionName) =>
   new Promise((resolve, reject) => {
     admin.database()
       .ref(`users/${uniqueUserId}/items/${itemId}`)
-      .set(itemId)
+      .set(institutionName)
       .then(resolve())
       .catch(err => reject(err));
   });

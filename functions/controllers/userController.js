@@ -24,7 +24,7 @@ exports.getUserItems = uniqueUserId =>
     admin.database()
       .ref(`users/${uniqueUserId}/items`)
       .once('value')
-      .then(snapshot => resolve(snapshot))
+      .then(snapshot => resolve(snapshot.val()))
       .catch(err => reject(err));
   });
 

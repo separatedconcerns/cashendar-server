@@ -11,7 +11,6 @@ exports.getTransactionsFromDatabase = require('./getTransactionsFromDatabase');
 exports.deleteUserProfile = require('./deleteUserProfile.js');
 exports.deleteItem = require('./deleteItem.js');
 exports.deleteCalendar = require('./deleteCalendar.js');
-exports.getAllUserInstitutions = require('./getAllUserInstitutions');
 exports.createEventsToDeleteArrayInDb = require('./createEventsToDeleteArrayInDb.js');
 exports.deleteDuplicateEventsInCalendar = require('./deleteDuplicateEventsInCalendar.js');
 exports.removeTransactionsFromDb = require('./removeTransactionsFromDb.js');

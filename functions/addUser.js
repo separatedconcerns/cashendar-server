@@ -16,10 +16,11 @@ const addUser = functions.https.onRequest((request, response) => {
     .then((result) => {
       uniqueUserId = result;
       user.doesUserExist(uniqueUserId)
-        .then((userExists) => {
-          if (userExists) {
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            console.log(21);
             // end response if user already exists
-            response.send({ uniqueUserId });
+            response.send({ items: snapshot.val().items });
           } else {
             addUserToDB(response); // eslint-disable-line
           }

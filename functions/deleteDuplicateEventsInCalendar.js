@@ -1,6 +1,4 @@
 const functions = require('firebase-functions');
-const admin = require('./apiClients/firebaseClient.js');
-const axios = require('axios');
 const google = require('googleapis');
 const Promise = require('bluebird');
 const googleClient = require('./apiClients/googleClient.js');

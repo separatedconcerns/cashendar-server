@@ -5,7 +5,6 @@ const google = require('googleapis');
 const Promise = require('bluebird');
 const googleClient = require('./apiClients/googleClient.js');
 const packageEventsToSchedule = require('./utils/packageEventsToSchedule.js');
-
 const deleteDuplicateEventsFlow = require('./utils/deleteDuplicateEventsFlow.js');
 
 const addCalendarEvents = functions.https.onRequest((request, response) => {

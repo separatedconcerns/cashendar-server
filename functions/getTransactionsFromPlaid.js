@@ -14,10 +14,6 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
   const today = now.format('YYYY-MM-DD');
   const daysAgo = now.subtract(1000, 'days').format('YYYY-MM-DD');
 
-  plaidClient.getTransactions(accessToken, daysAgo, today, { count: newTransactions })
-    .then((successResponse) => {
-      // let uniqueUserId;
-      const itemId = successResponse.item.item_id;
   const plaidGetTransactions = new Promise((resolve, reject) => {
     const transactionsObj = {
       transactions: [],

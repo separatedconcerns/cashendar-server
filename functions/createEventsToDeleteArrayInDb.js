@@ -1,8 +1,6 @@
 const functions = require('firebase-functions');
 const user = require('./controllers/userController');
-// const admin = require('./apiClients/firebaseClient.js');
 const getEventsToDeleteArray = require('./utils/getEventsToDeleteArray.js');
-
 
 const createEventsToDeleteArrayInDb = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');

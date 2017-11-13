@@ -1,8 +1,6 @@
 const functions = require('firebase-functions');
 const item = require('./controllers/itemController');
 const user = require('./controllers/userController');
-const admin = require('./apiClients/firebaseClient.js');
-// const axios = require('axios');
 
 const removeTransactionsFromDb = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
@@ -11,7 +9,7 @@ const removeTransactionsFromDb = functions.https.onRequest((request, response) =
   let uniqueUserId;
 
   item.getUserIdByItemFromDB(itemId)
-    .then(userId => uniqueUserId = userId);
+    .then((userId) => { uniqueUserId = userId; });
 
   item.getItemTransactionsFromDB(itemId)
     .then((transactions) => {

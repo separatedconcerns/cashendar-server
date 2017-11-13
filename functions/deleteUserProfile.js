@@ -27,9 +27,10 @@ const deleteUserProfile = functions.https.onRequest((request, response) => {
 
 const deleteBankItems = (uniqueUserId) => {
   user.getUserItems(uniqueUserId)
-    .then((snapshot) => {
-      snapshot.forEach((childSnapshot) => {
-        item.getItemFromDB(childSnapshot.val())
+    .then((itemsObj) => {
+      const allItems = Object.keys(itemsObj);
+      allItems.forEach((currentItem) => {
+        item.getItemFromDB(currentItem)
           .then((itemData) => {
             const config = {
               url: `${process.env.HOST}deleteItem`,
@@ -38,9 +39,9 @@ const deleteBankItems = (uniqueUserId) => {
               },
             };
             axios.post(config.url, config.payload)
-              .then(plaidRes => console.log('29', plaidRes.data));
-          })
-          .then(() => item.deleteItemFromDB(childSnapshot.val()));
+              .then(plaidRes => console.log('29', plaidRes.data))
+              .then(item.deleteItemFromDB(currentItem));
+          });
       });
     });
 };

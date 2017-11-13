@@ -8,6 +8,7 @@ const exchangePublicToken = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const publicToken = request.body.publicToken;
   const idToken = request.body.idToken;
+  const institutionName = request.body.institution;
   let uniqueUserId;
 
   verifyIdToken(idToken).then((result) => {
@@ -21,7 +22,7 @@ const exchangePublicToken = functions.https.onRequest((request, response) => {
         access_token: successResponse.access_token,
         request_id: successResponse.request_id,
       };
-      user.addItemsToUser(uniqueUserId, payload.itemId);
+      user.addItemsToUser(uniqueUserId, payload.itemId, institutionName);
       item.addDataToItem(payload.itemId, { access_token: payload.access_token, uniqueUserId });
     })
     .then(() => {

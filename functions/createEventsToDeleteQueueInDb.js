@@ -1,8 +1,8 @@
 const functions = require('firebase-functions');
 const user = require('./controllers/userController');
-const getEventsToDeleteArray = require('./utils/getEventsToDeleteArray.js');
+const getEventsToDeleteQueue = require('./utils/getEventsToDeleteQueue.js');
 
-const createEventsToDeleteArrayInDb = functions.https.onRequest((request, response) => {
+const createEventsToDeleteQueueInDb = functions.https.onRequest((request, response) => {
   response.header('Access-Control-Allow-Origin', '*');
   const newEventDates = request.body.newEventDates;
   const uniqueUserId = request.body.uniqueUserId;
@@ -14,19 +14,19 @@ const createEventsToDeleteArrayInDb = functions.https.onRequest((request, respon
       calendarId = userData.calendarId;
       OAuthToken = userData.OAuthToken;
       const scheduledEvents = userData.scheduledEvents || [];
-      return getEventsToDeleteArray(newEventDates, scheduledEvents);
+      return getEventsToDeleteQueue(newEventDates, scheduledEvents);
     })
-    .then((eventsToDelete) => {
+    .then((eventsToDeleteQueue) => {
       const responseObj = {
-        eventsToDelete,
+        eventsToDeleteQueue,
         calendarId,
         OAuthToken,
       };
-      user.updateEventsToDelete(uniqueUserId, eventsToDelete)
+      user.updateEventsToDeleteQueue(uniqueUserId, eventsToDeleteQueue)
         .then(response.json(responseObj))
-        .catch(e => console.log('Error in createEventsToDeleteArrayInDb', e));
+        .catch(e => console.log('Error in createEventsToDeleteQueueInDb', e));
     });
 });
 
-module.exports = createEventsToDeleteArrayInDb;
+module.exports = createEventsToDeleteQueueInDb;
 

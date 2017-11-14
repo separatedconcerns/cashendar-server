@@ -11,7 +11,7 @@ const deleteDuplicateEventsFlow = (uniqueUserId, newEvents) => {
 
   setTimeout(() => {
     const config = {
-      url: `${process.env.HOST}createEventsToDeleteArrayInDb`,
+      url: `${process.env.HOST}createEventsToDeleteQueueInDb`,
       payload: {
         newEventDates: Object.keys(newEvents),
         uniqueUserId,
@@ -19,9 +19,9 @@ const deleteDuplicateEventsFlow = (uniqueUserId, newEvents) => {
     };
     axios.post(config.url, config.payload)
       .catch(e => console.log('Events to delete array not created!:', e))
-      .then(calId_eventsToDelete_OAuthToken => ({
+      .then(calId_eventsToDeleteQueue_OAuthToken => ({
         url: `${process.env.HOST}deleteDuplicateEventsInCalendar`,
-        payload: calId_eventsToDelete_OAuthToken.data,
+        payload: calId_eventsToDeleteQueue_OAuthToken.data,
       }))
       .then((config2) => {
         axios.post(config2.url, config2.payload)
@@ -29,7 +29,7 @@ const deleteDuplicateEventsFlow = (uniqueUserId, newEvents) => {
             user.updateScheduledEvents(uniqueUserId, newEvents);
           });
       });
-  }, 100);
+  }, 300);
 };
 
 module.exports = deleteDuplicateEventsFlow;

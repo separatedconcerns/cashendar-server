@@ -87,11 +87,11 @@ exports.updateScheduledEvents = (uniqueUserId, newEvents) =>
       .catch(err => reject(err));
   });
 
-exports.updateEventsToDelete = (uniqueUserId, eventsToDelete) =>
+exports.updateEventsToDeleteQueue = (uniqueUserId, eventsToDeleteQueue) =>
   new Promise((resolve, reject) => {
     admin.database()
-      .ref(`users/${uniqueUserId}/eventsToDelete`)
-      .set(eventsToDelete)
+      .ref(`users/${uniqueUserId}/eventsToDeleteQueue`)
+      .set(eventsToDeleteQueue)
       .then(resolve())
       .catch(err => reject(err));
   });
@@ -125,7 +125,7 @@ exports.updateDatesToScheduleQueue = (uniqueUserId, transactionsToRemove) =>
 //   deleteUserFromDB,
 //   getDatesToScheduleFromDB,
 //   updateScheduledEvents,
-//   updateEventsToDelete,
+//   updateEventsToDeleteQueue,
 //   addItemsToUser,
 //   updateDatesToScheduleQueue,
 // };

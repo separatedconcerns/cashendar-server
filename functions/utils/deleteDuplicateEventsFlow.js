@@ -1,5 +1,6 @@
 const axios = require('axios');
 const user = require('../controllers/userController.js');
+const Promise = require('bluebird');
 
 const deleteDuplicateEventsFlow = (uniqueUserId, newEvents) => {
   user.getDatesToScheduleQueueFromDB(uniqueUserId)
@@ -26,10 +27,9 @@ const deleteDuplicateEventsFlow = (uniqueUserId, newEvents) => {
       .then((config2) => {
         axios.post(config2.url, config2.payload)
           .then(() => {
-            user.updateScheduledEvents(uniqueUserId, newEvents)
-              .then(() => {
-                user.clearDatesToScheduleAndEventsToDeleteQueues(uniqueUserId);
-              });
+            Promise.all([user.updateScheduledEvents(uniqueUserId, newEvents),
+              user.clearDatesToScheduleAndEventsToDeleteQueues(uniqueUserId)])
+              .catch(e => console.log('Promise.all error!:', e));
           });
       });
   }, 300);

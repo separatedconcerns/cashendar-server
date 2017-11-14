@@ -114,6 +114,14 @@ exports.updateDatesToScheduleQueue = (uniqueUserId, transactionsToRemove) =>
       .catch(err => reject(err));
   });
 
+exports.clearDatesToScheduleAndEventsToDeleteQueues = uniqueUserId =>
+  new Promise((resolve, reject) => {
+    admin.database()
+      .ref(`users/${uniqueUserId}`)
+      .update({ datesToScheduleQueue: null, eventsToDeleteQueue: null })
+      .then(resolve())
+      .catch(err => reject(err));
+  });
 
 // module.exports = { doesUserExist,
 //   getUserFromDB,

@@ -26,7 +26,10 @@ const deleteDuplicateEventsFlow = (uniqueUserId, newEvents) => {
       .then((config2) => {
         axios.post(config2.url, config2.payload)
           .then(() => {
-            user.updateScheduledEvents(uniqueUserId, newEvents);
+            user.updateScheduledEvents(uniqueUserId, newEvents)
+              .then(() => {
+                user.clearDatesToScheduleAndEventsToDeleteQueues(uniqueUserId);
+              });
           });
       });
   }, 300);

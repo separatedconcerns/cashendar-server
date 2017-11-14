@@ -1,9 +1,9 @@
 
 
-const packageEventsToDelete = (auth, calendarId, eventsToDelete) => {
+const packageEventsToDelete = (auth, calendarId, eventsToDeleteQueue) => {
   const packagedEventsToDelete = [];
 
-  eventsToDelete.forEach((eventId) => {
+  eventsToDeleteQueue.forEach((eventId) => {
     const event = {
       auth,
       calendarId,

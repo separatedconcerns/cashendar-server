@@ -9,13 +9,13 @@ const deleteDuplicateEventsInCalendar = functions.https.onRequest((request, resp
   const googleClientAuthorize = Promise.promisify(googleClient.authorize);
   const calendarId = request.body.calendarId;
   const OAuthToken = request.body.OAuthToken;
-  const eventsToDelete = request.body.eventsToDelete;
+  const eventsToDeleteQueue = request.body.eventsToDeleteQueue;
 
   const deleteDuplicateEvents = (auth) => {
     const deleteEvent = Promise.promisify(google.calendar('v3').events.delete);
     const packageEventsToDeleteProm = Promise.method(packageEventsToDelete);
 
-    packageEventsToDeleteProm(auth, calendarId, eventsToDelete)
+    packageEventsToDeleteProm(auth, calendarId, eventsToDeleteQueue)
       .then((packagedEvents) => {
         let i = 0;
         let eventsToBeDeleted = packagedEvents.length;

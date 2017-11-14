@@ -38,7 +38,7 @@ const removeTransactionsFromDb = functions.https.onRequest((request, response) =
 
         if (counter <= 0) {
           console.log(transactionInfo.transactionsToRemove.length, 'transactions have been removed from database.');
-          user.updateDatesToSchedule(uniqueUserId, Object.keys(transactionInfo.transactionsToRemoveDates))
+          user.updateDatesToScheduleQueue(uniqueUserId, Object.keys(transactionInfo.transactionsToRemoveDates))
             .then(response.send(uniqueUserId));
         }
       });

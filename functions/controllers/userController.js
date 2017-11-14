@@ -68,10 +68,10 @@ exports.deleteUserFromDB = uniqueUserId =>
       .catch(err => reject(err));
   });
 
-exports.getDatesToScheduleFromDB = uniqueUserId =>
+exports.getDatesToScheduleQueueFromDB = uniqueUserId =>
   new Promise((resolve, reject) => {
     admin.database()
-      .ref(`users/${uniqueUserId}/datesToSchedule`)
+      .ref(`users/${uniqueUserId}/datesToScheduleQueue`)
       .once('value')
       .then(snapshot => resolve(snapshot.val()))
       .catch(err => reject(err));
@@ -105,10 +105,10 @@ exports.addItemsToUser = (uniqueUserId, itemId, institutionName) =>
       .catch(err => reject(err));
   });
 
-exports.updateDatesToSchedule = (uniqueUserId, transactionsToRemove) =>
+exports.updateDatesToScheduleQueue = (uniqueUserId, transactionsToRemove) =>
   new Promise((resolve, reject) => {
     admin.database()
-      .ref(`users/${uniqueUserId}/datesToSchedule`)
+      .ref(`users/${uniqueUserId}/datesToScheduleQueue`)
       .set(transactionsToRemove)
       .then(resolve())
       .catch(err => reject(err));
@@ -127,5 +127,5 @@ exports.updateDatesToSchedule = (uniqueUserId, transactionsToRemove) =>
 //   updateScheduledEvents,
 //   updateEventsToDelete,
 //   addItemsToUser,
-//   updateDatesToSchedule,
+//   updateDatesToScheduleQueue,
 // };

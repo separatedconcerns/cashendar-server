@@ -26,7 +26,7 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
         .then((plaidResponse) => {
           transactionsObj.transactions = transactionsObj.transactions.concat(plaidResponse.transactions);
           transactionsObj.itemId = transactionsObj.itemId || plaidResponse.item.item_id;
-          console.log(`line 30: ${transactionsObj.transactions.length} vs ${numOfNewTransactions}`);
+          console.log(`line 30: ${transactionsObj.transactions.length} of ${numOfNewTransactions} batched from Plaid`);
         })
         .catch((e) => {
           console.log('pingPlaid ERROR!: ', e);

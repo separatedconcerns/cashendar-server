@@ -9,10 +9,9 @@ const packageTransactionsByDate = Promise.method(require('./utils/packageTransac
 const getTransactionsFromPlaid = functions.https.onRequest((request, response) => {
   const accessToken = request.body.access_token;
   const numOfNewTransactions = request.body.newTransactions;
-  // const uniqueUserId = request.body.uniqueUserId;
   const now = moment();
   const today = now.format('YYYY-MM-DD');
-  const daysAgo = now.subtract(1000, 'days').format('YYYY-MM-DD');
+  const daysAgo = now.subtract(3650, 'days').format('YYYY-MM-DD');
 
   const plaidGetTransactions = new Promise((resolve, reject) => {
     const transactionsObj = {
@@ -27,7 +26,7 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
         .then((plaidResponse) => {
           transactionsObj.transactions = transactionsObj.transactions.concat(plaidResponse.transactions);
           transactionsObj.itemId = transactionsObj.itemId || plaidResponse.item.item_id;
-          console.log(transactionsObj.transactions.length, '   ', numOfNewTransactions);
+          console.log(`line 30: ${transactionsObj.transactions.length} vs ${numOfNewTransactions}`);
         })
         .catch((e) => {
           console.log('pingPlaid ERROR!: ', e);
@@ -37,51 +36,44 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
       count = 500;
       numLoops -= 1;
       if (numLoops < 1) {
-        console.log(transactionsObj.transactions.length >= numOfNewTransactions);
         setTimeout(() => {
           resolve(transactionsObj);
-        }, 2000);
+        }, 4000);
         clearInterval(pingPlaid);
       }
     }, 100);
   });
 
-  plaidGetTransactions
-    .then((transactionsObj) => {
-      console.log('transactionsObj', transactionsObj.transactions.slice(0, 3));
-      let uniqueUserId;
-      const itemId = transactionsObj.itemId;
-      // const institutionId = successResponse.item.institution_id;
-      const transactions = transactionsObj.transactions;
-      // const accounts = successResponse.accounts;
-      // const requestId = successResponse.request_id;
-      console.log('getTransactionsFromPlaid total transactions:', transactions.length);
+  plaidGetTransactions.then((transactionsObj) => {
+    const itemId = transactionsObj.itemId;
+    const transactions = transactionsObj.transactions;
+    console.log(`line 51: getTransactionsFromPlaid total transactions: ${transactions.length}`);
 
-      packageTransactionsByDate(transactions)
-        .then((transactionsByDate) => {
-          const payload = {
-            dates: Object.keys(transactionsByDate),
-            transactions: transactionsByDate,
-          };
-          return payload;
-        })
-        .then((payload) => {
-          payload.dates.forEach((date) => {
-            item.addTransactionsByDate(itemId, date, payload.transactions[date])
-              .catch(e => console.log(e, 'NOT UPDATED IN DB!'));
-          });
-          return payload;
-        })
-        .then((payload) => {
-          item.getUserIdByItemFromDB(itemId)
-            .then((uniqueUserId) => {
-              const pollStatusAndDatesToSchedule =
-              { fetchingBanks: false, datesToSchedule: payload.dates };
-              user.updateUser(uniqueUserId, pollStatusAndDatesToSchedule)
-                .then(response.json(payload.dates));
-            });
+    packageTransactionsByDate(transactions)
+      .then((transactionsByDate) => {
+        const payload = {
+          dates: Object.keys(transactionsByDate),
+          transactions: transactionsByDate,
+        };
+        return payload;
+      })
+      .then((payload) => {
+        payload.dates.forEach((date) => {
+          item.addTransactionsByDate(itemId, date, payload.transactions[date])
+            .catch(e => console.log(e, 'NOT UPDATED IN DB!'));
         });
-    })
+        return payload;
+      })
+      .then((payload) => {
+        item.getUserIdByItemFromDB(itemId)
+          .then((uniqueUserId) => {
+            const pollStatusAndDatesToSchedule =
+              { fetchingBanks: false, datesToSchedule: payload.dates };
+            user.updateUser(uniqueUserId, pollStatusAndDatesToSchedule)
+              .then(response.json(payload.dates));
+          });
+      });
+  })
     .catch(error => console.log('getTransactionsFromPlaid', error));
 });
 

@@ -77,7 +77,6 @@ exports.getDatesToScheduleQueueFromDB = uniqueUserId =>
       .catch(err => reject(err));
   });
 
-
 exports.updateScheduledEvents = (uniqueUserId, newEvents) =>
   new Promise((resolve, reject) => {
     admin.database()
@@ -123,17 +122,11 @@ exports.clearDatesToScheduleAndEventsToDeleteQueues = uniqueUserId =>
       .catch(err => reject(err));
   });
 
-// module.exports = { doesUserExist,
-//   getUserFromDB,
-//   getUserItems,
-//   getUserProfile,
-//   initializeUser,
-//   updateUser,
-//   deleteUserInAuth,
-//   deleteUserFromDB,
-//   getDatesToScheduleFromDB,
-//   updateScheduledEvents,
-//   updateEventsToDeleteQueue,
-//   addItemsToUser,
-//   updateDatesToScheduleQueue,
-// };
+exports.deleteItemFromUserCollection = (uniqueUserId, itemId) =>
+  new Promise((resolve, reject) => {
+    admin.database()
+      .ref(`users/${uniqueUserId}/items/${itemId}`)
+      .remove()
+      .then(resolve())
+      .catch(err => reject(err));
+  });

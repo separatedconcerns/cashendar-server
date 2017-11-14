@@ -1,6 +1,6 @@
 const admin = require('../apiClients/firebaseClient');
 
-exports.deleteItemFromDB = itemId =>
+exports.deleteItemFromItemsCollection = itemId =>
   new Promise((resolve, reject) => {
     admin.database()
       .ref(`items/${itemId}`)
@@ -13,6 +13,15 @@ exports.getItemFromDB = itemId =>
   new Promise((resolve, reject) => {
     admin.database()
       .ref(`items/${itemId}`)
+      .once('value')
+      .then(snapshot => resolve(snapshot.val()))
+      .catch(err => reject(err));
+  });
+
+exports.getAccessTokenByItem = itemId =>
+  new Promise((resolve, reject) => {
+    admin.database()
+      .ref(`items/${itemId}/access_token`)
       .once('value')
       .then(snapshot => resolve(snapshot.val()))
       .catch(err => reject(err));
@@ -41,7 +50,9 @@ exports.getUserIdByItemFromDB = itemId =>
     admin.database()
       .ref(`items/${itemId}/uniqueUserId`)
       .once('value')
-      .then(snapshot => resolve(snapshot.val()))
+      .then((snapshot) => {
+        resolve(snapshot.val());
+      })
       .catch(err => reject(err));
   });
 

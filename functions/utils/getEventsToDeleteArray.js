@@ -1,9 +1,9 @@
 
 
-const getEventsToDeleteArray = (datesToSchedule, scheduledEvents) => {
+const getEventsToDeleteArray = (datesToScheduleQueue, scheduledEvents) => {
   const eventsToDelete = [];
 
-  datesToSchedule.forEach((date) => {
+  datesToScheduleQueue.forEach((date) => {
     if (scheduledEvents[date]) {
       eventsToDelete.push(scheduledEvents[date]);
     }

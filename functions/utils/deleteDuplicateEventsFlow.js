@@ -2,9 +2,9 @@ const axios = require('axios');
 const user = require('../controllers/userController.js');
 
 const deleteDuplicateEventsFlow = (uniqueUserId, newEvents) => {
-  user.getDatesToScheduleFromDB(uniqueUserId)
-    .then((datesToSchedule) => {
-      datesToSchedule.forEach((date) => {
+  user.getDatesToScheduleQueueFromDB(uniqueUserId)
+    .then((datesToScheduleQueue) => {
+      datesToScheduleQueue.forEach((date) => {
         newEvents[date] = newEvents[date] || null;
       });
     });

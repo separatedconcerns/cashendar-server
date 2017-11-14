@@ -67,9 +67,9 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
       .then((payload) => {
         item.getUserIdByItemFromDB(itemId)
           .then((uniqueUserId) => {
-            const pollStatusAndDatesToSchedule =
-              { fetchingBanks: false, datesToSchedule: payload.dates };
-            user.updateUser(uniqueUserId, pollStatusAndDatesToSchedule)
+            const pollStatusAndDatesToScheduleQueue =
+              { fetchingBanks: false, datesToScheduleQueue: payload.dates };
+            user.updateUser(uniqueUserId, pollStatusAndDatesToScheduleQueue)
               .then(response.json(payload.dates));
           });
       });

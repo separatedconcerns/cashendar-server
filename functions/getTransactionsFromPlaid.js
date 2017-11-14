@@ -26,7 +26,7 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
         .then((plaidResponse) => {
           transactionsObj.transactions = transactionsObj.transactions.concat(plaidResponse.transactions);
           transactionsObj.itemId = transactionsObj.itemId || plaidResponse.item.item_id;
-          console.log(`line 30: ${transactionsObj.transactions.length} of ${numOfNewTransactions} batched from Plaid`);
+          console.log(`${transactionsObj.transactions.length} of ${numOfNewTransactions} NEW TRANSACTIONS FETCHED FROM PLAID`);
         })
         .catch((e) => {
           console.log('pingPlaid ERROR!: ', e);
@@ -47,7 +47,7 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
   plaidGetTransactions.then((transactionsObj) => {
     const itemId = transactionsObj.itemId;
     const transactions = transactionsObj.transactions;
-    console.log(`line 51: getTransactionsFromPlaid total transactions: ${transactions.length}`);
+    console.log(`getTransactionsFromPlaid TOTAL TRANSACTIONS: ${transactions.length}`);
 
     packageTransactionsByDate(transactions)
       .then((transactionsByDate) => {

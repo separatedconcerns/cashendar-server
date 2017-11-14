@@ -14,3 +14,4 @@ exports.deleteCalendar = require('./deleteCalendar.js');
 exports.createEventsToDeleteArrayInDb = require('./createEventsToDeleteArrayInDb.js');
 exports.deleteDuplicateEventsInCalendar = require('./deleteDuplicateEventsInCalendar.js');
 exports.removeTransactionsFromDb = require('./removeTransactionsFromDb.js');
+exports.removeAllTransactionsInAnItem = require('./devFunctions/removeAllTransactionsInAnItem.js');

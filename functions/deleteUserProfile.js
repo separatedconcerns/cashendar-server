@@ -35,12 +35,12 @@ const deleteBankItems = (uniqueUserId) => {
             const config = {
               url: `${process.env.HOST}deleteItem`,
               payload: {
+                itemToDelete: currentItem,
                 access_token: itemData.access_token,
               },
             };
             axios.post(config.url, config.payload)
-              .then(plaidRes => console.log('29', plaidRes.data))
-              .then(item.deleteItemFromDB(currentItem));
+              .then(plaidRes => console.log('29', plaidRes.data));
           });
       });
     });

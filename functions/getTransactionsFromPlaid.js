@@ -24,9 +24,13 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
     const pingPlaid = setInterval(() => {
       plaidClient.getTransactions(accessToken, daysAgo, today, { count, offset })
         .then((plaidResponse) => {
+          const accounts = plaidResponse.accounts;
           transactionsObj.transactions = transactionsObj.transactions.concat(plaidResponse.transactions);
           transactionsObj.itemId = transactionsObj.itemId || plaidResponse.item.item_id;
           console.log(`${transactionsObj.transactions.length} of ${numOfNewTransactions} NEW TRANSACTIONS FETCHED FROM PLAID`);
+          accounts.forEach((account) => {
+            item.addAccountsToItem(transactionsObj.itemId, account);
+          });
         })
         .catch((e) => {
           console.log('pingPlaid ERROR!: ', e);

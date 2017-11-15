@@ -1,17 +1,13 @@
-const functions = require('firebase-functions');
 const user = require('./controllers/userController');
 const item = require('./controllers/itemController');
 
-const getTransactionsFromDatabase = functions.https.onRequest((request, response) => {
-  response.header('Access-Control-Allow-Origin', '*');
+function getTransactionsFromDatabase(request, response) {
   const uniqueUserId = request.body.uniqueUserId;
   user.getUserFromDB(uniqueUserId)
-    .then((userData) => {
-      return {
-        datesToScheduleQueue: userData.datesToScheduleQueue,
-        itemIds: Object.keys(userData.items),
-      };
-    })
+    .then(userData => ({
+      datesToScheduleQueue: userData.datesToScheduleQueue,
+      itemIds: Object.keys(userData.items),
+    }))
     .then((payload) => {
       let allTransactions = {};
       const lastItemId = payload.itemIds[payload.itemIds.length - 1];
@@ -29,6 +25,6 @@ const getTransactionsFromDatabase = functions.https.onRequest((request, response
           });
       });
     });
-});
+}
 
 module.exports = getTransactionsFromDatabase;

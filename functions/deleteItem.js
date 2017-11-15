@@ -1,10 +1,8 @@
-const functions = require('firebase-functions');
 const item = require('./controllers/itemController');
 const user = require('./controllers/userController');
 const plaidClient = require('./apiClients/plaidClient.js');
 
-const deleteItem = functions.https.onRequest((request, response) => {
-  response.header('Access-Control-Allow-Origin', '*');
+function deleteItem(request, response) {
   const itemId = request.body.itemToDelete;
   let uniqueUserId;
   let accessToken;
@@ -22,11 +20,6 @@ const deleteItem = functions.https.onRequest((request, response) => {
           plaidClient.deleteItem(accessToken)
             .then((result) => {
               item.deleteItemFromItemsCollection(itemId);
-              return result;
-            })
-            .then((result) => {
-              console.log('28', uniqueUserId);
-              console.log('29', itemId);
               user.deleteItemFromUserCollection(uniqueUserId, itemId);
               return result;
             })
@@ -35,6 +28,6 @@ const deleteItem = functions.https.onRequest((request, response) => {
             });
         });
     });
-});
+}
 
 module.exports = deleteItem;

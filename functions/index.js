@@ -1,17 +1,24 @@
 require('envkey');
+const functions = require('firebase-functions');
 
-exports.addUser = require('./addUser.js');
-exports.createNewCalendar = require('./createNewCalendar.js');
-exports.exchangePublicToken = require('./exchangePublicToken.js');
-exports.plaidWebHook = require('./plaidWebHook.js');
-exports.getTransactionsFromPlaid = require('./getTransactionsFromPlaid');
-exports.addCalendarEvents = require('./addCalendarEvents.js');
-exports.getDailySpendingAndTransactions = require('./getDailySpendingAndTransactions.js');
-exports.getTransactionsFromDatabase = require('./getTransactionsFromDatabase');
-exports.deleteUserProfile = require('./deleteUserProfile.js');
-exports.deleteItem = require('./deleteItem.js');
-exports.deleteCalendar = require('./deleteCalendar.js');
-exports.createEventsToDeleteQueueInDb = require('./createEventsToDeleteQueueInDb.js');
-exports.deleteDuplicateEventsInCalendar = require('./deleteDuplicateEventsInCalendar.js');
-exports.removeTransactionsFromDb = require('./removeTransactionsFromDb.js');
-exports.removeAllTransactionsInAnItem = require('./devFunctions/removeAllTransactionsInAnItem.js');
+
+const wrap = fn => functions.https.onRequest((request, response) => {
+  response.header('Access-Control-Allow-Origin', '*');
+  fn(request, response);
+});
+
+exports.addUser = wrap(require('./addUser.js'));
+exports.createNewCalendar = wrap(require('./createNewCalendar.js'));
+exports.exchangePublicToken = wrap(require('./exchangePublicToken.js'));
+exports.plaidWebHook = wrap(require('./plaidWebHook.js'));
+exports.getTransactionsFromPlaid = wrap(require('./getTransactionsFromPlaid'));
+exports.addCalendarEvents = wrap(require('./addCalendarEvents.js'));
+exports.getDailySpendingAndTransactions = wrap(require('./getDailySpendingAndTransactions.js'));
+exports.getTransactionsFromDatabase = wrap(require('./getTransactionsFromDatabase'));
+exports.deleteUserProfile = wrap(require('./deleteUserProfile.js'));
+exports.deleteItem = wrap(require('./deleteItem.js'));
+exports.deleteCalendar = wrap(require('./deleteCalendar.js'));
+exports.createEventsToDeleteQueueInDb = wrap(require('./createEventsToDeleteQueueInDb.js'));
+exports.deleteDuplicateEventsInCalendar = wrap(require('./deleteDuplicateEventsInCalendar.js'));
+exports.removeTransactionsFromDb = wrap(require('./removeTransactionsFromDb.js'));
+exports.removeAllTransactionsInAnItem = wrap(require('./devFunctions/removeAllTransactionsInAnItem.js'));

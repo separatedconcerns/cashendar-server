@@ -1,11 +1,9 @@
-const functions = require('firebase-functions');
 const user = require('./controllers/userController');
 const item = require('./controllers/itemController');
 const verifyIdToken = require('./utils/verifyIdToken.js');
 const plaidClient = require('./apiClients/plaidClient.js');
 
-const exchangePublicToken = functions.https.onRequest((request, response) => {
-  response.header('Access-Control-Allow-Origin', '*');
+function exchangePublicToken(request, response) {
   const publicToken = request.body.publicToken;
   const idToken = request.body.idToken;
   const institutionName = request.body.institution;
@@ -31,6 +29,6 @@ const exchangePublicToken = functions.https.onRequest((request, response) => {
         .then(response.end());
     })
     .catch(error => console.log(error));
-});
+}
 
 module.exports = exchangePublicToken;

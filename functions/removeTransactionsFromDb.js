@@ -1,9 +1,7 @@
-const functions = require('firebase-functions');
 const item = require('./controllers/itemController');
 const user = require('./controllers/userController');
 
-const removeTransactionsFromDb = functions.https.onRequest((request, response) => {
-  response.header('Access-Control-Allow-Origin', '*');
+function removeTransactionsFromDb(request, response) {
   const itemId = request.body.itemId;
   const plaidRemovedTransactions = request.body.removedTransactions;
   let uniqueUserId;
@@ -43,6 +41,6 @@ const removeTransactionsFromDb = functions.https.onRequest((request, response) =
         }
       });
     });
-});
+}
 
 module.exports = removeTransactionsFromDb;

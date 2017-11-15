@@ -1,4 +1,3 @@
-const functions = require('firebase-functions');
 const user = require('./controllers/userController');
 const verifyIdToken = require('./utils/verifyIdToken.js');
 const axios = require('axios');
@@ -7,8 +6,7 @@ let idToken;
 let OAuthToken;
 let uniqueUserId;
 
-const addUser = functions.https.onRequest((request, response) => {
-  response.header('Access-Control-Allow-Origin', '*');
+function addUser(request, response) {
   idToken = request.body.idToken;
   OAuthToken = request.body.OAuthToken;
 
@@ -26,7 +24,7 @@ const addUser = functions.https.onRequest((request, response) => {
           }
         });
     });
-});
+}
 
 function addUserToDB(response) {
   console.log('addUserToDB called');
@@ -48,12 +46,10 @@ function createGoogleCalendar(response) {
     payload: { OAuthToken, uniqueUserId },
   };
   axios.post(config.url, config.payload)
-    .then((calendar) => {
-      return {
-        calId: calendar.data.id,
-        calName: calendar.data.summary,
-      };
-    })
+    .then(calendar => ({
+      calId: calendar.data.id,
+      calName: calendar.data.summary,
+    }))
     .then((configCal) => {
       const userCalendarDetails = { calendarId: configCal.calId, calendarName: configCal.calName };
       user.updateUser(uniqueUserId, userCalendarDetails);

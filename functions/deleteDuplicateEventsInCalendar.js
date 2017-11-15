@@ -1,11 +1,9 @@
-const functions = require('firebase-functions');
 const google = require('googleapis');
 const Promise = require('bluebird');
 const googleClient = require('./apiClients/googleClient.js');
 const packageEventsToDelete = require('./utils/packageEventsToDelete.js');
 
-const deleteDuplicateEventsInCalendar = functions.https.onRequest((request, response) => {
-  response.header('Access-Control-Allow-Origin', '*');
+function deleteDuplicateEventsInCalendar(request, response) {
   const googleClientAuthorize = Promise.promisify(googleClient.authorize);
   const calendarId = request.body.calendarId;
   const OAuthToken = request.body.OAuthToken;
@@ -38,10 +36,10 @@ const deleteDuplicateEventsInCalendar = functions.https.onRequest((request, resp
         }, 400);
       });
   };
-  
+
   googleClientAuthorize(OAuthToken, deleteDuplicateEvents)
     .then(response.end())
     .catch(e => console.log('deleteDuplicateEvents FAILURE!:', e));
-});
+}
 
 module.exports = deleteDuplicateEventsInCalendar;

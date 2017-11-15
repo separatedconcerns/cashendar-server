@@ -1,4 +1,3 @@
-const functions = require('firebase-functions');
 const item = require('./controllers/itemController');
 const user = require('./controllers/userController');
 const moment = require('moment');
@@ -6,7 +5,7 @@ const plaidClient = require('./apiClients/plaidClient.js');
 const Promise = require('bluebird');
 const packageTransactionsByDate = Promise.method(require('./utils/packageTransactionsByDate.js'));
 
-const getTransactionsFromPlaid = functions.https.onRequest((request, response) => {
+function getTransactionsFromPlaid(request, response) {
   const accessToken = request.body.access_token;
   const numOfNewTransactions = request.body.newTransactions;
   const now = moment();
@@ -79,6 +78,6 @@ const getTransactionsFromPlaid = functions.https.onRequest((request, response) =
       });
   })
     .catch(error => console.log('getTransactionsFromPlaid', error));
-});
+}
 
 module.exports = getTransactionsFromPlaid;

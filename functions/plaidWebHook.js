@@ -1,9 +1,7 @@
-const functions = require('firebase-functions');
 const item = require('./controllers/itemController');
 const axios = require('axios');
 
-const plaidWebHook = functions.https.onRequest((request, response) => {
-  response.header('Access-Control-Allow-Origin', '*');
+function plaidWebHook(request, response) {
   const itemId = request.body.item_id;
   const webHookCode = request.body.webhook_code;
   const newTransactions = request.body.new_transactions || null;
@@ -50,6 +48,6 @@ const plaidWebHook = functions.https.onRequest((request, response) => {
         }
       });
   }
-});
+}
 
 module.exports = plaidWebHook;

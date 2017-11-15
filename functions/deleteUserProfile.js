@@ -1,11 +1,9 @@
-const functions = require('firebase-functions');
 const user = require('./controllers/userController');
 const item = require('./controllers/itemController');
 const verifyIdToken = require('./utils/verifyIdToken.js');
 const axios = require('axios');
 
-const deleteUserProfile = functions.https.onRequest((request, response) => {
-  response.header('Access-Control-Allow-Origin', '*');
+function deleteUserProfile(request, response) {
   const idToken = request.body.idToken;
   let uniqueUserId;
 
@@ -23,7 +21,7 @@ const deleteUserProfile = functions.https.onRequest((request, response) => {
         .then(response.end('Profile Deleted'));
     })
     .catch(e => console.log(e));
-});
+}
 
 const deleteBankItems = (uniqueUserId) => {
   user.getUserItems(uniqueUserId)
@@ -62,5 +60,5 @@ const deleteCalendar = (uniqueUserId) => {
     });
 };
 
-
 module.exports = deleteUserProfile;
+

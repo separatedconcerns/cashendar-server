@@ -1,11 +1,9 @@
-const functions = require('firebase-functions');
 const Promise = require('bluebird');
 const googleClient = require('./apiClients/googleClient.js');
 const google = require('googleapis');
 // const createGoogleCalendar = require('./utils/createNewGoogleCalendar.js');
 
-const createNewCalendar = functions.https.onRequest((request, response) => {
-  response.header('Access-Control-Allow-Origin', '*');
+function createNewCalendar(request, response) {
   const OAuthToken = request.body.OAuthToken;
 
   function createCalendar(auth) {
@@ -23,6 +21,6 @@ const createNewCalendar = functions.https.onRequest((request, response) => {
   // googleClientAuthorize(OAuthToken, createGoogleCalendar)
   //   .then(calendar => console.log(calendar))
   //   .catch(e => response.end(e));
-});
+}
 
 module.exports = createNewCalendar;

@@ -1,4 +1,3 @@
-const functions = require('firebase-functions');
 const user = require('./controllers/userController');
 const axios = require('axios');
 const google = require('googleapis');
@@ -7,8 +6,7 @@ const googleClient = require('./apiClients/googleClient.js');
 const packageEventsToSchedule = require('./utils/packageEventsToSchedule.js');
 const deleteDuplicateEventsFlow = require('./utils/deleteDuplicateEventsFlow.js');
 
-const addCalendarEvents = functions.https.onRequest((request, response) => {
-  response.header('Access-Control-Allow-Origin', '*');
+function addCalendarEvents(request, response) {
   const uniqueUserId = request.body.uniqueUserId;
   let calendarId;
   let OAuthToken;
@@ -60,7 +58,7 @@ const addCalendarEvents = functions.https.onRequest((request, response) => {
       })
       .catch(e => console.log('line 49', e));
   };
-});
+}
 
 
 module.exports = addCalendarEvents;

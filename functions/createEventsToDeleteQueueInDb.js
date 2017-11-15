@@ -1,9 +1,7 @@
-const functions = require('firebase-functions');
 const user = require('./controllers/userController');
 const getEventsToDeleteQueue = require('./utils/getEventsToDeleteQueue.js');
 
-const createEventsToDeleteQueueInDb = functions.https.onRequest((request, response) => {
-  response.header('Access-Control-Allow-Origin', '*');
+function createEventsToDeleteQueueInDb(request, response) {
   const newEventDates = request.body.newEventDates;
   const uniqueUserId = request.body.uniqueUserId;
   let calendarId;
@@ -26,7 +24,7 @@ const createEventsToDeleteQueueInDb = functions.https.onRequest((request, respon
         .then(response.json(responseObj))
         .catch(e => console.log('Error in createEventsToDeleteQueueInDb', e));
     });
-});
+}
 
 module.exports = createEventsToDeleteQueueInDb;
 

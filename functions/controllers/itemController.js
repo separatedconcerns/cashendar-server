@@ -82,3 +82,12 @@ exports.addAccountsToItem = (itemId, dataToAdd) =>
       .then(resolve())
       .catch(err => reject(err));
   });
+
+exports.removeAllTransactionsInAnItem = itemId =>
+  new Promise((resolve, reject) => {
+    admin.database()
+      .ref(`items/${itemId}/transactions`)
+      .remove()
+      .then(resolve())
+      .catch(err => reject(err));
+  });

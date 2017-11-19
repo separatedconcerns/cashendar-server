@@ -6,11 +6,10 @@ function removeTransactionsFromDb(request, response) {
   const plaidRemovedTransactions = request.body.removedTransactions;
   let uniqueUserId;
 
-  item.getUserIdByItemFromDB(itemId)
-    .then((userId) => { uniqueUserId = userId; });
-
-  item.getItemTransactionsFromDB(itemId)
-    .then((transactions) => {
+  Promise.all([item.getUserIdByItemFromDB(itemId), item.getItemTransactionsFromDB(itemId)])
+    .then((results) => {
+      uniqueUserId = results[0];
+      const transactions = results[1];
       const transactionsToRemove = [];
       const transactionsToRemoveDates = {};
       const transactionDates = Object.keys(transactions);

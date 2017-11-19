@@ -19,16 +19,6 @@ function exchangePublicToken(request, response) {
     })
     .then(response.end())
     .catch(error => console.log(error));
-
-  // verifyIdToken(idToken).then((result) => { uniqueUserId = result; });
-
-  // plaidClient.exchangePublicToken(publicToken)
-  //   .then(payload => Promise.all(
-  //     [user.addItemsToUser(uniqueUserId, payload.itemId, institutionName),
-  //       item.addDataToItem(payload.itemId, { access_token: payload.access_token, uniqueUserId }),
-  //       user.updateUser(uniqueUserId, { fetchingBanks: true })]))
-  //   .then(response.end())
-  //   .catch(error => console.log(error));
 }
 
 module.exports = exchangePublicToken;

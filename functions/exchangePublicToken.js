@@ -7,28 +7,28 @@ function exchangePublicToken(request, response) {
   const publicToken = request.body.publicToken;
   const idToken = request.body.idToken;
   const institutionName = request.body.institution;
-  let uniqueUserId;
 
-  verifyIdToken(idToken).then((result) => {
-    uniqueUserId = result;
-  });
-
-  plaidClient.exchangePublicToken(publicToken)
-    .then((successResponse) => {
-      const payload = {
-        itemId: successResponse.item_id,
-        access_token: successResponse.access_token,
-        request_id: successResponse.request_id,
-      };
-      user.addItemsToUser(uniqueUserId, payload.itemId, institutionName);
-      item.addDataToItem(payload.itemId, { access_token: payload.access_token, uniqueUserId });
+  Promise.all([verifyIdToken(idToken), plaidClient.exchangePublicToken(publicToken)])
+    .then((results) => {
+      const uniqueUserId = results[0];
+      const plaidResponse = results[1];
+      return Promise.all([
+        user.addItemsToUser(uniqueUserId, plaidResponse.item_id, institutionName),
+        item.addDataToItem(plaidResponse.item_id, { access_token: plaidResponse.access_token, uniqueUserId }),
+        user.updateUser(uniqueUserId, { fetchingBanks: true })]);
     })
-    .then(() => {
-      // set bool to indicate data is being fetched from Plaid
-      user.updateUser(uniqueUserId, { fetchingBanks: true })
-        .then(response.end());
-    })
+    .then(response.end())
     .catch(error => console.log(error));
+
+  // verifyIdToken(idToken).then((result) => { uniqueUserId = result; });
+
+  // plaidClient.exchangePublicToken(publicToken)
+  //   .then(payload => Promise.all(
+  //     [user.addItemsToUser(uniqueUserId, payload.itemId, institutionName),
+  //       item.addDataToItem(payload.itemId, { access_token: payload.access_token, uniqueUserId }),
+  //       user.updateUser(uniqueUserId, { fetchingBanks: true })]))
+  //   .then(response.end())
+  //   .catch(error => console.log(error));
 }
 
 module.exports = exchangePublicToken;

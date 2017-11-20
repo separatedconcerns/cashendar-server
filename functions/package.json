@@ -14,6 +14,7 @@
     "plaid": "^2.1.0"
   },
   "scripts": {
+    "webhook": "ngrok http 5000",
     "start": "firebase serve --port 5000 --only functions",
     "lint": "./node_modules/.bin/eslint index.js",
     "deploy-production": "firebase deploy --only functions -P production",

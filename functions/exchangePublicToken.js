@@ -7,14 +7,16 @@ function exchangePublicToken(request, response) {
   const publicToken = request.body.publicToken;
   const idToken = request.body.idToken;
   const institutionName = request.body.institution;
+  const webhook = request.body.webhook;
 
   Promise.all([verifyIdToken(idToken), plaidClient.exchangePublicToken(publicToken)])
     .then((results) => {
       const uniqueUserId = results[0];
-      const plaidResponse = results[1];
+      const itemId = results[1].item_id;
+      const accessToken = results[1].access_token;
       return Promise.all([
-        user.addItemsToUser(uniqueUserId, plaidResponse.item_id, institutionName),
-        item.addDataToItem(plaidResponse.item_id, { access_token: plaidResponse.access_token, uniqueUserId }),
+        user.addItemsToUser(uniqueUserId, itemId, institutionName),
+        item.addDataToItem(itemId, { accessToken, uniqueUserId, webhook }),
         user.updateUser(uniqueUserId, { fetchingBanks: true })]);
     })
     .then(response.end())

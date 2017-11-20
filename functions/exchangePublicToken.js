@@ -16,7 +16,7 @@ function exchangePublicToken(request, response) {
       const accessToken = results[1].access_token;
       return Promise.all([
         user.addItemsToUser(uniqueUserId, itemId, institutionName),
-        item.addDataToItem(itemId, { accessToken, uniqueUserId, webhook }),
+        item.addDataToItem(itemId, { access_token: accessToken, uniqueUserId, webhook }),
         user.updateUser(uniqueUserId, { fetchingBanks: true })]);
     })
     .then(response.end())

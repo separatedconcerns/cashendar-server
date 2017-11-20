@@ -50,24 +50,21 @@ function getTransactionsFromPlaid(request, response) {
   plaidGetTransactions.then((transactionsObj) => {
     const itemId = transactionsObj.itemId;
     const transactions = transactionsObj.transactions;
+    let payload;
     console.log(`getTransactionsFromPlaid TOTAL TRANSACTIONS: ${transactions.length}`);
 
     packageTransactionsByDate(transactions)
       .then((transactionsByDate) => {
-        const payload = {
+        payload = {
           dates: Object.keys(transactionsByDate),
           transactions: transactionsByDate,
         };
-        return payload;
-      })
-      .then((payload) => {
-        payload.dates.forEach((date) => {
+        return payload.dates.forEach((date) => {
           item.addTransactionsByDate(itemId, date, payload.transactions[date])
             .catch(e => console.log(e, 'NOT UPDATED IN DB!'));
         });
-        return payload;
       })
-      .then((payload) => {
+      .then(() => {
         item.getUserIdByItemFromDB(itemId)
           .then((uniqueUserId) => {
             const pollStatusAndDatesToScheduleQueue =

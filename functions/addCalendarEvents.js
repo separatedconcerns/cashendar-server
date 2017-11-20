@@ -15,8 +15,6 @@ function addCalendarEvents(request, response) {
     .then((userData) => {
       calendarId = userData.calendarId;
       OAuthToken = userData.OAuthToken;
-    })
-    .then(() => {
       // googleClient.authorize(OAuthToken, createEvents);
       const googleClientAuthorize = Promise.promisify(googleClient.authorize);
       googleClientAuthorize(OAuthToken, createEvents)

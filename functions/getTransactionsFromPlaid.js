@@ -50,31 +50,27 @@ function getTransactionsFromPlaid(request, response) {
   plaidGetTransactions.then((transactionsObj) => {
     const itemId = transactionsObj.itemId;
     const transactions = transactionsObj.transactions;
+    let uniqueUserId;
     let payload;
     console.log(`getTransactionsFromPlaid TOTAL TRANSACTIONS: ${transactions.length}`);
 
-    packageTransactionsByDate(transactions)
-      .then((transactionsByDate) => {
+    return Promise.all([packageTransactionsByDate(transactions), item.getUserIdByItemFromDB(itemId)])
+      .then((values) => {
+        const transactionsByDate = values[0];
+        uniqueUserId = values[1];
         payload = {
           dates: Object.keys(transactionsByDate),
           transactions: transactionsByDate,
         };
-        return payload.dates.forEach((date) => {
-          item.addTransactionsByDate(itemId, date, payload.transactions[date])
-            .catch(e => console.log(e, 'NOT UPDATED IN DB!'));
-        });
+        const promiseArr = payload.dates.map(date => item.addTransactionsByDate(itemId, date, payload.transactions[date]));
+        const pollStatusAndDatesToScheduleQueue =
+        { fetchingBanks: false, datesToScheduleQueue: payload.dates };
+        promiseArr.push(user.updateUser(uniqueUserId, pollStatusAndDatesToScheduleQueue));
+        return Promise.all(promiseArr);
       })
-      .then(() => {
-        item.getUserIdByItemFromDB(itemId)
-          .then((uniqueUserId) => {
-            const pollStatusAndDatesToScheduleQueue =
-              { fetchingBanks: false, datesToScheduleQueue: payload.dates };
-            user.updateUser(uniqueUserId, pollStatusAndDatesToScheduleQueue)
-              .then(response.json(payload.dates));
-          });
-      });
-  })
-    .catch(error => console.log('getTransactionsFromPlaid', error));
+      .then(() => response.json(payload.dates))
+      .catch(error => console.log('getTransactionsFromPlaid', error));
+  });
 }
 
 module.exports = getTransactionsFromPlaid;

@@ -4,11 +4,11 @@ const item = require('./controllers/itemController');
 function getTransactionsFromDatabase(request, response) {
   const uniqueUserId = request.body.uniqueUserId;
   user.getUserFromDB(uniqueUserId)
-    .then(userData => ({
-      datesToScheduleQueue: userData.datesToScheduleQueue,
-      itemIds: Object.keys(userData.items),
-    }))
-    .then((payload) => {
+    .then((userData) => {
+      const payload = {
+        datesToScheduleQueue: userData.datesToScheduleQueue,
+        itemIds: Object.keys(userData.items),
+      };
       let allTransactions = {};
       const lastItemId = payload.itemIds[payload.itemIds.length - 1];
       const lastDate = payload.datesToScheduleQueue[payload.datesToScheduleQueue.length - 1];

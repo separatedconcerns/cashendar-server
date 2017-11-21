@@ -5,34 +5,36 @@ const axios = require('axios');
 
 function deleteUserProfile(request, response) {
   const idToken = request.body.idToken;
+  let uniqueUserId;
 
   verifyIdToken(idToken).then((result) => {
-    const uniqueUserId = result;
+    uniqueUserId = result;
     return Promise.all([
       deleteBankItems(uniqueUserId),
       deleteCalendar(uniqueUserId),
       user.deleteUserInAuth(uniqueUserId)]);
-  }).then(response.end('Profile Deleted'))
+  })
+    .then(() => user.deleteUserFromDB(uniqueUserId))
+    .then(() => response.end('Profile Deleted'))
     .catch(e => console.log(e));
 }
 
 const deleteBankItems = uniqueUserId => user.getUserItems(uniqueUserId)
   .then((itemsObj) => {
     const allItems = Object.keys(itemsObj);
-    allItems.forEach((currentItem) => {
-      item.getItemFromDB(currentItem)
-        .then((itemData) => {
-          const config = {
-            url: `${process.env.HOST}deleteItem`,
-            payload: {
-              itemToDelete: currentItem,
-              access_token: itemData.access_token,
-            },
-          };
-          axios.post(config.url, config.payload)
-            .then(plaidRes => console.log(plaidRes.data));
-        });
-    });
+    const allItemsPromiseArr = allItems.map(currentItem => item.getItemFromDB(currentItem)
+      .then((itemData) => {
+        const config = {
+          url: `${process.env.HOST}deleteItem`,
+          payload: {
+            itemToDelete: currentItem,
+            access_token: itemData.access_token,
+          },
+        };
+        return axios.post(config.url, config.payload);
+      })
+      .then(plaidRes => console.log(plaidRes.data)));
+    return Promise.all(allItemsPromiseArr);
   });
 
 const deleteCalendar = uniqueUserId => user.getUserFromDB(uniqueUserId)
@@ -44,10 +46,9 @@ const deleteCalendar = uniqueUserId => user.getUserFromDB(uniqueUserId)
         OAuthToken: userData.OAuthToken,
       },
     };
-    axios.post(config.url, config.payload)
-      .then(response => console.log('62 Gcal Deletion Response', response.data))
-      .then(user.deleteUserFromDB(uniqueUserId));
-  });
+    return axios.post(config.url, config.payload);
+  })
+  .then(response => console.log('62 Gcal Deletion Response', response.data));
 
 module.exports = deleteUserProfile;
 

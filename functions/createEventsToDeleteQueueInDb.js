@@ -6,6 +6,7 @@ function createEventsToDeleteQueueInDb(request, response) {
   const uniqueUserId = request.body.uniqueUserId;
   let calendarId;
   let OAuthToken;
+  let responseObj;
 
   user.getUserFromDB(uniqueUserId)
     .then((userData) => {
@@ -15,15 +16,15 @@ function createEventsToDeleteQueueInDb(request, response) {
       return getEventsToDeleteQueue(newEventDates, scheduledEvents);
     })
     .then((eventsToDeleteQueue) => {
-      const responseObj = {
+      responseObj = {
         eventsToDeleteQueue,
         calendarId,
         OAuthToken,
       };
-      user.updateEventsToDeleteQueue(uniqueUserId, eventsToDeleteQueue)
-        .then(response.json(responseObj))
-        .catch(e => console.log('Error in createEventsToDeleteQueueInDb', e));
-    });
+      return user.updateEventsToDeleteQueue(uniqueUserId, eventsToDeleteQueue);
+    })
+    .then(() => response.json(responseObj))
+    .catch(e => console.log('Error in createEventsToDeleteQueueInDb', e));
 }
 
 module.exports = createEventsToDeleteQueueInDb;

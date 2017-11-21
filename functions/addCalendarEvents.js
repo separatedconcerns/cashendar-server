@@ -11,23 +11,13 @@ function addCalendarEvents(request, response) {
   let calendarId;
   let OAuthToken;
   const newEvents = {};
-  user.getUserFromDB(uniqueUserId)
-    .then((userData) => {
-      calendarId = userData.calendarId;
-      OAuthToken = userData.OAuthToken;
-      // googleClient.authorize(OAuthToken, createEvents);
-      const googleClientAuthorize = Promise.promisify(googleClient.authorize);
-      googleClientAuthorize(OAuthToken, createEvents)
-        .then(response.end())
-        .catch(e => console.log('line 24 inside addCalendarEvents', e));
-    });
 
   const createEvents = (auth) => {
     const config = {
       url: `${process.env.HOST}getDailySpendingAndTransactions`,
       payload: { uniqueUserId },
     };
-    axios.post(config.url, config.payload)
+    return axios.post(config.url, config.payload)
       .then(transactionsByDate => packageEventsToSchedule(auth, calendarId, transactionsByDate))
       .then((events) => {
         // console.log(events[events.length - 1].resource);
@@ -56,6 +46,17 @@ function addCalendarEvents(request, response) {
       })
       .catch(e => console.log('line 49', e));
   };
+
+  return user.getUserFromDB(uniqueUserId)
+    .then((userData) => {
+      calendarId = userData.calendarId;
+      OAuthToken = userData.OAuthToken;
+      // googleClient.authorize(OAuthToken, createEvents);
+      const googleClientAuthorize = Promise.promisify(googleClient.authorize);
+      return googleClientAuthorize(OAuthToken, createEvents)
+        .then(response.end())
+        .catch(e => console.log('line 24 inside addCalendarEvents', e));
+    });
 }
 
 

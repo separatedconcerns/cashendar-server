@@ -8,7 +8,7 @@ function plaidWebHook(request, response) {
   console.log('WEBHOOK HIT:', itemId, webHookCode, newTransactions);
 
   if (webHookCode === 'INITIAL_UPDATE') {
-    response.end();
+    return response.end();
   } else if (webHookCode === 'TRANSACTIONS_REMOVED') {
     const config = {
       url: `${process.env.HOST}removeTransactionsFromDb`,
@@ -17,37 +17,28 @@ function plaidWebHook(request, response) {
         removedTransactions: request.body.removed_transactions,
       },
     };
-
-    axios.post(config.url, config.payload)
-      .then((uniqueUserId) => {
-        axios.post(`${process.env.HOST}addCalendarEvents`, { uniqueUserId: uniqueUserId.data })
-          .then(response.end())
-          .catch(e => console.log('TRANSACTIONS_REMOVED ERROR!:', e));
-      })
-      .catch(e => console.log(e, 'line 26 plaidWebHook'));
-  } else {
-    item.getItemFromDB(itemId)
-      .then((itemData) => {
-        if (itemData) {
-          const config = {
-            url: `${process.env.HOST}getTransactionsFromPlaid`,
-            payload: {
-              access_token: itemData.access_token,
-              uniqueUserId: itemData.uniqueUserId,
-              newTransactions,
-            },
-          };
-          axios.post(config.url, config.payload)
-            .then(() => {
-              axios.post(`${process.env.HOST}addCalendarEvents`, config.payload)
-                .then(response.end());
-            })
-            .catch(e => console.log('plaidWebHook Error!:', e));
-        } else {
-          response.end();
-        }
-      });
-  }
+    return axios.post(config.url, config.payload)
+      .then(uniqueUserId => axios.post(`${process.env.HOST}addCalendarEvents`, { uniqueUserId: uniqueUserId.data }))
+      .then(() => response.end())
+      .catch(e => console.log('TRANSACTIONS_REMOVED ERROR!:', e));
+  } return item.getItemFromDB(itemId)
+    .then((itemData) => {
+      if (itemData) {
+        const config = {
+          url: `${process.env.HOST}getTransactionsFromPlaid`,
+          payload: {
+            access_token: itemData.access_token,
+            uniqueUserId: itemData.uniqueUserId,
+            newTransactions,
+          },
+        };
+        return axios.post(config.url, config.payload)
+          .then(() => axios.post(`${process.env.HOST}addCalendarEvents`, config.payload))
+          .then(() => response.end())
+          .catch(e => console.log('plaidWebHook Error!:', e));
+      }
+      return response.end();
+    });
 }
 
 module.exports = plaidWebHook;

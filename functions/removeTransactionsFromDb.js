@@ -5,6 +5,7 @@ function removeTransactionsFromDb(request, response) {
   const itemId = request.body.itemId;
   const plaidRemovedTransactions = request.body.removedTransactions;
   let uniqueUserId;
+  let transactionInfo;
 
   Promise.all([item.getUserIdByItemFromDB(itemId), item.getItemTransactionsFromDB(itemId)])
     .then((results) => {
@@ -27,19 +28,18 @@ function removeTransactionsFromDb(request, response) {
 
       return { transactionsToRemove, transactionsToRemoveDates };
     })
-    .then((transactionInfo) => {
-      let counter = transactionInfo.transactionsToRemove.length;
-      transactionInfo.transactionsToRemove.forEach((dateAndId) => {
+    .then((result) => {
+      transactionInfo = result;
+      const promiseArr = transactionInfo.transactionsToRemove.map(dateAndId =>
         item.removeTransactions(itemId, dateAndId[0], dateAndId[1])
-          .then(counter -= 1);
-
-        if (counter <= 0) {
-          console.log(transactionInfo.transactionsToRemove.length, 'transactions have been removed from database.');
-          user.updateDatesToScheduleQueue(uniqueUserId, Object.keys(transactionInfo.transactionsToRemoveDates))
-            .then(response.send(uniqueUserId));
-        }
-      });
-    });
+      );
+      return Promise.all(promiseArr);
+    })
+    .then(() => {
+      console.log(transactionInfo.transactionsToRemove.length, 'transactions have been removed from database.');
+      return user.updateDatesToScheduleQueue(uniqueUserId, Object.keys(transactionInfo.transactionsToRemoveDates));
+    })
+    .then(() => response.send(uniqueUserId));
 }
 
 module.exports = removeTransactionsFromDb;

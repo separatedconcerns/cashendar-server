@@ -12,18 +12,17 @@ function getTransactionsFromDatabase(request, response) {
       let allTransactions = {};
       const lastItemId = payload.itemIds[payload.itemIds.length - 1];
       const lastDate = payload.datesToScheduleQueue[payload.datesToScheduleQueue.length - 1];
-      payload.itemIds.forEach((itemId) => {
-        item.getItemTransactionsFromDB(itemId)
-          .then((transactions) => {
-            payload.datesToScheduleQueue.forEach((date) => {
-              const mergeObj = Object.assign(allTransactions, transactions[date] || {});
-              allTransactions = mergeObj;
-              if (itemId === lastItemId && date === lastDate) {
-                response.json(allTransactions);
-              }
-            });
+      const promiseArr = payload.itemIds.map(itemId => item.getItemTransactionsFromDB(itemId)
+        .then((transactions) => {
+          payload.datesToScheduleQueue.forEach((date) => {
+            const mergeObj = Object.assign(allTransactions, transactions[date] || {});
+            allTransactions = mergeObj;
+            if (itemId === lastItemId && date === lastDate) {
+              response.json(allTransactions);
+            }
           });
-      });
+        }));
+      return Promise.all(promiseArr);
     });
 }
 

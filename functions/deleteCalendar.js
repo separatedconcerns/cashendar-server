@@ -8,7 +8,7 @@ function deleteCalendar(request, response) {
 
   const googleClientAuthorize = Promise.promisify(googleClient.authorize);
   googleClientAuthorize(OAuthToken, deleteGoogleCalendar, calendarId)
-    .then(response.end())
+    .then(() => response.end())
     .catch(e => console.log(e));
 }
 

@@ -4,6 +4,6 @@ const plaidClient = new plaid.Client(
   process.env.PLAID_CLIENT_ID,
   process.env.PLAID_SECRET,
   process.env.PLAID_PUBLIC_KEY,
-  'https://sandbox.plaid.com');
+  process.env.PLAID_ENV);
 
 module.exports = plaidClient;

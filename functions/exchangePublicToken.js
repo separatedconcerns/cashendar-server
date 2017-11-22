@@ -19,7 +19,7 @@ function exchangePublicToken(request, response) {
         item.addDataToItem(itemId, { access_token: accessToken, uniqueUserId, webhook }),
         user.updateUser(uniqueUserId, { fetchingBanks: true })]);
     })
-    .then(response.end())
+    .then(() => response.end())
     .catch(error => console.log(error));
 }
 

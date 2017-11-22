@@ -38,7 +38,7 @@ function deleteDuplicateEventsInCalendar(request, response) {
   };
 
   googleClientAuthorize(OAuthToken, deleteDuplicateEvents)
-    .then(response.end())
+    .then(() => response.end())
     .catch(e => console.log('deleteDuplicateEvents FAILURE!:', e));
 }
 

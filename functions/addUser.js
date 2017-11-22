@@ -45,7 +45,7 @@ function addUser(request, response) {
         const userCalendarDetails = { calendarId: calendar.data.id, calendarName: calendar.data.summary };
         return user.updateUser(uniqueUserId, userCalendarDetails);
       })
-      .then(response.end())
+      .then(() => response.end())
       .catch(error => console.log('Error fetching user data:', error));
   }
 }

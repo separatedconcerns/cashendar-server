@@ -54,7 +54,7 @@ function addCalendarEvents(request, response) {
       // googleClient.authorize(OAuthToken, createEvents);
       const googleClientAuthorize = Promise.promisify(googleClient.authorize);
       return googleClientAuthorize(OAuthToken, createEvents)
-        .then(response.end())
+        .then(() => response.end())
         .catch(e => console.log('line 24 inside addCalendarEvents', e));
     });
 }

@@ -7,6 +7,7 @@ function exchangePublicToken(request, response) {
   const publicToken = request.body.publicToken;
   const idToken = request.body.idToken;
   const institutionName = request.body.institution;
+  const webhook = request.body.webhook;
   let uniqueUserId;
 
   verifyIdToken(idToken).then((result) => {
@@ -21,7 +22,7 @@ function exchangePublicToken(request, response) {
         request_id: successResponse.request_id,
       };
       user.addItemsToUser(uniqueUserId, payload.itemId, institutionName);
-      item.addDataToItem(payload.itemId, { access_token: payload.access_token, uniqueUserId });
+      item.addDataToItem(payload.itemId, { access_token: payload.access_token, uniqueUserId, webhook });
     })
     .then(() => {
       // set bool to indicate data is being fetched from Plaid

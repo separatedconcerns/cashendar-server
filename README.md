@@ -13,3 +13,10 @@ To setup:
 
 1) npm install
 2) npm start
+
+To add new environment variables:
+
+1) Add the environment variable to EnvKey
+2) Add the environment variable to the permitted list in config/webpack.config.dev.js (ctrl-f for "new EnvkeyWebpackPlugin")
+3) Do the same for config/webpack.config.prod.js
+4) Only use your personal dev key from EnvKey. Staging and Production keys are for CI.

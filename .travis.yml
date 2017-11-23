@@ -1,13 +1,14 @@
 language: node_js
 node_js:
 - 6.11.5
+before_install:
+- chmod +x deploy.sh
 install:
 - npm install
 cache:
   directories:
   - node_modules
 after_success:
-- npm run build
-- ./node_modules/.bin/firebase deploy -P dev --token $FIREBASE_DEPLOY_TOKEN
+- ./deploy.sh
 notifications:
   email: false

@@ -13,11 +13,9 @@ function deleteItem(request, response) {
     .then((output) => {
       uniqueUserId = output[0];
       accessToken = output[1];
-      return plaidClient.deleteItem(accessToken);
+      return Promise.all([plaidClient.deleteItem(accessToken), item.getItemTransactionsFromDB(itemId)]);
     })
-    .then(() => item.getItemTransactionsFromDB(itemId))
-    .then(transactions => Object.keys(transactions))
-    .then(transactionDates => user.updateDatesToScheduleQueue(uniqueUserId, transactionDates))
+    .then(transactions => user.updateDatesToScheduleQueue(uniqueUserId, Object.keys(transactions)))
     .then(() => Promise.all([item.deleteItemFromItemsCollection(itemId), user.deleteItemFromUserCollection(uniqueUserId, itemId)]))
     .then(() => axios.post(`${process.env.HOST}addCalendarEvents`, { uniqueUserId }))
     .then((result) => { response.end('Bank Item Deleted', result); });

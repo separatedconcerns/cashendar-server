@@ -104,11 +104,11 @@ exports.addItemsToUser = (uniqueUserId, itemId, institutionName) =>
       .catch(err => reject(err));
   });
 
-exports.updateDatesToScheduleQueue = (uniqueUserId, transactionsToRemove) =>
+exports.updateDatesToScheduleQueue = (uniqueUserId, transactionDates) =>
   new Promise((resolve, reject) => {
     admin.database()
       .ref(`users/${uniqueUserId}/datesToScheduleQueue`)
-      .set(transactionsToRemove)
+      .set(transactionDates)
       .then(resolve())
       .catch(err => reject(err));
   });

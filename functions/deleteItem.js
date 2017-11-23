@@ -9,39 +9,18 @@ function deleteItem(request, response) {
   let uniqueUserId;
   let accessToken;
 
-  item.getUserIdByItemFromDB(itemId)
+  Promise.all([item.getUserIdByItemFromDB(itemId), item.getAccessTokenByItem(itemId)])
     .then((output) => {
-      uniqueUserId = output;
+      uniqueUserId = output[0];
+      accessToken = output[1];
+      return plaidClient.deleteItem(accessToken);
     })
-    .then(() => {
-      item.getAccessTokenByItem(itemId)
-        .then((token) => {
-          accessToken = token;
-        })
-        .then(() => {
-          plaidClient.deleteItem(accessToken)
-            .then((result) => {
-              item.getItemTransactionsFromDB(itemId)
-                .then((transactions) => {
-                  return Object.keys(transactions);
-                })
-                .then((transactionDates) => {
-                  console.log(transactionDates);
-                  user.updateDatesToScheduleQueue(uniqueUserId, transactionDates)
-                    .then(() => {
-                      Promise.all([item.deleteItemFromItemsCollection(itemId),
-                        user.deleteItemFromUserCollection(uniqueUserId, itemId)])
-                        .then(() => {
-                          axios.post(`${process.env.HOST}addCalendarEvents`, { uniqueUserId })
-                            .then(() => {
-                              response.end('Bank Item Deleted', result);
-                            });
-                        });
-                    });
-                });
-            });
-        });
-    });
+    .then(() => item.getItemTransactionsFromDB(itemId))
+    .then(transactions => Object.keys(transactions))
+    .then(transactionDates => user.updateDatesToScheduleQueue(uniqueUserId, transactionDates))
+    .then(() => Promise.all([item.deleteItemFromItemsCollection(itemId), user.deleteItemFromUserCollection(uniqueUserId, itemId)]))
+    .then(() => axios.post(`${process.env.HOST}addCalendarEvents`, { uniqueUserId }))
+    .then((result) => { response.end('Bank Item Deleted', result); });
 }
 
 module.exports = deleteItem;

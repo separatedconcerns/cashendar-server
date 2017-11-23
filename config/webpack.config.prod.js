@@ -12,6 +12,7 @@ const eslintFormatter = require('react-dev-utils/eslintFormatter');
 const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
 const paths = require('./paths');
 const getClientEnvironment = require('./env');
+const EnvkeyWebpackPlugin = require('envkey-webpack-plugin');
 
 // Webpack uses `publicPath` to determine where the app is being served from.
 // It requires a trailing slash, or the file assets will get an incorrect path.
@@ -234,6 +235,21 @@ module.exports = {
     ],
   },
   plugins: [
+    new EnvkeyWebpackPlugin({
+
+      permitted: [
+        'REACT_APP_FIREBASE_API_KEY',
+        'REACT_APP_FIREBASE_AUTH_DOMAIN',
+        'REACT_APP_FIREBASE_DATABASE_URL',
+        'REACT_APP_FIREBASE_PROJECT_ID',
+        'REACT_APP_HOST',
+        'REACT_APP_PLAID_CLIENT_ID',
+        'REACT_APP_PLAID_PUBLIC_KEY',
+        'REACT_APP_PLAID_ENV',
+        'REACT_APP_WEBHOOK',
+      ],
+      // required, specify whitelist of vars to pull from Envkey -- you can also include "NODE_ENV" to make that available
+    }),
     // Makes some environment variables available in index.html.
     // The public URL is available as %PUBLIC_URL% in index.html, e.g.:
     // <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">

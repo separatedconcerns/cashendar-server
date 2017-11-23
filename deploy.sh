@@ -1,5 +1,5 @@
 #!/bin/bash
-if [ "$TRAVIS_BRANCH" == "master" ]; then
+if [ "$TRAVIS_BRANCH" == "master" -a $"$TRAVIS_PULL_REQUEST" == "false" ]; then
   echo "$TRAVIS_BRANCH"
   npm run build
   ./node_modules/.bin/firebase deploy -P dev --token $FIREBASE_DEPLOY_TOKEN

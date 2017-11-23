@@ -1,15 +1,15 @@
 language: node_js
 node_js:
 - 6.11.5
-before_install:
-- chmod +x deploy.sh
 install:
 - npm install
 cache:
   directories:
   - node_modules
 after_success:
-- npm run build
-- ./deploy.sh
+- if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+    npm run build
+    ./node_modules/.bin/firebase deploy -P dev --token $FIREBASE_DEPLOY_TOKEN
+  fi
 notifications:
   email: false

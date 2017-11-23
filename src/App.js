@@ -51,8 +51,7 @@ class App extends Component {
         return axios.post(config.url, config.payload)    
       })
       .then(response => {
-        let itemKeyValues = Object.entries(response.data.items)
-        this.setState({ items: itemKeyValues });
+        console.log(response.data);
       })
       .catch(err => console.log(err));
   }

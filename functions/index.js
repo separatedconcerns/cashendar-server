@@ -1,10 +1,10 @@
 require('envkey');
+const cors = require('cors')({ origin: true });
 const functions = require('firebase-functions');
 
 
 const wrap = fn => functions.https.onRequest((request, response) => {
-  response.header('Access-Control-Allow-Origin', '*');
-  fn(request, response);
+  cors(request, response, () => fn(request, response));
 });
 
 exports.addUser = wrap(require('./addUser.js'));

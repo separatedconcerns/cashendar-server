@@ -1,8 +1,6 @@
 language: node_js
 node_js:
 - 6.11.5
-before_install:
-- npm install -g firebase-tools
 install:
 - npm install
 cache:
@@ -10,6 +8,6 @@ cache:
   - /node_modules
 after_success:
 - npm run build
-- firebase deploy -P dev --token $FIREBASE_DEPLOY_TOKEN
+- ./node_modules/.bin/firebase deploy -P dev --token $FIREBASE_DEPLOY_TOKEN
 notifications:
   email: false

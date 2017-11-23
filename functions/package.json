@@ -14,10 +14,10 @@
     "plaid": "^2.1.0"
   },
   "scripts": {
-    "start": "firebase serve --port 5000 --only functions",
+    "start": "firebase serve --port 5000 --only functions --debug",
     "lint": "./node_modules/.bin/eslint index.js",
-    "deploy-production": "firebase deploy --only functions -P production",
-    "deploy-dev": "firebase deploy --only functions -P dev",
+    "deploy-production": "firebase deploy --only functions -P production --debug",
+    "deploy-dev": "firebase deploy --only functions -P dev --debug",
     "test": "jest"
   },
   "private": true,

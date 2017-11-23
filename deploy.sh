@@ -5,6 +5,6 @@ if [ "$TRAVIS_BRANCH" == "master" -a $"$TRAVIS_PULL_REQUEST" == "false" ]; then
   ./node_modules/.bin/firebase deploy -P dev --token $FIREBASE_DEPLOY_TOKEN
   exit 0
 else
-  echo "Not deploying since not on master"
+  echo "Will only deploy if on master and not a PR"
   exit 0
 fi

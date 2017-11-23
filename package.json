@@ -57,6 +57,7 @@
     "test": "node scripts/test.js --env=jsdom --coverage"
   },
   "devDependencies": {
+    "envkey-webpack-plugin": "^1.0.0",
     "eslint-config-airbnb": "^15.1.0",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-jsx-a11y": "^5.1.1",

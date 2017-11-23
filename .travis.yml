@@ -7,9 +7,10 @@ cache:
   directories:
   - node_modules
 after_success:
-- if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-    npm run build
-    ./node_modules/.bin/firebase deploy -P dev --token $FIREBASE_DEPLOY_TOKEN
-  fi
+- npm run build
+- ./node_modules/.bin/firebase deploy -P dev --token $FIREBASE_DEPLOY_TOKEN
+stages:
+- name: after_success
+    if: branch = master
 notifications:
   email: false

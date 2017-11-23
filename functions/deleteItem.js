@@ -16,8 +16,10 @@ function deleteItem(request, response) {
       return Promise.all([plaidClient.deleteItem(accessToken), item.getItemTransactionsFromDB(itemId)]);
     })
     .then(transactions => user.updateDatesToScheduleQueue(uniqueUserId, Object.keys(transactions)))
-    .then(() => Promise.all([item.deleteItemFromItemsCollection(itemId), user.deleteItemFromUserCollection(uniqueUserId, itemId)]))
-    .then(() => axios.post(`${process.env.HOST}addCalendarEvents`, { uniqueUserId }))
+    .then(() => Promise.all([
+      item.deleteItemFromItemsCollection(itemId),
+      user.deleteItemFromUserCollection(uniqueUserId, itemId),
+      axios.post(`${process.env.HOST}addCalendarEvents`, { uniqueUserId })]))
     .then((result) => { response.end('Bank Item Deleted', result); });
 }
 

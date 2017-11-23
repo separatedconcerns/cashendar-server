@@ -1,9 +1,9 @@
 language: node_js
 node_js:
-- 6.11.1
-before_script:
-- cd functions
+- 6.11.5
+before_install:
 - npm install -g firebase-tools
+install:
 - npm install
 cache:
   directories:

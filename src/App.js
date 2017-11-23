@@ -1,9 +1,9 @@
+/* eslint-disable */
 import React, { Component } from 'react';
 import axios from 'axios';
 import qs from 'qs';
 import PlaidLink from 'react-plaid-link';
 import { auth, provider } from './firebase';
-
 // const PlaidLink = require('react-plaid-link');
 
 class App extends Component {
@@ -12,6 +12,7 @@ class App extends Component {
     this.state = {
       user: null,
       idToken: null,
+      items: null
     };
 
     this.login = this.login.bind(this);
@@ -47,9 +48,13 @@ class App extends Component {
           url: `${process.env.REACT_APP_HOST}addUser`,
           payload: qs.stringify({ idToken, OAuthToken }),
         };
-        axios.post(config.url, config.payload)
-          .catch(err => console.log(err));
-      });
+        return axios.post(config.url, config.payload)    
+      })
+      .then(response => {
+        let itemKeyValues = Object.entries(response.data.items)
+        this.setState({ items: itemKeyValues });
+      })
+      .catch(err => console.log(err));
   }
 
   handleOnSuccess(token, metadata) {
@@ -59,7 +64,6 @@ class App extends Component {
   }
 
   exchangePublicToken(publicToken, institution) {
-    console.log(this.state.idToken);
     const config = {
       url: `${process.env.REACT_APP_HOST}exchangePublicToken`,
       payload: qs.stringify({
@@ -69,7 +73,8 @@ class App extends Component {
       }),
     };
     axios.post(config.url, config.payload)
-      .catch((error) => { console.log(error); });
+    .then(response => console.log(response.data))
+    .catch((error) => { console.log(error); });
   }
 
   logout() {
@@ -98,7 +103,7 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <h1>Where's My Money</h1>
+        <h1>Cashendar</h1>
         <div className="wrapper">
           {this.state.user ?
             <button onClick={this.logout}>Log Out</button>
@@ -110,12 +115,13 @@ class App extends Component {
         {this.state.user ?
           <div>
             <div>{this.state.user.email}</div>
+            {/* <div>{this.state.items[0][1].name}</div> */}
             <PlaidLink
               publicKey={process.env.REACT_APP_PLAID_PUBLIC_KEY}
               product="connect"
               webhook={process.env.REACT_APP_WEBHOOK}
               env={process.env.REACT_APP_PLAID_ENV}
-              clientName="Wheres My Money"
+              clientName="Cashendar"
               onSuccess={this.handleOnSuccess}
             />
           </div>
@@ -126,7 +132,20 @@ class App extends Component {
           <button onClick={this.deleteProfile}>Delete Profile</button> :
           <div />
         }
+        <p />
+        {process.env.REACT_APP_PLAID_ENV === 'sandbox' ? 
+        <div className="environments">
+          <div className="firebaseEnvironment">
+            <b>Firebase environment:</b><br /> {process.env.REACT_APP_HOST}
+          </div>
+          <div className="plaidEnvironment">
+            <b>Plaid environment</b>:<br /> {process.env.REACT_APP_PLAID_ENV}<br />
+            <b>Plaid webhook</b>:<br />{process.env.REACT_APP_WEBHOOK}
+          </div>
+        </div>
+        : <div> </div>}
       </div>
+      
     );
   }
 }

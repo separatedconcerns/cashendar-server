@@ -15,7 +15,11 @@ function deleteItem(request, response) {
       accessToken = output[1];
       return Promise.all([plaidClient.deleteItem(accessToken), item.getItemTransactionsFromDB(itemId)]);
     })
-    .then(transactions => user.updateDatesToScheduleQueue(uniqueUserId, Object.keys(transactions)))
+    .then((results) => {
+      const transactions = results[1];
+      const transactionDates = Object.keys(transactions);
+      return user.updateDatesToScheduleQueue(uniqueUserId, transactionDates);
+    })
     .then(() => Promise.all([
       item.deleteItemFromItemsCollection(itemId),
       user.deleteItemFromUserCollection(uniqueUserId, itemId),

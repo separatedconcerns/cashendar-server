@@ -27,17 +27,17 @@ class App extends Component {
       if (user) {
         this.setState({ user });
       }
-    });
-  }
+    })
+    auth.getRedirectResult().then(result => {
+        if (result.credential) {
+          const OAuthToken = result.credential.accessToken;
+          this.verifyUser(OAuthToken);
+        }
+      })
+    }
 
   login() {
-    auth.signInWithPopup(provider)
-      .then((result) => {
-        const user = result.user;
-        const OAuthToken = result.credential.accessToken;
-        this.setState({ user });
-        this.verifyUser(OAuthToken);
-      });
+    auth.signInWithRedirect(provider);
   }
 
   verifyUser(OAuthToken) {
@@ -81,8 +81,6 @@ class App extends Component {
       .then(() => {
         this.setState({
           user: null,
-          transactions: [],
-          transactionSums: {},
           idToken: null,
         });
       });

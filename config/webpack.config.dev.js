@@ -12,7 +12,7 @@ const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
 const getClientEnvironment = require('./env');
 const paths = require('./paths');
 const EnvkeyWebpackPlugin = require('envkey-webpack-plugin');
-
+const whitelist = require('./whitelist');
 // Webpack uses `publicPath` to determine where the app is being served from.
 // In development, we always serve from the root. This makes config easier.
 const publicPath = '/';
@@ -215,17 +215,7 @@ module.exports = {
 
     new EnvkeyWebpackPlugin({
 
-      permitted: [
-        'REACT_APP_FIREBASE_API_KEY',
-        'REACT_APP_FIREBASE_AUTH_DOMAIN',
-        'REACT_APP_FIREBASE_DATABASE_URL',
-        'REACT_APP_FIREBASE_PROJECT_ID',
-        'REACT_APP_HOST',
-        'REACT_APP_PLAID_CLIENT_ID',
-        'REACT_APP_PLAID_PUBLIC_KEY',
-        'REACT_APP_PLAID_ENV',
-        'REACT_APP_WEBHOOK',
-      ],
+      permitted: whitelist,
       // required, specify whitelist of vars to pull from Envkey -- you can also include "NODE_ENV" to make that available
     }),
     // Makes some environment variables available in index.html.

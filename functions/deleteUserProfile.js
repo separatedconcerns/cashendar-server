@@ -26,21 +26,23 @@ function deleteUserProfile(request, response) {
 const deleteBankItems = (uniqueUserId) => {
   user.getUserItems(uniqueUserId)
     .then((itemsObj) => {
-      const allItems = Object.keys(itemsObj);
-      allItems.forEach((currentItem) => {
-        item.getItemFromDB(currentItem)
-          .then((itemData) => {
-            const config = {
-              url: `${process.env.HOST}deleteItem`,
-              payload: {
-                itemToDelete: currentItem,
-                access_token: itemData.access_token,
-              },
-            };
-            axios.post(config.url, config.payload)
-              .then(plaidRes => console.log('29', plaidRes.data));
-          });
-      });
+      if (itemsObj !== null) {
+        const allItems = Object.keys(itemsObj);
+        allItems.forEach((currentItem) => {
+          item.getItemFromDB(currentItem)
+            .then((itemData) => {
+              const config = {
+                url: `${process.env.HOST}deleteItem`,
+                payload: {
+                  itemToDelete: currentItem,
+                  access_token: itemData.access_token,
+                },
+              };
+              axios.post(config.url, config.payload)
+                .then(plaidRes => console.log('29', plaidRes.data));
+            });
+        });
+      }
     });
 };
 

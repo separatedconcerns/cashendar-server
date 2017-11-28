@@ -1,132 +1,81 @@
 const admin = require('../apiClients/firebaseClient');
 
-const userRef = uniqueUserId => admin.database()
-  .ref(`users/${uniqueUserId}`);
+const db = ref => admin.database().ref(ref);
+const auth = admin.auth();
 
 exports.doesUserExist = uniqueUserId =>
-  new Promise((resolve, reject) => {
-    console.log('does user exist called');
-    userRef(uniqueUserId).once('value')
-      .then(snapshot => resolve(snapshot))
-      .catch(err => reject(err));
-  });
+  db(`users/${uniqueUserId}`).once('value')
+    .then(snapshot => snapshot)
+    .catch(err => console.log(err));
 
 exports.getUserFromDB = uniqueUserId =>
-  new Promise((resolve, reject) => {
-    userRef(uniqueUserId)
-      .once('value')
-      .then(snapshot => resolve(snapshot.val()))
-      .catch(err => reject(err));
-  });
+  db(`users/${uniqueUserId}`)
+    .once('value')
+    .then(snapshot => snapshot.val())
+    .catch(err => console.log(err));
 
 exports.getUserItems = uniqueUserId =>
-  new Promise((resolve, reject) => {
-    admin.database()
-      .ref(`users/${uniqueUserId}/items`)
-      .once('value')
-      .then(snapshot => resolve(snapshot.val()))
-      .catch(err => reject(err));
-  });
+  db(`users/${uniqueUserId}/items`)
+    .once('value')
+    .then(snapshot => snapshot.val())
+    .catch(err => console.log(err));
 
 exports.getUserProfile = uniqueUserId =>
-  new Promise((resolve, reject) => {
-    admin.auth()
-      .getUser(uniqueUserId)
-      .then(userRecord => resolve(userRecord.toJSON()))
-      .catch(err => reject(err));
-  });
+  auth.getUser(uniqueUserId)
+    .then(userRecord => userRecord.toJSON())
+    .catch(err => console.log(err));
 
 exports.initializeUser = (uniqueUserId, payload) =>
-  new Promise((resolve, reject) => {
-    userRef(uniqueUserId)
-      .set(payload)
-      .then(resolve())
-      .catch(err => reject(err));
-  });
+  db(`users/${uniqueUserId}`)
+    .set(payload)
+    .catch(err => console.log(err));
 
 exports.updateUser = (uniqueUserId, newData) =>
-  new Promise((resolve, reject) => {
-    userRef(uniqueUserId)
-      .update(newData)
-      .then(resolve())
-      .catch(err => reject(err));
-  });
+  db(`users/${uniqueUserId}`)
+    .update(newData)
+    .catch(err => console.log(err));
 
 exports.deleteUserInAuth = uniqueUserId =>
-  new Promise((resolve, reject) => {
-    admin.auth()
-      .deleteUser(uniqueUserId)
-      .then(resolve())
-      .catch(err => reject(err));
-  });
+  auth.deleteUser(uniqueUserId)
+    .catch(err => console.log(err));
 
 exports.deleteUserFromDB = uniqueUserId =>
-  new Promise((resolve, reject) => {
-    userRef(uniqueUserId)
-      .remove()
-      .then(resolve())
-      .catch(err => reject(err));
-  });
+  db(`users/${uniqueUserId}`)
+    .remove()
+    .catch(err => console.log(err));
 
 exports.getDatesToScheduleQueueFromDB = uniqueUserId =>
-  new Promise((resolve, reject) => {
-    admin.database()
-      .ref(`users/${uniqueUserId}/datesToScheduleQueue`)
-      .once('value')
-      .then(snapshot => resolve(snapshot.val()))
-      .catch(err => reject(err));
-  });
+  db(`users/${uniqueUserId}/datesToScheduleQueue`)
+    .once('value')
+    .then(snapshot => snapshot.val()))
+    .catch(err => console.log(err));
 
 exports.updateScheduledEvents = (uniqueUserId, newEvents) =>
-  new Promise((resolve, reject) => {
-    admin.database()
-      .ref(`users/${uniqueUserId}/scheduledEvents`)
-      .update(newEvents)
-      .then(resolve())
-      .catch(err => reject(err));
-  });
+  db(`users/${uniqueUserId}/scheduledEvents`)
+    .update(newEvents)
+    .catch(err => console.log(err));
 
 exports.updateEventsToDeleteQueue = (uniqueUserId, eventsToDeleteQueue) =>
-  new Promise((resolve, reject) => {
-    admin.database()
-      .ref(`users/${uniqueUserId}/eventsToDeleteQueue`)
-      .set(eventsToDeleteQueue)
-      .then(resolve())
-      .catch(err => reject(err));
-  });
+  db(`users/${uniqueUserId}/eventsToDeleteQueue`)
+    .set(eventsToDeleteQueue)
+    .catch(err => console.log(err));
 
 exports.addItemsToUser = (uniqueUserId, itemId, institutionName) =>
-  new Promise((resolve, reject) => {
-    admin.database()
-      .ref(`users/${uniqueUserId}/items/${itemId}`)
-      .set(institutionName)
-      .then(resolve())
-      .catch(err => reject(err));
-  });
+  db(`users/${uniqueUserId}/items/${itemId}`)
+    .set(institutionName)
+    .catch(err => console.log(err));
 
 exports.updateDatesToScheduleQueue = (uniqueUserId, transactionDates) =>
-  new Promise((resolve, reject) => {
-    admin.database()
-      .ref(`users/${uniqueUserId}/datesToScheduleQueue`)
-      .set(transactionDates)
-      .then(resolve())
-      .catch(err => reject(err));
-  });
+  db(`users/${uniqueUserId}/datesToScheduleQueue`)
+    .set(transactionDates)
+    .catch(err => console.log(err));
 
 exports.clearDatesToScheduleAndEventsToDeleteQueues = uniqueUserId =>
-  new Promise((resolve, reject) => {
-    admin.database()
-      .ref(`users/${uniqueUserId}`)
-      .update({ datesToScheduleQueue: null, eventsToDeleteQueue: null })
-      .then(resolve())
-      .catch(err => reject(err));
-  });
+  db(`users/${uniqueUserId}`)
+    .update({ datesToScheduleQueue: null, eventsToDeleteQueue: null })
+    .catch(err => console.log(err));
 
 exports.deleteItemFromUserCollection = (uniqueUserId, itemId) =>
-  new Promise((resolve, reject) => {
-    admin.database()
-      .ref(`users/${uniqueUserId}/items/${itemId}`)
-      .remove()
-      .then(resolve())
-      .catch(err => reject(err));
-  });
+  db(`users/${uniqueUserId}/items/${itemId}`)
+    .remove()
+    .catch(err => console.log(err));

@@ -1,13 +1,12 @@
 const user = require('./controllers/userController');
 const item = require('./controllers/itemController');
-const verifyIdToken = require('./utils/verifyIdToken.js');
 const axios = require('axios');
 
 function deleteUserProfile(request, response) {
   const idToken = request.body.idToken;
   let uniqueUserId;
 
-  verifyIdToken(idToken).then((result) => {
+  user.verifyIdToken(idToken).then((result) => {
     uniqueUserId = result;
   })
     .then(() => {

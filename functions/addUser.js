@@ -1,5 +1,4 @@
 const user = require('./controllers/userController');
-const verifyIdToken = require('./utils/verifyIdToken.js');
 const axios = require('axios');
 
 function addUser(request, response) {
@@ -7,7 +6,7 @@ function addUser(request, response) {
   const OAuthToken = request.body.OAuthToken;
   let uniqueUserId;
 
-  verifyIdToken(idToken)
+  user.verifyIdToken(idToken)
     .then((result) => {
       uniqueUserId = result;
       user.doesUserExist(uniqueUserId)

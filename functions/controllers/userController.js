@@ -25,6 +25,11 @@ exports.getUserProfile = uniqueUserId =>
     .then(userRecord => userRecord.toJSON())
     .catch(err => console.log(err));
 
+exports.verifyIdToken = idToken =>
+  auth.verifyIdToken(idToken)
+    .then(decodedToken => decodedToken.uid)
+    .catch(error => console.log(error));
+
 exports.initializeUser = (uniqueUserId, payload) =>
   db(`users/${uniqueUserId}`)
     .set(payload)

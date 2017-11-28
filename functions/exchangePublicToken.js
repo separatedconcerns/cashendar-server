@@ -1,6 +1,5 @@
 const user = require('./controllers/userController');
 const item = require('./controllers/itemController');
-const verifyIdToken = require('./utils/verifyIdToken.js');
 const plaidClient = require('./apiClients/plaidClient.js');
 
 function exchangePublicToken(request, response) {
@@ -9,7 +8,7 @@ function exchangePublicToken(request, response) {
   const institutionName = request.body.institution;
   let uniqueUserId;
 
-  verifyIdToken(idToken)
+  user.verifyIdToken(idToken)
     .then((result) => { uniqueUserId = result; })
     .then(() => plaidClient.exchangePublicToken(publicToken))
     .then(payload => Promise.all([

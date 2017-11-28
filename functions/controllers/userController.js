@@ -47,7 +47,7 @@ exports.deleteUserFromDB = uniqueUserId =>
 exports.getDatesToScheduleQueueFromDB = uniqueUserId =>
   db(`users/${uniqueUserId}/datesToScheduleQueue`)
     .once('value')
-    .then(snapshot => snapshot.val()))
+    .then(snapshot => snapshot.val())
     .catch(err => console.log(err));
 
 exports.updateScheduledEvents = (uniqueUserId, newEvents) =>

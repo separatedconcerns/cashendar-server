@@ -9,15 +9,14 @@ function addUser(request, response) {
   user.verifyIdToken(idToken)
     .then((result) => {
       uniqueUserId = result;
-      user.doesUserExist(uniqueUserId)
-        .then((snapshot) => {
-          if (snapshot.exists()) {
-            console.log('user exists');
-            response.send({ items: snapshot.val().items });
-          } else {
-            addUserToDB(); // eslint-disable-line
-          }
-        });
+      return user.doesUserExist(uniqueUserId);
+    })
+    .then((snapshot) => {
+      if (snapshot.exists()) {
+        response.send({ items: snapshot.val().items });
+      } else {
+        addUserToDB(); // eslint-disable-line
+      }
     });
 
   function addUserToDB() {

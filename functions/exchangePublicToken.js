@@ -8,13 +8,17 @@ function exchangePublicToken(request, response) {
   const institutionName = request.body.institution;
   let uniqueUserId;
 
-  user.verifyIdToken(idToken)
-    .then((result) => { uniqueUserId = result; })
-    .then(() => plaidClient.exchangePublicToken(publicToken))
-    .then(payload => Promise.all([
-      user.addItemsToUser(uniqueUserId, payload.item_id, institutionName),
-      item.addDataToItem(payload.item_id, { access_token: payload.access_token, uniqueUserId }),
-      user.updateUser(uniqueUserId, { fetchingBanks: true })]))
+  Promise.all([
+    user.verifyIdToken(idToken),
+    plaidClient.exchangePublicToken(publicToken)])
+    .then((result) => {
+      uniqueUserId = result[0];
+      const payload = result[1];
+      return Promise.all([
+        user.addItemsToUser(uniqueUserId, payload.item_id, institutionName),
+        item.addDataToItem(payload.item_id, { access_token: payload.access_token, uniqueUserId }),
+        user.updateUser(uniqueUserId, { fetchingBanks: true })]);
+    })
     .then(() => response.end())
     .catch(error => console.log(error));
 }

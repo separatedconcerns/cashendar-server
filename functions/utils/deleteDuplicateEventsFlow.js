@@ -19,19 +19,17 @@ const deleteDuplicateEventsFlow = (uniqueUserId, newEvents) => {
       },
     };
     axios.post(config.url, config.payload)
-      .catch(e => console.log('Events to delete array not created!:', e))
-      .then(calId_eventsToDeleteQueue_OAuthToken => ({
-        url: `${process.env.HOST}deleteDuplicateEventsInCalendar`,
-        payload: calId_eventsToDeleteQueue_OAuthToken.data,
-      }))
-      .then((config2) => {
-        axios.post(config2.url, config2.payload)
-          .then(() => {
-            Promise.all([user.updateScheduledEvents(uniqueUserId, newEvents),
-              user.clearDatesToScheduleAndEventsToDeleteQueues(uniqueUserId)])
-              .catch(e => console.log('Promise.all error!:', e));
-          });
-      });
+      .then((calId_eventsToDeleteQueue_OAuthToken) => {
+        const config2 = {
+          url: `${process.env.HOST}deleteDuplicateEventsInCalendar`,
+          payload: calId_eventsToDeleteQueue_OAuthToken.data,
+        };
+        return axios.post(config2.url, config2.payload);
+      })
+      .then(() => Promise.all(
+        [user.updateScheduledEvents(uniqueUserId, newEvents),
+          user.clearDatesToScheduleAndEventsToDeleteQueues(uniqueUserId)]))
+      .catch(e => console.log('Promise.all error!:', e));
   }, 300);
 };
 

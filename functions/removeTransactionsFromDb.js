@@ -5,12 +5,15 @@ function removeTransactionsFromDb(request, response) {
   const itemId = request.body.itemId;
   const plaidRemovedTransactions = request.body.removedTransactions;
   let uniqueUserId;
+  let transactions;
+  let transactionInfo;
 
-  item.getUserIdByItemFromDB(itemId)
-    .then((userId) => { uniqueUserId = userId; });
-
-  item.getItemTransactionsFromDB(itemId)
-    .then((transactions) => {
+  Promise.all([
+    item.getUserIdByItemFromDB(itemId),
+    item.getItemTransactionsFromDB(itemId)])
+    .then((result) => {
+      uniqueUserId = result[0];
+      transactions = result[1];
       const transactionsToRemove = [];
       const transactionsToRemoveDates = {};
       const transactionDates = Object.keys(transactions);
@@ -26,21 +29,13 @@ function removeTransactionsFromDb(request, response) {
         }
       });
 
-      return { transactionsToRemove, transactionsToRemoveDates };
+      transactionInfo = { transactionsToRemove, transactionsToRemoveDates };
+      const removeTransactionPromise = transactionInfo.transactionsToRemove.map(dateAndId =>
+        item.removeTransactions(itemId, dateAndId[0], dateAndId[1]));
+      return Promise.all(removeTransactionPromise);
     })
-    .then((transactionInfo) => {
-      let counter = transactionInfo.transactionsToRemove.length;
-      transactionInfo.transactionsToRemove.forEach((dateAndId) => {
-        item.removeTransactions(itemId, dateAndId[0], dateAndId[1])
-          .then(counter -= 1);
-
-        if (counter <= 0) {
-          console.log(transactionInfo.transactionsToRemove.length, 'transactions have been removed from database.');
-          user.updateDatesToScheduleQueue(uniqueUserId, Object.keys(transactionInfo.transactionsToRemoveDates))
-            .then(response.send(uniqueUserId));
-        }
-      });
-    });
+    .then(() => user.updateDatesToScheduleQueue(uniqueUserId, Object.keys(transactionInfo.transactionsToRemoveDates)))
+    .then(() => response.send(uniqueUserId));
 }
 
 module.exports = removeTransactionsFromDb;

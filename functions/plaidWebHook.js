@@ -7,7 +7,7 @@ function plaidWebHook(request, response) {
   const newTransactions = request.body.new_transactions || null;
   console.log('WEBHOOK HIT:', itemId, webHookCode, newTransactions);
 
-  if (webHookCode === 'INITIAL_UPDATE') {
+  if (webHookCode === 'HISTORICAL_UPDATE') {
     response.end();
   } else if (webHookCode === 'TRANSACTIONS_REMOVED') {
     const config = {
@@ -19,12 +19,10 @@ function plaidWebHook(request, response) {
     };
 
     axios.post(config.url, config.payload)
-      .then((uniqueUserId) => {
-        axios.post(`${process.env.HOST}addCalendarEvents`, { uniqueUserId: uniqueUserId.data })
-          .then(response.end())
-          .catch(e => console.log('TRANSACTIONS_REMOVED ERROR!:', e));
-      })
-      .catch(e => console.log(e, 'line 26 plaidWebHook'));
+      .then(uniqueUserId =>
+        axios.post(`${process.env.HOST}addCalendarEvents`, { uniqueUserId: uniqueUserId.data }))
+      .then(response.end())
+      .catch(e => console.log('TRANSACTIONS_REMOVED ERROR!:', e));
   } else {
     item.getItemFromDB(itemId)
       .then((itemData) => {
@@ -38,10 +36,8 @@ function plaidWebHook(request, response) {
             },
           };
           axios.post(config.url, config.payload)
-            .then(() => {
-              axios.post(`${process.env.HOST}addCalendarEvents`, config.payload)
-                .then(response.end());
-            })
+            .then(() => axios.post(`${process.env.HOST}addCalendarEvents`, config.payload))
+            .then(() => response.end())
             .catch(e => console.log('plaidWebHook Error!:', e));
         } else {
           response.end();

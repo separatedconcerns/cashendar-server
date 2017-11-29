@@ -27,9 +27,8 @@ function getTransactionsFromPlaid(request, response) {
           transactionsObj.transactions = transactionsObj.transactions.concat(plaidResponse.transactions);
           transactionsObj.itemId = transactionsObj.itemId || plaidResponse.item.item_id;
           console.log(`${transactionsObj.transactions.length} of ${numOfNewTransactions} NEW TRANSACTIONS FETCHED FROM PLAID`);
-          accounts.forEach((account) => {
-            item.addAccountsToItem(transactionsObj.itemId, account);
-          });
+          const accountsPromise = accounts.map(account => item.addAccountsToItem(transactionsObj.itemId, account));
+          return Promise.all(accountsPromise);
         })
         .catch((e) => {
           console.log('pingPlaid ERROR!: ', e);
@@ -47,36 +46,33 @@ function getTransactionsFromPlaid(request, response) {
     }, 100);
   });
 
-  plaidGetTransactions.then((transactionsObj) => {
-    const itemId = transactionsObj.itemId;
-    const transactions = transactionsObj.transactions;
-    console.log(`getTransactionsFromPlaid TOTAL TRANSACTIONS: ${transactions.length}`);
+  let itemId;
+  let transactions;
+  let payload;
 
-    packageTransactionsByDate(transactions)
-      .then((transactionsByDate) => {
-        const payload = {
-          dates: Object.keys(transactionsByDate),
-          transactions: transactionsByDate,
-        };
-        return payload;
-      })
-      .then((payload) => {
-        payload.dates.forEach((date) => {
-          item.addTransactionsByDate(itemId, date, payload.transactions[date])
-            .catch(e => console.log(e, 'NOT UPDATED IN DB!'));
-        });
-        return payload;
-      })
-      .then((payload) => {
-        item.getUserIdByItemFromDB(itemId)
-          .then((uniqueUserId) => {
-            const pollStatusAndDatesToScheduleQueue =
-              { fetchingBanks: false, datesToScheduleQueue: payload.dates };
-            user.updateUser(uniqueUserId, pollStatusAndDatesToScheduleQueue)
-              .then(response.json(payload.dates));
-          });
-      });
+  plaidGetTransactions.then((transactionsObj) => {
+    itemId = transactionsObj.itemId;
+    transactions = transactionsObj.transactions;
+    console.log(`getTransactionsFromPlaid TOTAL TRANSACTIONS: ${transactions.length}`);
+    return packageTransactionsByDate(transactions);
   })
+    .then((transactionsByDate) => {
+      payload = {
+        dates: Object.keys(transactionsByDate),
+        transactions: transactionsByDate,
+      };
+      const promArr = payload.dates.map(date =>
+        item.addTransactionsByDate(itemId, date, payload.transactions[date])
+          .catch(e => console.log(e, 'NOT UPDATED IN DB!')));
+      return Promise.all(promArr);
+    })
+    .then(() => item.getUserIdByItemFromDB(itemId))
+    .then((uniqueUserId) => {
+      const pollStatusAndDatesToScheduleQueue =
+          { fetchingBanks: false, datesToScheduleQueue: payload.dates };
+      return user.updateUser(uniqueUserId, pollStatusAndDatesToScheduleQueue);
+    })
+    .then(() => response.json(payload.dates))
     .catch(error => console.log('getTransactionsFromPlaid', error));
 }
 

@@ -48,7 +48,7 @@ exports.removeTransactions = (itemId, dateAndId1, dateAndId2) =>
 
 exports.addAccountsToItem = (itemId, dataToAdd) =>
   db(`items/${itemId}/accounts/${dataToAdd.account_id}`)
-    .update(dataToAdd)
+    .set(dataToAdd)
     .catch(err => console.log(err));
 
 exports.removeAllTransactionsInAnItem = itemId =>

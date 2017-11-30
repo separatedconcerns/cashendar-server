@@ -1,13 +1,15 @@
 language: node_js
 node_js:
-- 6.11.1
+- 6.11.5
 before_script:
 - cd functions
-- npm install -g firebase-tools
+install:
 - npm install
 cache:
   directories:
-  - functions/node_modules
+  - node_modules
 after_success:
 - pwd
-- firebase deploy --only functions -P production --token $FIREBASE_DEPLOY_TOKEN
+- bash deploy.sh
+notifications:
+  email: false

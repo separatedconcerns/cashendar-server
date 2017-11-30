@@ -10,6 +10,8 @@ cache:
   - node_modules
 after_success:
 - pwd
+- cd ..
+- pwd
 - bash deploy.sh
 notifications:
   email: false

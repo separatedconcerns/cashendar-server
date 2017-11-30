@@ -9,19 +9,21 @@ function getTransactionsFromDatabase(request, response) {
         datesToScheduleQueue: userData.datesToScheduleQueue,
         itemIds: userData.items ? Object.keys(userData.items) : [],
       };
-      let allTransactions = {};
+      const allTransactions = { accounts: {}, transactions: {} };
       const lastItemId = payload.itemIds[payload.itemIds.length - 1];
       const lastDate = payload.datesToScheduleQueue[payload.datesToScheduleQueue.length - 1];
 
       if (payload.itemIds.length === 0) { response.json(allTransactions); }
 
       const itemsProm = payload.itemIds.map(itemId =>
-        item.getItemTransactionsFromDB(itemId)
-          .then((transactions) => {
-            transactions = transactions || {};
+        item.getItemFromDB(itemId)
+          .then((itemObj) => {
+            const transactions = itemObj.transactions ? itemObj.transactions : {};
+            const accounts = itemObj.accounts ? itemObj.accounts : {};
+            Object.assign(allTransactions.accounts, accounts);
             payload.datesToScheduleQueue.forEach((date) => {
-              const mergeObj = Object.assign(allTransactions, transactions[date] || {});
-              allTransactions = mergeObj;
+              const mergeObj = Object.assign(allTransactions.transactions, transactions[date] || {});
+              allTransactions.transactions = mergeObj;
               if (itemId === lastItemId && date === lastDate) { response.json(allTransactions); }
             });
           }));

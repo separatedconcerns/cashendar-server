@@ -9,21 +9,32 @@ function getDailySpendingAndTransactions(request, response) {
     },
   };
   axios.post(config.url, config.payload)
-    .then((transactions) => {
-      const transKeys = Object.keys(transactions.data);
-      const transactionsByDate = {};
+    .then((accountsAndTransactions) => {
+      const transactions = accountsAndTransactions.data.transactions;
+      const accounts = accountsAndTransactions.data.accounts;
+      const transactionIds = Object.keys(transactions);
+      // abbreviate transactionsByDateAndAccount w/ tBDAA
+      const tBDAA = {};
+      const transactionsByDateAndAccount = tBDAA;
+      
       let counter = 0;
-      if (transKeys.length < 1) { response.json(transactionsByDate); }
-      transKeys.forEach((key) => {
-        const transaction = transactions.data[key];
+      if (transactionIds.length < 1) { response.json(transactionsByDateAndAccount); }
+      transactionIds.forEach((transactionId) => {
+        const transaction = transactions[transactionId];
+        
         if (transaction.date) {
-          transactionsByDate[transaction.date] = transactionsByDate[transaction.date] || { list: [], sum: 0 };
-          transactionsByDate[transaction.date].list.push(` $ ${transaction.amount}   ${transaction.name}`);
-          transactionsByDate[transaction.date].sum += transaction.amount;
+          const date = transaction.date;
+          const acctId = transaction.account_id;
+          const acctName = accounts[acctId].name;
+
+          tBDAA[date] = tBDAA[date] || { sum: 0 };
+          tBDAA[date][acctName] = tBDAA[date][acctName] || [];
+          tBDAA[date][acctName].push(` $ ${transaction.amount}   ${transaction.name}`);
+          tBDAA[date].sum += transaction.amount;
         }
 
-        if (counter >= transKeys.length - 1) {
-          response.json(transactionsByDate);
+        if (counter >= transactionIds.length - 1) {
+          response.json(transactionsByDateAndAccount);
         }
         counter += 1;
       });

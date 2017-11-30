@@ -7,11 +7,13 @@ install:
 - npm install
 cache:
   directories:
-  - node_modules
+  - functions/node_modules
 after_success:
 - pwd
+- ls
 - cd ..
 - pwd
+- ls
 - bash deploy.sh
 notifications:
   email: false

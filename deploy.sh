@@ -5,7 +5,7 @@ then
   chmod +x envkey-fetch-linux
   ./envkey-fetch-linux $ENVKEY_STAGING > src/creds.json
   npm run build
-  ./node_modules/.bin/firebase deploy -P dev --token $FIREBASE_STAGING_DEPLOY_TOKEN
+  ./node_modules/.bin/firebase deploy -P staging --token $FIREBASE_STAGING_DEPLOY_TOKEN
   exit 0
 elif [ "$TRAVIS_BRANCH" == "production" -a $"$TRAVIS_PULL_REQUEST" == "false" ];
 then

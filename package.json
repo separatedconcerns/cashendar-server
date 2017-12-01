@@ -50,6 +50,7 @@
     "whatwg-fetch": "2.0.3"
   },
   "scripts": {
+    "getEnv": "./envkey-fetch-osx > src/creds.json",
     "start": "node scripts/start.js",
     "deploy-dev": "npm run build && firebase deploy -P dev",
     "deploy-production": "npm run build && firebase deploy -P production",

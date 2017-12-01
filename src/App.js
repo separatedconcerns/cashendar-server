@@ -4,6 +4,7 @@ import axios from 'axios';
 import qs from 'qs';
 import PlaidLink from 'react-plaid-link';
 import { auth, provider } from './firebase';
+import creds from './creds.json'
 // const PlaidLink = require('react-plaid-link');
 
 class App extends Component {
@@ -12,7 +13,7 @@ class App extends Component {
     this.state = {
       user: null,
       idToken: null,
-      items: null
+      // items: null,
     };
 
     this.login = this.login.bind(this);
@@ -20,6 +21,7 @@ class App extends Component {
     this.handleOnSuccess = this.handleOnSuccess.bind(this);
     this.exchangePublicToken = this.exchangePublicToken.bind(this);
     this.deleteProfile = this.deleteProfile.bind(this);
+    // this.listItems = this.listItems.bind(this);
   }
 
   componentDidMount() {
@@ -34,7 +36,7 @@ class App extends Component {
           this.verifyUser(OAuthToken);
         }
       })
-    }
+}
 
   login() {
     auth.signInWithRedirect(provider);
@@ -45,14 +47,20 @@ class App extends Component {
       .then((idToken) => {
         this.setState({ idToken });
         const config = {
-          url: `${process.env.REACT_APP_HOST}addUser`,
+          url: `${creds.REACT_APP_HOST}addUser`,
           payload: qs.stringify({ idToken, OAuthToken }),
         };
         return axios.post(config.url, config.payload)    
       })
-      .then(response => {
-        console.log(response.data);
-      })
+      // .then(response => {
+      //   let allItems = [];
+      //   let itemsObjs = response.data.items;
+      //   for (let key in itemsObjs) {
+      //     allItems.push(itemsObjs[key]);
+      //   }
+      //   this.setState({items: allItems});
+      //   console.log(this.state.items[0].name)
+      // })
       .catch(err => console.log(err));
   }
 
@@ -64,7 +72,7 @@ class App extends Component {
 
   exchangePublicToken(publicToken, institution) {
     const config = {
-      url: `${process.env.REACT_APP_HOST}exchangePublicToken`,
+      url: `${creds.REACT_APP_HOST}exchangePublicToken`,
       payload: qs.stringify({
         publicToken,
         idToken: this.state.idToken,
@@ -88,7 +96,7 @@ class App extends Component {
 
   deleteProfile() {
     const config = {
-      url: `${process.env.REACT_APP_HOST}deleteUserProfile`,
+      url: `${creds.REACT_APP_HOST}deleteUserProfile`,
       payload: qs.stringify({ idToken: this.state.idToken }),
     };
     axios.post(config.url, config.payload)
@@ -96,6 +104,17 @@ class App extends Component {
       .then(() => { this.logout(); })
       .catch(e => console.log(e));
   }
+
+  // listItems() {
+  //   <ul>  
+  //   {this.state.items.map((item) => {
+  //     <li key={item.institution_id}>
+  //       {item.name}
+  //     </li>
+  //   })
+  //   }
+  //   </ul>
+  // }
 
   render() {
     return (
@@ -109,34 +128,49 @@ class App extends Component {
           }
         </div>
 
-        {this.state.user ?
+        {!this.state.user ?
+          <div>Log in to link account</div>
+          :
           <div>
             <div>{this.state.user.email}</div>
             {/* <div>{this.state.items[0][1].name}</div> */}
             <PlaidLink
-              publicKey={process.env.REACT_APP_PLAID_PUBLIC_KEY}
+              publicKey={creds.REACT_APP_PLAID_PUBLIC_KEY}
               product="connect"
+<<<<<<< HEAD
               webhook={`${process.env.REACT_APP_HOST}plaidWebHook`}
               env={process.env.REACT_APP_PLAID_ENV}
+=======
+              webhook={creds.REACT_APP_WEBHOOK}
+              env={creds.REACT_APP_PLAID_ENV}
+>>>>>>> Move from process.env to config
               clientName="Cashendar"
               onSuccess={this.handleOnSuccess}
             />
+            <button onClick={this.deleteProfile}>Delete Profile</button>
+            <div className="items">
+            Items eventually go here
+            {/* {this.listItems()} */}
+            </div>
           </div>
-          :
-          <div>Log in to link account</div>
-        }
-        {this.state.user ?
-          <button onClick={this.deleteProfile}>Delete Profile</button> :
-          <div />
+          
         }
         <p />
-        {process.env.REACT_APP_PLAID_ENV === 'sandbox' ? 
+        {creds.REACT_APP_PLAID_ENV === 'sandbox' ? 
         <div className="environments">
           <div className="firebaseEnvironment">
+<<<<<<< HEAD
             <b>Firebase host</b><br /> {process.env.REACT_APP_HOST}
           </div>
           <div className="plaidEnvironment">
             <b>Plaid environment</b>:<br /> {process.env.REACT_APP_PLAID_ENV}<br />
+=======
+            <b>Firebase environment:</b><br /> {creds.REACT_APP_HOST}
+          </div>
+          <div className="plaidEnvironment">
+            <b>Plaid environment</b>:<br /> {creds.REACT_APP_PLAID_ENV}<br />
+            <b>Plaid webhook</b>:<br />{creds.REACT_APP_WEBHOOK}
+>>>>>>> Move from process.env to config
           </div>
         </div>
         : <div> </div>}

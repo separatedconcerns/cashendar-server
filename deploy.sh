@@ -3,7 +3,7 @@ if [ "$TRAVIS_BRANCH" == "master" -a $"$TRAVIS_PULL_REQUEST" == "false" ]; then
   echo "$TRAVIS_BRANCH"
   cd functions
   echo $(pwd)
-  ./node_modules/.bin/firebase deploy -P dev --token $FIREBASE_DEPLOY_TOKEN
+  ./node_modules/.bin/firebase deploy --only functions -P dev --token $FIREBASE_DEPLOY_TOKEN
   exit 0
 else
   cd functions

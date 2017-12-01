@@ -12,10 +12,4 @@ Powered by React, Firebase, Google Cloud Functions, Plaid, and Google Calendar.
 To setup:
 
 1) npm install
-1) npm start
-
-To add new environment variables:
-
-1) Add the environment variable to EnvKey
-1) Add the environment variable to whitelist.js in config/
-1) Only use your personal dev key from EnvKey. Staging and Production keys are for CI.
+2) npm start

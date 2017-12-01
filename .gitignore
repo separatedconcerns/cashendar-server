@@ -13,7 +13,6 @@
 # misc
 *.log
 .DS_Store
-creds.json
 .env
 .env.prod
 .env.dev

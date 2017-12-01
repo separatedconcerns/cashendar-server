@@ -137,13 +137,8 @@ class App extends Component {
             <PlaidLink
               publicKey={creds.REACT_APP_PLAID_PUBLIC_KEY}
               product="connect"
-<<<<<<< HEAD
               webhook={`${process.env.REACT_APP_HOST}plaidWebHook`}
               env={process.env.REACT_APP_PLAID_ENV}
-=======
-              webhook={creds.REACT_APP_WEBHOOK}
-              env={creds.REACT_APP_PLAID_ENV}
->>>>>>> Move from process.env to config
               clientName="Cashendar"
               onSuccess={this.handleOnSuccess}
             />
@@ -159,18 +154,10 @@ class App extends Component {
         {creds.REACT_APP_PLAID_ENV === 'sandbox' ? 
         <div className="environments">
           <div className="firebaseEnvironment">
-<<<<<<< HEAD
             <b>Firebase host</b><br /> {process.env.REACT_APP_HOST}
           </div>
           <div className="plaidEnvironment">
             <b>Plaid environment</b>:<br /> {process.env.REACT_APP_PLAID_ENV}<br />
-=======
-            <b>Firebase environment:</b><br /> {creds.REACT_APP_HOST}
-          </div>
-          <div className="plaidEnvironment">
-            <b>Plaid environment</b>:<br /> {creds.REACT_APP_PLAID_ENV}<br />
-            <b>Plaid webhook</b>:<br />{creds.REACT_APP_WEBHOOK}
->>>>>>> Move from process.env to config
           </div>
         </div>
         : <div> </div>}

@@ -116,7 +116,7 @@ class App extends Component {
             <PlaidLink
               publicKey={process.env.REACT_APP_PLAID_PUBLIC_KEY}
               product="connect"
-              webhook={process.env.REACT_APP_WEBHOOK}
+              webhook={process.env.REACT_APP_HOST}
               env={process.env.REACT_APP_PLAID_ENV}
               clientName="Cashendar"
               onSuccess={this.handleOnSuccess}

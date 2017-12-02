@@ -1,4 +1,3 @@
-require('envkey');
 const cors = require('cors')({ origin: true });
 const functions = require('firebase-functions');
 

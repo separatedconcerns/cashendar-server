@@ -1,6 +1,7 @@
 const user = require('./controllers/userController');
 const item = require('./controllers/itemController');
 const axios = require('axios');
+const creds = require('./creds.json');
 
 function deleteUserProfile(request, response) {
   const idToken = request.body.idToken;
@@ -31,7 +32,7 @@ const deleteBankItems = (uniqueUserId) => {
           item.getItemFromDB(currentItem)
             .then((itemData) => {
               const config = {
-                url: `${process.env.HOST}deleteItem`,
+                url: `${creds.HOST}deleteItem`,
                 payload: {
                   itemToDelete: currentItem,
                   access_token: itemData.access_token,
@@ -49,7 +50,7 @@ const deleteCalendar = (uniqueUserId) => {
   user.getUserFromDB(uniqueUserId)
     .then((userData) => {
       const config = {
-        url: `${process.env.HOST}deleteCalendar`,
+        url: `${creds.HOST}deleteCalendar`,
         payload: {
           calendarId: userData.calendarId,
           OAuthToken: userData.OAuthToken,

@@ -1,17 +1,18 @@
 const Promise = require('bluebird');
 const GoogleAuth = require('google-auth-library');
+const creds = require('../creds.json');
 
 const APICredentials = {
   installed: {
-    client_id: process.env.GCAL_CLIENT_ID,
-    project_id: process.env.GCAL_PROJECT_ID,
-    auth_uri: process.env.GCAL_AUTH_URI,
-    token_uri: process.env.GCAL_TOKEN_URI,
-    auth_provider_x509_cert_url: process.env.GCAL_AUTH_PROVIDER,
-    client_secret: process.env.GCAL_CLIENT_SECRET,
+    client_id: creds.GCAL_CLIENT_ID,
+    project_id: creds.GCAL_PROJECT_ID,
+    auth_uri: creds.GCAL_AUTH_URI,
+    token_uri: creds.GCAL_TOKEN_URI,
+    auth_provider_x509_cert_url: creds.GCAL_AUTH_PROVIDER,
+    client_secret: creds.GCAL_CLIENT_SECRET,
     redirect_uris: [
-      process.env.GCAL_URN,
-      process.env.GCAL_LOCALHOST,
+      creds.GCAL_URN,
+      creds.GCAL_LOCALHOST,
     ],
   },
 };

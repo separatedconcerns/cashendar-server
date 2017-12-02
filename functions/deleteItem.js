@@ -3,6 +3,7 @@ const user = require('./controllers/userController');
 const axios = require('axios');
 const plaidClient = require('./apiClients/plaidClient.js');
 const Promise = require('bluebird');
+const creds = require('./creds.json');
 
 function deleteItem(request, response) {
   const itemId = request.body.itemToDelete;
@@ -19,7 +20,7 @@ function deleteItem(request, response) {
     .then(transactions => Object.keys(transactions))
     .then(transactionDates => user.updateDatesToScheduleQueue(uniqueUserId, transactionDates))
     .then(() => Promise.all([item.deleteItemFromItemsCollection(itemId), user.deleteItemFromUserCollection(uniqueUserId, itemId)]))
-    .then(() => axios.post(`${process.env.HOST}addCalendarEvents`, { uniqueUserId }))
+    .then(() => axios.post(`${creds.HOST}addCalendarEvents`, { uniqueUserId }))
     .then((result) => { response.end('Bank Item Deleted', result); });
 }
 

@@ -1,6 +1,7 @@
 const axios = require('axios');
 const user = require('../controllers/userController.js');
 const Promise = require('bluebird');
+const creds = require('../creds.json');
 
 const deleteDuplicateEventsFlow = (uniqueUserId, newEvents) => {
   user.getDatesToScheduleQueueFromDB(uniqueUserId)
@@ -12,7 +13,7 @@ const deleteDuplicateEventsFlow = (uniqueUserId, newEvents) => {
 
   setTimeout(() => {
     const config = {
-      url: `${process.env.HOST}createEventsToDeleteQueueInDb`,
+      url: `${creds.HOST}createEventsToDeleteQueueInDb`,
       payload: {
         newEventDates: Object.keys(newEvents),
         uniqueUserId,
@@ -21,7 +22,7 @@ const deleteDuplicateEventsFlow = (uniqueUserId, newEvents) => {
     axios.post(config.url, config.payload)
       .then((calId_eventsToDeleteQueue_OAuthToken) => {
         const config2 = {
-          url: `${process.env.HOST}deleteDuplicateEventsInCalendar`,
+          url: `${creds.HOST}deleteDuplicateEventsInCalendar`,
           payload: calId_eventsToDeleteQueue_OAuthToken.data,
         };
         return axios.post(config2.url, config2.payload);

@@ -1,5 +1,6 @@
 const user = require('./controllers/userController');
 const axios = require('axios');
+const creds = require('./creds.json');
 
 function addUser(request, response) {
   const idToken = request.body.idToken;
@@ -35,7 +36,7 @@ function addUser(request, response) {
 
   function createGoogleCalendar() {
     const config = {
-      url: `${process.env.HOST}createNewCalendar`,
+      url: `${creds.HOST}createNewCalendar`,
       payload: { OAuthToken, uniqueUserId },
     };
     axios.post(config.url, config.payload)

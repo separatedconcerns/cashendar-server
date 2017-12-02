@@ -1,9 +1,10 @@
 const axios = require('axios');
+const creds = require('./creds.json');
 
 function getDailySpendingAndTransactions(request, response) {
   const uniqueUserId = request.body.uniqueUserId;
   const config = {
-    url: `${process.env.HOST}getTransactionsFromDatabase`,
+    url: `${creds.HOST}getTransactionsFromDatabase`,
     payload: {
       uniqueUserId,
     },

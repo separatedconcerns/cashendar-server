@@ -1,5 +1,6 @@
 const item = require('./controllers/itemController');
 const axios = require('axios');
+const creds = require('./creds.json');
 
 function plaidWebHook(request, response) {
   const itemId = request.body.item_id;
@@ -11,7 +12,7 @@ function plaidWebHook(request, response) {
     response.end();
   } else if (webHookCode === 'TRANSACTIONS_REMOVED') {
     const config = {
-      url: `${process.env.HOST}removeTransactionsFromDb`,
+      url: `${creds.HOST}removeTransactionsFromDb`,
       payload: {
         itemId,
         removedTransactions: request.body.removed_transactions,
@@ -20,7 +21,7 @@ function plaidWebHook(request, response) {
 
     axios.post(config.url, config.payload)
       .then(uniqueUserId =>
-        axios.post(`${process.env.HOST}addCalendarEvents`, { uniqueUserId: uniqueUserId.data }))
+        axios.post(`${creds.HOST}addCalendarEvents`, { uniqueUserId: uniqueUserId.data }))
       .then(response.end())
       .catch(e => console.log('TRANSACTIONS_REMOVED ERROR!:', e));
   } else {
@@ -28,7 +29,7 @@ function plaidWebHook(request, response) {
       .then((itemData) => {
         if (itemData) {
           const config = {
-            url: `${process.env.HOST}getTransactionsFromPlaid`,
+            url: `${creds.HOST}getTransactionsFromPlaid`,
             payload: {
               access_token: itemData.access_token,
               uniqueUserId: itemData.uniqueUserId,
@@ -36,7 +37,7 @@ function plaidWebHook(request, response) {
             },
           };
           axios.post(config.url, config.payload)
-            .then(() => axios.post(`${process.env.HOST}addCalendarEvents`, config.payload))
+            .then(() => axios.post(`${creds.HOST}addCalendarEvents`, config.payload))
             .then(() => response.end())
             .catch(e => console.log('plaidWebHook Error!:', e));
         } else {

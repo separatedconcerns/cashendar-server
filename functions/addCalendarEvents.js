@@ -5,6 +5,7 @@ const Promise = require('bluebird');
 const googleClient = require('./apiClients/googleClient.js');
 const packageEventsToSchedule = require('./utils/packageEventsToSchedule.js');
 const deleteDuplicateEventsFlow = require('./utils/deleteDuplicateEventsFlow.js');
+const creds = require('./creds.json');
 
 function addCalendarEvents(request, response) {
   const uniqueUserId = request.body.uniqueUserId;
@@ -26,7 +27,7 @@ function addCalendarEvents(request, response) {
 
   const createEvents = (auth) => {
     const config = {
-      url: `${process.env.HOST}getDailySpendingAndTransactions`,
+      url: `${creds.HOST}getDailySpendingAndTransactions`,
       payload: { uniqueUserId },
     };
     axios.post(config.url, config.payload)

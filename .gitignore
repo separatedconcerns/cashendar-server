@@ -1,4 +1,5 @@
 node_modules
+creds.json
 .env
 npm-debug.log
 firebase-debug.log

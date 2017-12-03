@@ -13,6 +13,7 @@
     "plaid": "^2.1.0"
   },
   "scripts": {
+    "getEnv": "./envkey-fetch-osx > creds.json",
     "start": "firebase serve --port 5000 --only functions --debug",
     "lint": "./node_modules/.bin/eslint index.js",
     "deploy-production": "firebase deploy --only functions -P production --debug",

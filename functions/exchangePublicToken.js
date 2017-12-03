@@ -6,6 +6,7 @@ function exchangePublicToken(request, response) {
   const publicToken = request.body.publicToken;
   const idToken = request.body.idToken;
   const institutionName = request.body.institution;
+  const webhook = request.body.webhook;
   let uniqueUserId;
 
   Promise.all([
@@ -16,7 +17,7 @@ function exchangePublicToken(request, response) {
       const payload = result[1];
       return Promise.all([
         user.addItemsToUser(uniqueUserId, payload.item_id, institutionName),
-        item.addDataToItem(payload.item_id, { access_token: payload.access_token, uniqueUserId }),
+        item.addDataToItem(payload.item_id, { access_token: payload.access_token, webhook, uniqueUserId }),
         user.updateUser(uniqueUserId, { fetchingBanks: true })]);
     })
     .then(() => response.end())

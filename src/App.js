@@ -77,6 +77,7 @@ class App extends Component {
         publicToken,
         idToken: this.state.idToken,
         institution,
+        webhook: `${creds.REACT_APP_HOST}plaidWebHook`
       }),
     };
     axios.post(config.url, config.payload)

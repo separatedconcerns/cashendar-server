@@ -2,17 +2,14 @@ language: node_js
 node_js:
 - 6.11.5
 before_install:
-- bash creds.sh
 - cd functions
+- bash creds.sh
 install:
 - npm install
 cache:
   directories:
   - functions/node_modules
 after_success:
-- pwd
-- ls
-- cd ..
 - pwd
 - ls
 - bash deploy.sh

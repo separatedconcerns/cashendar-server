@@ -3,6 +3,7 @@ const functions = require('firebase-functions');
 
 
 const wrap = fn => functions.https.onRequest((request, response) => {
+  console.log(fn);
   cors(request, response, () => fn(request, response));
 });
 

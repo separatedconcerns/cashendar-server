@@ -21,7 +21,6 @@ function addUser(request, response) {
     });
 
   function addUserToDB() {
-    console.log('addUserToDB called');
     user.getUserProfile(uniqueUserId)
       .then((userProfile) => {
         const payload = {
@@ -46,7 +45,6 @@ function addUser(request, response) {
           calendarName: calendar.data.summary,
         };
         user.updateUser(uniqueUserId, userCalendarDetails);
-        console.log('cal created');
       })
       .then(response.end())
       .catch(error => console.log('Error fetching user data:', error));

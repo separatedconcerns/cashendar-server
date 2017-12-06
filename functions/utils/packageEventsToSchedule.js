@@ -5,9 +5,11 @@ const packageEvents = (auth, calendarId, transactionsByDateAndAccount) => {
   // eslint-disable-next-line
   for (const date in dailySpending) {
     const sum = Math.round(dailySpending[date].sum);
-    const acctNames = Object.keys(dailySpending[date]);
-    const transactionsByAcctName = acctNames.filter(name => name !== 'sum')
-      .map(name => `${name}:\n${dailySpending[date][name].join('\n')}`);
+    const acctIdNameStrings = Object.keys(dailySpending[date]).filter(name => name !== 'sum');
+    const transactionsByAcctName = acctIdNameStrings.map((idNameString) => {
+      const acctName = idNameString.split(': ')[1];
+      return `${acctName}:\n${dailySpending[date][acctName].join('\n')}`;
+    });
     const spentOrEarned = sum >= 0 ? 'Spent' : 'Earned';
     const color = spentOrEarned === 'Spent' ? '4' : '2';
     const emoji = spentOrEarned === 'Spent' ? `💸` : `👏`;

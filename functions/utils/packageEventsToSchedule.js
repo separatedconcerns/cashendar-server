@@ -8,7 +8,7 @@ const packageEvents = (auth, calendarId, transactionsByDateAndAccount) => {
     const acctIdNameStrings = Object.keys(dailySpending[date]).filter(name => name !== 'sum');
     const transactionsByAcctName = acctIdNameStrings.map((idNameString) => {
       const acctName = idNameString.split(': ')[1];
-      return `${acctName}:\n${dailySpending[date][acctName].join('\n')}`;
+      return `${acctName}:\n${dailySpending[date][idNameString].join('\n')}`;
     });
     const spentOrEarned = sum >= 0 ? 'Spent' : 'Earned';
     const color = spentOrEarned === 'Spent' ? '4' : '2';

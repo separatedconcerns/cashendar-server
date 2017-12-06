@@ -29,8 +29,8 @@ function getDailySpendingAndTransactions(request, response) {
           const acctName = accounts[acctId].name;
 
           tBDAA[date] = tBDAA[date] || { sum: 0 };
-          tBDAA[date][acctName] = tBDAA[date][acctName] || [];
-          tBDAA[date][acctName].push(` $ ${transaction.amount}   ${transaction.name}`);
+          tBDAA[date][`${acctId}: ${acctName}`] = tBDAA[date][`${acctId}: ${acctName}`] || [];
+          tBDAA[date][`${acctId}: ${acctName}`].push(` $ ${transaction.amount}   ${transaction.name}`);
           tBDAA[date].sum += transaction.amount;
         }
 

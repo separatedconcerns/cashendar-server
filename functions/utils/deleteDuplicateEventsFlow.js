@@ -3,7 +3,7 @@ const user = require('../controllers/userController.js');
 const Promise = require('bluebird');
 const creds = require('../creds.json');
 
-const deleteDuplicateEventsFlow = (uniqueUserId, newEvents) => {
+const deleteDuplicateEventsFlow = (uniqueUserId, newEvents) =>
   user.getDatesToScheduleQueueFromDB(uniqueUserId)
     .then((datesToScheduleQueue) => {
       datesToScheduleQueue.forEach((date) => {
@@ -29,6 +29,5 @@ const deleteDuplicateEventsFlow = (uniqueUserId, newEvents) => {
       [user.updateScheduledEvents(uniqueUserId, newEvents),
         user.clearDatesToScheduleAndEventsToDeleteQueues(uniqueUserId)]))
     .catch(e => console.log('Promise.all error!:', e));
-};
 
 module.exports = deleteDuplicateEventsFlow;

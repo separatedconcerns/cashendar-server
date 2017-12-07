@@ -100,10 +100,10 @@ class App extends Component {
       url: `${creds.REACT_APP_HOST}deleteUserProfile`,
       payload: qs.stringify({ idToken: this.state.idToken }),
     };
-    axios.post(config.url, config.payload)
-      .then(response => console.log(response))
-      .then(() => { this.logout(); })
-      .catch(e => console.log(e));
+    auth.currentUser.delete()
+    .then(() => { this.logout(); })
+    .then(axios.post(config.url, config.payload))
+    .catch(e => console.log(e));
   }
 
   // listItems() {

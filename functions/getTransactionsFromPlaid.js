@@ -3,7 +3,6 @@ const user = require('./controllers/userController');
 const moment = require('moment');
 const plaidClient = require('./apiClients/plaidClient.js');
 const Promise = require('bluebird');
-const packageTransactionsByDate = Promise.method(require('./utils/packageTransactionsByDate.js'));
 
 function getTransactionsFromPlaid(request, response) {
   const accessToken = request.body.access_token;
@@ -54,7 +53,11 @@ function getTransactionsFromPlaid(request, response) {
     itemId = transactionsObj.itemId;
     transactions = transactionsObj.transactions;
     console.log(`getTransactionsFromPlaid TOTAL TRANSACTIONS: ${transactions.length}`);
-    return packageTransactionsByDate(transactions);
+    return transactions.reduce((transactionsByDate, transaction) => {
+      transactionsByDate[transaction.date] = transactionsByDate[transaction.date] || {};
+      transactionsByDate[transaction.date][transaction.transaction_id] = transaction;
+      return transactionsByDate;
+    }, {});
   })
     .then((transactionsByDate) => {
       payload = {

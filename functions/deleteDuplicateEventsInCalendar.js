@@ -1,7 +1,6 @@
 const google = require('googleapis');
 const Promise = require('bluebird');
 const googleClient = require('./apiClients/googleClient.js');
-const packageEventsToDelete = require('./utils/packageEventsToDelete.js');
 
 function deleteDuplicateEventsInCalendar(request, response) {
   const googleClientAuthorize = Promise.promisify(googleClient.authorize);
@@ -11,30 +10,19 @@ function deleteDuplicateEventsInCalendar(request, response) {
 
   const deleteDuplicateEvents = (auth) => {
     const deleteEvent = Promise.promisify(google.calendar('v3').events.delete);
-    const packageEventsToDeleteProm = Promise.method(packageEventsToDelete);
-
-    packageEventsToDeleteProm(auth, calendarId, eventsToDeleteQueue)
-      .then((packagedEvents) => {
-        let i = 0;
-        let eventsToBeDeleted = packagedEvents.length;
-        console.log(`${eventsToBeDeleted} events to be deleted`);
-
-        const deleteEvents = setInterval(() => {
-          if (i <= packagedEvents.length - 1) {
-            deleteEvent(packagedEvents[i])
-              .catch((e) => {
-                eventsToBeDeleted -= 1;
-                console.log('EVENT NOT DELETED!:', e);
-              });
-            i += 1;
-            console.log(i);
-          } else {
-            console.log(`${eventsToBeDeleted} of ${packagedEvents.length} new events have been deleted`);
-            console.log('EVENTS UP-TO-DATE AND PROGRAM LOOP COMPLETE!');
-            clearInterval(deleteEvents);
-          }
-        }, 400);
-      });
+    const packagedEvents = eventsToDeleteQueue.reduce((packagedEventsToDelete, eventId) => {
+      const event = {
+        auth,
+        calendarId,
+        eventId,
+      };
+      packagedEventsToDelete.push(event);
+      return packagedEventsToDelete;
+    }, []);
+    const eventsToBeDeleted = packagedEvents.length;
+    console.log(`${eventsToBeDeleted} events to be deleted`);
+    const deletePromises = packagedEvents.map(event => deleteEvent(event));
+    return Promise.all(deletePromises).catch(error => console.log(error));
   };
 
   googleClientAuthorize(OAuthToken, deleteDuplicateEvents)

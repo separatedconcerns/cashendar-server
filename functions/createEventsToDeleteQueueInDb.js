@@ -1,29 +1,32 @@
 const user = require('./controllers/userController');
-const getEventsToDeleteQueue = require('./utils/getEventsToDeleteQueue.js');
 
 function createEventsToDeleteQueueInDb(request, response) {
   const newEventDates = request.body.newEventDates;
   const uniqueUserId = request.body.uniqueUserId;
   let calendarId;
   let OAuthToken;
+  let responseObj;
 
   user.getUserFromDB(uniqueUserId)
     .then((userData) => {
       calendarId = userData.calendarId;
       OAuthToken = userData.OAuthToken;
       const scheduledEvents = userData.scheduledEvents || [];
-      return getEventsToDeleteQueue(newEventDates, scheduledEvents);
-    })
-    .then((eventsToDeleteQueue) => {
-      const responseObj = {
+      const eventsToDeleteQueue = newEventDates.reduce((accumulator, date) => {
+        if (scheduledEvents[date]) {
+          accumulator.push(scheduledEvents[date]);
+        }
+        return accumulator;
+      }, []);
+      responseObj = {
         eventsToDeleteQueue,
         calendarId,
         OAuthToken,
       };
-      user.updateEventsToDeleteQueue(uniqueUserId, eventsToDeleteQueue)
-        .then(response.json(responseObj))
-        .catch(e => console.log('Error in createEventsToDeleteQueueInDb', e));
-    });
+      return user.updateEventsToDeleteQueue(uniqueUserId, eventsToDeleteQueue);
+    })
+    .then(() => response.json(responseObj))
+    .catch(e => console.log('Error in createEventsToDeleteQueueInDb', e));
 }
 
 module.exports = createEventsToDeleteQueueInDb;

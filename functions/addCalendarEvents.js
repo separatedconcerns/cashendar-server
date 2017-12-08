@@ -48,25 +48,3 @@ function addCalendarEvents(request, response) {
 }
 
 module.exports = addCalendarEvents;
-
-// let i = 0;
-// let eventsToBeScheduled = events.length;
-// console.log(`${eventsToBeScheduled} new events to be scheduled`);
-// const scheduleEvents = setInterval(() => {
-//   if (i <= events.length - 1) {
-//     insertEvent(events[i])
-//       .then((event) => { newEvents[event.start.date] = event.id; })
-//       .catch((e) => {
-//         eventsToBeScheduled -= 1;
-//         console.log(`Error on event: ${events[i].date} ----> ${e}`);
-//       });
-//     i += 1;
-//     console.log(i);
-//   } else {
-//     console.log(`${eventsToBeScheduled} of ${events.length} events have been scheduled`);
-//     setTimeout(() => {
-//       deleteDuplicateEventsFlow(uniqueUserId, newEvents);
-//       clearInterval(scheduleEvents);
-//     }, 200);
-//   }
-// }, 300);

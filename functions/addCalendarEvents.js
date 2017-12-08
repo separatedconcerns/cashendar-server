@@ -16,8 +16,8 @@ function addCalendarEvents(request, response) {
     .then((userData) => {
       calendarId = userData.calendarId;
       OAuthToken = userData.OAuthToken;
-    })
-    .then(() => {
+      // })
+      // .then(() => {
       // googleClient.authorize(OAuthToken, createEvents);
       const googleClientAuthorize = Promise.promisify(googleClient.authorize);
       googleClientAuthorize(OAuthToken, createEvents)
@@ -35,31 +35,38 @@ function addCalendarEvents(request, response) {
       .then((events) => {
         // console.log(events[events.length - 1].resource);
         const insertEvent = Promise.promisify(google.calendar('v3').events.insert);
-        let i = 0;
-        let eventsToBeScheduled = events.length;
+        const eventsToBeScheduled = events.length;
         console.log(`${eventsToBeScheduled} new events to be scheduled`);
-        const scheduleEvents = setInterval(() => {
-          if (i <= events.length - 1) {
-            insertEvent(events[i])
-              .then((event) => { newEvents[event.start.date] = event.id; })
-              .catch((e) => {
-                eventsToBeScheduled -= 1;
-                console.log(`Error on event: ${events[i].date} ----> ${e}`);
-              });
-            i += 1;
-            console.log(i);
-          } else {
-            console.log(`${eventsToBeScheduled} of ${events.length} events have been scheduled`);
-            setTimeout(() => {
-              deleteDuplicateEventsFlow(uniqueUserId, newEvents);
-              clearInterval(scheduleEvents);
-            }, 200);
-          }
-        }, 300);
+        const scheduleEventsPromises = events.map(event => insertEvent(event)
+          .then(newEvent => newEvents[newEvent.start.date] = newEvent.id)
+          .catch(e => console.log('insertEvent Error:', e)));
+        return Promise.all(scheduleEventsPromises);
       })
+      .then(() => deleteDuplicateEventsFlow(uniqueUserId, newEvents))
       .catch(e => console.log('line 49', e));
   };
 }
 
-
 module.exports = addCalendarEvents;
+
+// let i = 0;
+// let eventsToBeScheduled = events.length;
+// console.log(`${eventsToBeScheduled} new events to be scheduled`);
+// const scheduleEvents = setInterval(() => {
+//   if (i <= events.length - 1) {
+//     insertEvent(events[i])
+//       .then((event) => { newEvents[event.start.date] = event.id; })
+//       .catch((e) => {
+//         eventsToBeScheduled -= 1;
+//         console.log(`Error on event: ${events[i].date} ----> ${e}`);
+//       });
+//     i += 1;
+//     console.log(i);
+//   } else {
+//     console.log(`${eventsToBeScheduled} of ${events.length} events have been scheduled`);
+//     setTimeout(() => {
+//       deleteDuplicateEventsFlow(uniqueUserId, newEvents);
+//       clearInterval(scheduleEvents);
+//     }, 200);
+//   }
+// }, 300);

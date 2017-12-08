@@ -16,9 +16,6 @@ function addCalendarEvents(request, response) {
     .then((userData) => {
       calendarId = userData.calendarId;
       OAuthToken = userData.OAuthToken;
-      // })
-      // .then(() => {
-      // googleClient.authorize(OAuthToken, createEvents);
       const googleClientAuthorize = Promise.promisify(googleClient.authorize);
       googleClientAuthorize(OAuthToken, createEvents)
         .then(response.end())
@@ -33,7 +30,6 @@ function addCalendarEvents(request, response) {
     axios.post(config.url, config.payload)
       .then(transactionsByDate => packageEventsToSchedule(auth, calendarId, transactionsByDate))
       .then((events) => {
-        // console.log(events[events.length - 1].resource);
         const insertEvent = Promise.promisify(google.calendar('v3').events.insert);
         const eventsToBeScheduled = events.length;
         console.log(`${eventsToBeScheduled} new events to be scheduled`);

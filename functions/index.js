@@ -17,7 +17,6 @@ exports.getDailySpendingAndTransactions = wrap(require('./getDailySpendingAndTra
 exports.getTransactionsFromDatabase = wrap(require('./getTransactionsFromDatabase'));
 exports.deleteUserProfile = wrap(require('./deleteUserProfile.js'));
 exports.deleteItem = wrap(require('./deleteItem.js'));
-exports.deleteCalendar = wrap(require('./deleteCalendar.js'));
 exports.createEventsToDeleteQueueInDb = wrap(require('./createEventsToDeleteQueueInDb.js'));
 exports.deleteDuplicateEventsInCalendar = wrap(require('./deleteDuplicateEventsInCalendar.js'));
 exports.removeTransactionsFromDb = wrap(require('./removeTransactionsFromDb.js'));

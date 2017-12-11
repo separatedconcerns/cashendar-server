@@ -2,8 +2,8 @@ const user = require('./controllers/userController');
 const axios = require('axios');
 const google = require('googleapis');
 const Promise = require('bluebird');
+const _ = require('underscore');
 const googleClient = require('./apiClients/googleClient.js');
-const packageEventsToSchedule = require('./utils/packageEventsToSchedule.js');
 const deleteDuplicateEventsFlow = require('./utils/deleteDuplicateEventsFlow.js');
 const creds = require('./creds.json');
 
@@ -28,7 +28,41 @@ function addCalendarEvents(request, response) {
       payload: { uniqueUserId },
     };
     axios.post(config.url, config.payload)
-      .then(transactionsByDate => packageEventsToSchedule(auth, calendarId, transactionsByDate))
+      .then((transactionsByDate) => {
+        const dailySpending = transactionsByDate.data;
+        return _.map(dailySpending, (acctIdNameStrings, date) => {
+          const sum = Math.round(dailySpending[date].sum);
+          const transactionsByAcctName = _.filter(acctIdNameStrings, (transactions, acctIdNameString) => {
+            acctIdNameString !== 'sum';
+          }).map((idNameString) => {
+            const acctName = idNameString.split(': ')[1];
+            return `${acctName}:\n${dailySpending[date][idNameString].join('\n')}`;
+          });
+          const spentOrEarned = sum >= 0 ? 'Spent' : 'Earned';
+          const color = spentOrEarned === 'Spent' ? '4' : '2';
+          const emoji = spentOrEarned === 'Spent' ? `💸` : `👏`;
+
+          const event = {
+            summary: `${emoji} ${spentOrEarned} $${Math.abs(sum)} `,
+            description: `${transactionsByAcctName.join('\n')}`,
+            colorId: color,
+            start: {
+              date,
+              timeZone: 'America/Los_Angeles',
+            },
+            end: {
+              date,
+              timeZone: 'America/Los_Angeles',
+            },
+          };
+
+          return {
+            auth,
+            calendarId,
+            resource: event,
+          };
+        });
+      })
       .then((events) => {
         const insertEvent = Promise.promisify(google.calendar('v3').events.insert);
         const eventsToBeScheduled = events.length;

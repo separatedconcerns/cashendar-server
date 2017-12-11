@@ -2,6 +2,7 @@ const user = require('./controllers/userController');
 const item = require('./controllers/itemController');
 const axios = require('axios');
 const creds = require('./creds.json');
+const deleteGoogleCalendar = require('./deleteCalendar');
 
 function deleteUserProfile(request, response) {
   const idToken = request.body.idToken;
@@ -40,15 +41,9 @@ function deleteUserProfile(request, response) {
   const deleteCalendar = (uniqueUserId) => {
     user.getUserFromDB(uniqueUserId)
       .then((userData) => {
-        const config = {
-          url: `${creds.HOST}deleteCalendar`,
-          payload: {
-            calendarId: userData.calendarId,
-            OAuthToken: userData.OAuthToken,
-          },
-        };
-        axios.post(config.url, config.payload)
-          .then(response => console.log('62 Gcal Deletion Response', response.data))
+        const calendarId = userData.calendarId;
+        const OAuthToken = userData.OAuthToken;
+        deleteGoogleCalendar(OAuthToken, calendarId)
           .then(user.deleteUserFromDB(uniqueUserId));
       });
   };

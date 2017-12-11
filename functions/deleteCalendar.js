@@ -1,15 +1,22 @@
 const Promise = require('bluebird');
+const google = require('googleapis');
 const googleClient = require('./apiClients/googleClient.js');
-const deleteGoogleCalendar = require('./utils/deleteGoogleCalendar.js');
 
-function deleteCalendar(request, response) {
-  const OAuthToken = request.body.OAuthToken;
-  const calendarId = request.body.calendarId;
-
+function deleteCalendar(OAuthToken, calendarId) {
   const googleClientAuthorize = Promise.promisify(googleClient.authorize);
-  googleClientAuthorize(OAuthToken, deleteGoogleCalendar, calendarId)
-    .then(response.end())
-    .catch(e => console.log(e));
+
+  const deleteGoogleCalendar = (auth, calendarId) => {
+    const calendarDelete = Promise.promisify(google.calendar('v3').calendars.delete);
+    const config = {
+      auth,
+      calendarId,
+    };
+    return calendarDelete(config)
+      .then(calendar => calendar)
+      .catch(e => e);
+  };
+
+  return googleClientAuthorize(OAuthToken, deleteGoogleCalendar, calendarId);
 }
 
 module.exports = deleteCalendar;

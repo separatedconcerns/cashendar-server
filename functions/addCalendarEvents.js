@@ -30,14 +30,16 @@ function addCalendarEvents(request, response) {
     axios.post(config.url, config.payload)
       .then((transactionsByDate) => {
         const dailySpending = transactionsByDate.data;
-        return _.map(dailySpending, (acctIdNameStrings, date) => {
+        return _.map(dailySpending, (acctIdsAndNames, date) => {
           const sum = Math.round(dailySpending[date].sum);
-          const transactionsByAcctName = _.filter(acctIdNameStrings, (transactions, acctIdNameString) => {
-            acctIdNameString !== 'sum';
-          }).map((idNameString) => {
-            const acctName = idNameString.split(': ')[1];
-            return `${acctName}:\n${dailySpending[date][idNameString].join('\n')}`;
-          });
+          const transactionsByAcctName = _.reduce(acctIdsAndNames, (arr, transaction, acctIdAndName) => {
+            if (acctIdAndName !== 'sum') {
+              const acctName = acctIdAndName.split(': ')[1];
+              arr.push(`${ acctName }: \n${ dailySpending[date][acctIdAndName].join('\n')}`);
+            }
+            return arr;
+          }, []);
+
           const spentOrEarned = sum >= 0 ? 'Spent' : 'Earned';
           const color = spentOrEarned === 'Spent' ? '4' : '2';
           const emoji = spentOrEarned === 'Spent' ? `💸` : `👏`;

@@ -35,7 +35,7 @@ function addCalendarEvents(request, response) {
           const transactionsByAcctName = _.reduce(acctIdsAndNames, (arr, transaction, acctIdAndName) => {
             if (acctIdAndName !== 'sum') {
               const acctName = acctIdAndName.split(': ')[1];
-              arr.push(`${ acctName }: \n${ dailySpending[date][acctIdAndName].join('\n')}`);
+              arr.push(`${acctName}: \n${dailySpending[date][acctIdAndName].join('\n')}`);
             }
             return arr;
           }, []);

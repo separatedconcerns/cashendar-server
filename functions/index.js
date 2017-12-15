@@ -1,4 +1,4 @@
-const cors = require('cors')({ origin: true });
+const cors = require('cors')({ origin: true, Connection: 'keep-alive' });
 const functions = require('firebase-functions');
 
 

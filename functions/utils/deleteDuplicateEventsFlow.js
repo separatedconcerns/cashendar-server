@@ -1,7 +1,7 @@
 const axios = require('axios');
-const user = require('../controllers/userController.js');
+const user = require('../src/controllers/userController');
 const Promise = require('bluebird');
-const creds = require('../creds.json');
+const creds = require('../src/creds.json');
 
 const deleteDuplicateEventsFlow = (uniqueUserId, newEvents) =>
   user.getDatesToScheduleQueueFromDB(uniqueUserId)

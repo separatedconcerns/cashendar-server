@@ -6,4 +6,5 @@ firebase-debug.log
 .vscode
 .DS_Store
 functions/.DS_Store
+functions/lib
 

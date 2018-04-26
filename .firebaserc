@@ -1,6 +1,7 @@
 {
   "projects": {
     "production": "where-s-my-money",
-    "staging": "testproject-6177f"
+    "staging": "testproject-6177f",
+    "default": "testproject-6177f"
   }
 }

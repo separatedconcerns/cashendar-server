@@ -1,5 +1,4 @@
-import moment from 'moment';
-import Promise, { all } from 'bluebird';
+import * as moment from 'moment';
 import { addAccountsToItem, addTransactionsByDate, getUserIdByItemFromDB } from './controllers/itemController';
 import { updateUser } from './controllers/userController';
 import { getTransactions } from './apiClients/plaidClient';
@@ -27,7 +26,7 @@ function getTransactionsFromPlaid(request, response) {
           transactionsObj.itemId = transactionsObj.itemId || plaidResponse.item.item_id;
           console.log(`${transactionsObj.transactions.length} of ${numOfNewTransactions} NEW TRANSACTIONS FETCHED FROM PLAID`);
           const accountsPromise = accounts.map(account => addAccountsToItem(transactionsObj.itemId, account));
-          return all(accountsPromise);
+          return Promise.all(accountsPromise);
         })
         .catch((e) => {
           console.log('pingPlaid ERROR!: ', e);
@@ -67,7 +66,7 @@ function getTransactionsFromPlaid(request, response) {
       const promArr = payload.dates.map(date =>
         addTransactionsByDate(itemId, date, payload.transactions[date])
           .catch(e => console.log(e, 'NOT UPDATED IN DB!')));
-      return all(promArr);
+      return Promise.all(promArr);
     })
     .then(() => getUserIdByItemFromDB(itemId))
     .then((uniqueUserId) => {

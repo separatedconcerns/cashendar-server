@@ -26,7 +26,7 @@ async function addUser(request, response) {
       url: `${creds.HOST}createNewCalendar`,
       payload: { OAuthToken, uniqueUserId },
     };
-    const calendar = await axios.post(config.url, config.payload)
+    const calendar = await axios.post(config.url, config.payload);
     const userCalendarDetails = {
       calendarId: calendar.data.id,
       calendarName: calendar.data.summary,

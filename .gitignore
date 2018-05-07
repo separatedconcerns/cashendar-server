@@ -7,4 +7,4 @@ firebase-debug.log
 .DS_Store
 functions/.DS_Store
 functions/lib
-
+antigen.zsh

@@ -20,6 +20,7 @@
     "getEnv": "./envkey-fetch-osx > creds.json",
     "build": "./node_modules/.bin/tslint --project tsconfig.json && ./node_modules/.bin/tsc",
     "start": "npm run build && firebase serve --port 5000 --only functions --debug",
+    "watch": "tsc --watch",
     "lint": "./node_modules/.bin/eslint index.js",
     "deploy-production": "firebase deploy --only functions -P production --debug",
     "deploy-dev": "firebase deploy --only functions -P dev --debug",

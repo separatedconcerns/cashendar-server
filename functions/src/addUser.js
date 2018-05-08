@@ -36,7 +36,6 @@ export default async function addUser(request, response) {
     let items;
     try {
       items = await user.getUserItems(uniqueUserId);
-      console.log('44', items);
     } catch (error) {
       console.log(error);
     }

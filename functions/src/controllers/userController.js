@@ -1,102 +1,194 @@
 import * as admin from '../apiClients/firebaseClient';
 
-const db = ref => admin.database().ref(ref);
 const auth = admin.auth();
+const db = admin.firestore();
+const userCollection = db.collection('users');
+const aUsersDocs = uniqueUserId => userCollection.doc(`${uniqueUserId}`);
 
-export function doesUserExist(uniqueUserId) {
-  return db(`users/${uniqueUserId}`).once('value')
-    .then(snapshot => snapshot)
-    .catch(err => console.log(err));
+export async function getUserProfile(uniqueUserId) {
+  let userRecord;
+  let userProfile;
+  try {
+    userRecord = await auth.getUser(uniqueUserId);
+    userProfile = userRecord.toJSON();
+  } catch (error) {
+    console.log(error);
+  }
+  return userProfile;
 }
 
-export function getUserFromDB(uniqueUserId) {
-  return db(`users/${uniqueUserId}`)
-    .once('value')
-    .then(snapshot => snapshot.val())
-    .catch(err => console.log(err));
+export async function verifyIdToken(idToken) {
+  let decodedToken;
+  let uniqueUserId;
+  try {
+    decodedToken = await auth.verifyIdToken(idToken);
+    uniqueUserId = decodedToken.uid;
+  } catch (error) {
+    console.log(error);
+  }
+  return uniqueUserId;
 }
 
-export function getUserItems(uniqueUserId) {
-  return db(`users/${uniqueUserId}/items`)
-    .once('value')
-    .then(snapshot => snapshot.val())
-    .catch(err => console.log(err));
+export async function deleteUserInAuth(uniqueUserId) {
+  let fs;
+  try {
+    fs = await auth.deleteUser(uniqueUserId);
+  } catch (error) {
+    console.log(error);
+  }
+  return fs;
 }
 
-export function getUserProfile(uniqueUserId) {
-  return auth.getUser(uniqueUserId)
-    .then(userRecord => userRecord.toJSON())
-    .catch(err => console.log(err));
+export async function doesUserExist(uniqueUserId) {
+  let fs;
+  try {
+    fs = await aUsersDocs(uniqueUserId).get();
+  } catch (error) {
+    console.log(error);
+  }
+  return fs.exists;
 }
 
-export function verifyIdToken(idToken) {
-  return auth.verifyIdToken(idToken)
-    .then(decodedToken => decodedToken.uid)
-    .catch(error => console.log(error));
+export async function getUserFromDB(uniqueUserId) {
+  let fs;
+  let user;
+  try {
+    fs = await aUsersDocs(uniqueUserId).get();
+    user = fs.data();
+  } catch (error) {
+    console.log(error);
+  }
+  return user;
 }
 
-export function initializeUser(uniqueUserId, payload) {
-  return db(`users/${uniqueUserId}`)
-    .set(payload)
-    .catch(err => console.log(err));
+export async function getUserItems(uniqueUserId) {
+  let fs;
+  const items = {};
+  try {
+    fs = await db.collection('users').doc(`${uniqueUserId}`).collection('items').get()
+      .then((snapshot) => {
+        snapshot.forEach((doc) => {
+          items[doc.id] = doc.data();
+        });
+      })
+      .catch((err) => {
+        console.log('Error getting documents', err);
+      });
+
+    // items = fs.exists ? fs.data() : 'null';
+    console.log('70 items', items);
+  } catch (error) {
+    console.log(error);
+  }
+  return items;
 }
 
-export function updateUser(uniqueUserId, newData) {
-  return db(`users/${uniqueUserId}`)
-    .update(newData)
-    .catch(err => console.log(err));
+
+export async function initializeUser(uniqueUserId, payload) {
+  let fs;
+  try {
+    fs = await aUsersDocs(uniqueUserId).set(payload);
+  } catch (error) {
+    console.log(error);
+  }
+  return fs;
 }
 
-export function deleteUserInAuth(uniqueUserId) {
-  return auth.deleteUser(uniqueUserId)
-    .catch(err => console.log(err));
+export async function updateUser(uniqueUserId, newData) {
+  let fs;
+  try {
+    fs = await aUsersDocs(uniqueUserId).update(newData);
+  } catch (error) {
+    console.log(error);
+  }
+  return fs;
 }
 
-export function deleteUserFromDB(uniqueUserId) {
-  return db(`users/${uniqueUserId}`)
-    .remove()
-    .catch(err => console.log(err));
+
+export async function deleteUserFromDB(uniqueUserId) {
+  let fs;
+  try {
+    fs = await aUsersDocs(uniqueUserId).delete();
+  } catch (error) {
+    console.log(error);
+  }
+  return fs;
 }
 
-export function getDatesToScheduleQueueFromDB(uniqueUserId) {
-  return db(`users/${uniqueUserId}/datesToScheduleQueue`)
-    .once('value')
-    .then(snapshot => snapshot.val())
-    .catch(err => console.log(err));
+export async function getDatesToScheduleQueueFromDB(uniqueUserId) {
+  let fs;
+  try {
+    fs = await aUsersDocs(uniqueUserId).get();
+  } catch (error) {
+    console.log(error);
+  }
+  console.log(fs.data());
+  return fs.data();
 }
 
-export function updateScheduledEvents(uniqueUserId, newEvents) {
-  return db(`users/${uniqueUserId}/scheduledEvents`)
-    .update(newEvents)
-    .catch(err => console.log(err));
+export async function updateScheduledEvents(uniqueUserId, newEvents) {
+  let fs;
+  try {
+    const payload = { scheduledEvents: newEvents };
+    fs = await aUsersDocs(uniqueUserId).update(payload);
+  } catch (error) {
+    console.log(error);
+  }
+  return fs;
 }
 
-export function updateEventsToDeleteQueue(uniqueUserId, eventsToDeleteQueue) {
-  return db(`users/${uniqueUserId}/eventsToDeleteQueue`)
-    .set(eventsToDeleteQueue)
-    .catch(err => console.log(err));
+export async function updateEventsToDeleteQueue(uniqueUserId, eventsToDeleteQueue) {
+  let fs;
+  try {
+    const payload = { eventsToDeleteQueue };
+    fs = await aUsersDocs(uniqueUserId).set(payload);
+  } catch (error) {
+    console.log(error);
+  }
+  return fs;
 }
 
-export function addItemsToUser(uniqueUserId, itemId, institutionName) {
-  return db(`users/${uniqueUserId}/items/${itemId}`)
-    .set(institutionName)
-    .catch(err => console.log(err));
+export async function addItemsToUser(uniqueUserId, itemId, institutionName) {
+  let fs;
+  try {
+    fs = await aUsersDocs(uniqueUserId).collection('items').doc(`${itemId}`)
+      .set(institutionName);
+  } catch (error) {
+    console.log(error);
+  }
+  return fs;
 }
 
-export function updateDatesToScheduleQueue(uniqueUserId, transactionDates) {
-  return db(`users/${uniqueUserId}/datesToScheduleQueue`)
-    .set(transactionDates)
-    .catch(err => console.log(err));
+export async function updateDatesToScheduleQueue(uniqueUserId, transactionDates) {
+  let fs;
+  try {
+    const payload = { datesToScheduleQueue: transactionDates };
+    fs = await aUsersDocs(uniqueUserId).update(payload);
+  } catch (error) {
+    console.log(error);
+  }
+  return fs;
 }
 
-export function clearDatesToScheduleAndEventsToDeleteQueues(uniqueUserId) {
-  return db(`users/${uniqueUserId}`)
-    .update({ datesToScheduleQueue: null, eventsToDeleteQueue: null })
-    .catch(err => console.log(err));
+export async function clearDatesToScheduleAndEventsToDeleteQueues(uniqueUserId) {
+  let fs;
+  try {
+    const remove = db.FieldValue.delete();
+    const payload = { datesToScheduleQueue: remove, eventsToDeleteQueue: remove };
+    fs = await aUsersDocs(uniqueUserId).update(payload);
+  } catch (error) {
+    console.log(error);
+  }
+  return fs;
 }
 
-export function deleteItemFromUserCollection(uniqueUserId, itemId) {
-  return db(`users/${uniqueUserId}/items/${itemId}`)
-    .remove()
-    .catch(err => console.log(err));
+export async function deleteItemFromUserCollection(uniqueUserId, itemId) {
+  let fs;
+  try {
+    fs = await aUsersDocs(uniqueUserId).collection('items').doc(`${itemId}`)
+      .delete();
+  } catch (error) {
+    console.log(error);
+  }
+  return fs;
 }

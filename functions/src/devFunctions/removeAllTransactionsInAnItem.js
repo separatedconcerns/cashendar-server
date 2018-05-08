@@ -2,9 +2,12 @@ import { removeAllTransactionsInAnItem as _removeAllTransactionsInAnItem } from 
 
 async function removeAllTransactionsInAnItem(request, response) {
   const itemId = request.body.itemId;
-  await _removeAllTransactionsInAnItem(itemId);
+  try {
+    await _removeAllTransactionsInAnItem(itemId);
+  } catch (error) {
+    console.log(`Transactions NOT Deleted for item: ${itemId}, ${error}`);
+  }
   response.end(`All Transactions Deleted for item: ${itemId}`);
-  // .catch(e => response.end(`Transactions NOT Deleted for item: ${itemId}, ${e}`));
 }
 
 export default removeAllTransactionsInAnItem;

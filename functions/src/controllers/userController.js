@@ -2,6 +2,7 @@ import * as admin from '../apiClients/firebaseClient';
 
 const auth = admin.auth();
 const db = admin.firestore();
+const FieldValue = db.FieldValue;
 const userCollection = db.collection('users');
 const aUsersDocs = uniqueUserId => userCollection.doc(`${uniqueUserId}`);
 
@@ -62,21 +63,12 @@ export async function getUserFromDB(uniqueUserId) {
 }
 
 export async function getUserItems(uniqueUserId) {
-  let fs;
   const items = {};
   try {
-    fs = await db.collection('users').doc(`${uniqueUserId}`).collection('items').get()
-      .then((snapshot) => {
-        snapshot.forEach((doc) => {
-          items[doc.id] = doc.data();
-        });
-      })
-      .catch((err) => {
-        console.log('Error getting documents', err);
-      });
-
-    // items = fs.exists ? fs.data() : 'null';
-    console.log('70 items', items);
+    const snapshot = await aUsersDocs(uniqueUserId).collection('items').get();
+    snapshot.forEach((doc) => {
+      items[doc.id] = doc.data();
+    });
   } catch (error) {
     console.log(error);
   }
@@ -117,13 +109,14 @@ export async function deleteUserFromDB(uniqueUserId) {
 
 export async function getDatesToScheduleQueueFromDB(uniqueUserId) {
   let fs;
+  let dates;
   try {
     fs = await aUsersDocs(uniqueUserId).get();
+    dates = fs.data().datesToScheduleQueue;
   } catch (error) {
     console.log(error);
   }
-  console.log(fs.data());
-  return fs.data();
+  return dates;
 }
 
 export async function updateScheduledEvents(uniqueUserId, newEvents) {
@@ -173,8 +166,7 @@ export async function updateDatesToScheduleQueue(uniqueUserId, transactionDates)
 export async function clearDatesToScheduleAndEventsToDeleteQueues(uniqueUserId) {
   let fs;
   try {
-    const remove = db.FieldValue.delete();
-    const payload = { datesToScheduleQueue: remove, eventsToDeleteQueue: remove };
+    const payload = { datesToScheduleQueue: FieldValue.delete(), eventsToDeleteQueue: FieldValue.delete() };
     fs = await aUsersDocs(uniqueUserId).update(payload);
   } catch (error) {
     console.log(error);

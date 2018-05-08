@@ -4,51 +4,49 @@ import { getItemFromDB } from './controllers/itemController';
 import { HOST } from './creds.json';
 import deleteGoogleCalendar from './deleteCalendar';
 
-function deleteUserProfile(request, response) {
+
+const deleteBankItems = async (uniqueUserId) => {
+  try {
+    const itemsObj = await getUserItems(uniqueUserId);
+    if (itemsObj !== 'null') {
+      const allItems = Object.keys(itemsObj);
+      allItems.forEach((currentItem) => {
+        getItemFromDB(currentItem)
+          .then((itemData) => {
+            const config = {
+              url: `${HOST}deleteItem`,
+              payload: {
+                itemToDelete: currentItem,
+                accessToken: itemData.accessToken,
+              },
+            };
+            post(config.url, config.payload)
+              .then(plaidRes => console.log('29', plaidRes.data));
+          });
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const deleteCalendar = async (uniqueUserId) => {
+  const userData = await getUserFromDB(uniqueUserId).catch(error => console.log(error));
+  const calendarId = userData.calendarId;
+  const OAuthToken = userData.OAuthToken;
+  deleteGoogleCalendar(OAuthToken, calendarId);
+};
+
+export default async function deleteUserProfile(request, response) {
   const idToken = request.body.idToken;
   let uniqueUserId;
-
-  verifyIdToken(idToken)
-    .then((result) => { uniqueUserId = result; })
-    .then(() => deleteBankItems(uniqueUserId))
-    .then(() => deleteCalendar(uniqueUserId))
-    .then(() => response.end('Profile Deleted'))
-    .catch(e => console.log(e));
-
-  const deleteBankItems = (uniqueUserId) => {
-    getUserItems(uniqueUserId)
-      .then((itemsObj) => {
-        if (itemsObj !== null) {
-          const allItems = Object.keys(itemsObj);
-          allItems.forEach((currentItem) => {
-            getItemFromDB(currentItem)
-              .then((itemData) => {
-                const config = {
-                  url: `${HOST}deleteItem`,
-                  payload: {
-                    itemToDelete: currentItem,
-                    access_token: itemData.access_token,
-                  },
-                };
-                post(config.url, config.payload)
-                  .then(plaidRes => console.log('29', plaidRes.data));
-              });
-          });
-        }
-      });
-  };
-
-  const deleteCalendar = (uniqueUserId) => {
-    getUserFromDB(uniqueUserId)
-      .then((userData) => {
-        const calendarId = userData.calendarId;
-        const OAuthToken = userData.OAuthToken;
-        deleteGoogleCalendar(OAuthToken, calendarId)
-          .then(deleteUserFromDB(uniqueUserId));
-      });
-  };
+  try {
+    uniqueUserId = await verifyIdToken(idToken);
+    await deleteBankItems(uniqueUserId);
+    await deleteCalendar(uniqueUserId);
+    await deleteUserFromDB(uniqueUserId);
+  } catch (error) {
+    console.log(error);
+  }
+  response.end('Profile Deleted');
 }
-
-
-export default deleteUserProfile;
-

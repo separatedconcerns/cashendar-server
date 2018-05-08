@@ -1,67 +1,116 @@
-import { database } from '../apiClients/firebaseClient';
+import * as admin from '../apiClients/firebaseClient';
 
-const db = ref => database().ref(ref);
+const db = admin.firestore();
+const itemCollection = db.collection('items');
+const anItemsDocs = itemId => itemCollection.doc(`${itemId}`);
 
-export function deleteItemFromItemsCollection(itemId) {
-  return db(`items/${itemId}`)
-    .remove()
-    .catch(err => console.log(err));
+export async function deleteItemFromItemsCollection(itemId) {
+  let fs;
+  try {
+    fs = await anItemsDocs(itemId).delete();
+  } catch (error) {
+    console.log(error);
+  }
+  return fs;
 }
 
-export function getItemFromDB(itemId) {
-  return db(`items/${itemId}`)
-    .once('value')
-    .then(snapshot => snapshot.val())
-    .catch(err => console.log(err));
+export async function getItemFromDB(itemId) {
+  let fs;
+  let item;
+  try {
+    fs = await anItemsDocs(itemId).get();
+    console.log(fs);
+    item = fs.data();
+    console.log(item);
+  } catch (error) {
+    console.log(error);
+  }
+  return item;
 }
 
-export function getAccessTokenByItem(itemId) {
-  return db(`items/${itemId}/access_token`)
-    .once('value')
-    .then(snapshot => snapshot.val())
-    .catch(err => console.log(err));
+export async function getAccessTokenByItem(itemId) {
+  let fs;
+  let accessToken;
+  try {
+    fs = await anItemsDocs(itemId).get();
+    accessToken = fs.data().accessToken;
+  } catch (error) {
+    console.log(error);
+  }
+  return accessToken;
 }
 
-export function getItemTransactionsFromDB(itemId) {
-  return db(`items/${itemId}/transactions`)
-    .once('value')
-    .then(snapshot => snapshot.val())
-    .catch(err => console.log(err));
+export async function getItemTransactionsFromDB(itemId) {
+  let fs;
+  let transactions;
+  try {
+    fs = await anItemsDocs(itemId).get();
+    transactions = fs.data().transactions;
+    // todo: transactions should be in a collection?
+  } catch (error) {
+    console.log(error);
+  }
+  return transactions;
 }
 
-export function addTransactionsByDate(itemId, date, transactions) {
-  return db(`/items/${itemId}/transactions/${date}`)
-    .update(transactions)
-    .catch(err => console.log(err));
+export async function getUserIdByItemFromDB(itemId) {
+  let fs;
+  let uniqueUserId;
+  try {
+    fs = await anItemsDocs(itemId).get();
+    uniqueUserId = fs.data().uniqueUserId;
+  } catch (error) {
+    console.log(error);
+  }
+  return uniqueUserId;
 }
 
-export function getUserIdByItemFromDB(itemId) {
-  return db(`items/${itemId}/uniqueUserId`)
-    .once('value')
-    .then(snapshot => snapshot.val())
-    .catch(err => console.log(err));
+export async function addTransactionsByDate(itemId, date, transactions) {
+  let fs;
+  try {
+    fs = await anItemsDocs(itemId).collection('transactions').doc(`${date}`).set(transactions);
+  } catch (error) {
+    console.log(error);
+  }
+  return fs;
 }
 
-export function addDataToItem(itemId, dataToAdd) {
-  return db(`items/${itemId}`)
-    .set(dataToAdd)
-    .catch(err => console.log(err));
+export async function addDataToItem(itemId, dataToAdd) {
+  let fs;
+  try {
+    fs = await anItemsDocs(itemId).set(dataToAdd);
+  } catch (error) {
+    console.log(error);
+  }
+  return fs;
 }
 
-export function removeTransactions(itemId, dateAndId1, dateAndId2) {
-  return db(`items/${itemId}/transactions/${dateAndId1}/${dateAndId2}`)
-    .remove()
-    .catch(err => console.log(err));
+export async function removeTransactions(itemId, dateAndId1, dateAndId2) {
+  let fs;
+  try {
+    fs = await anItemsDocs(itemId).collection('transactions').doc(`${dateAndId1}`).remove();
+  } catch (error) {
+    console.log(error);
+  }
+  return fs;
 }
 
-export function addAccountsToItem(itemId, dataToAdd) {
-  return db(`items/${itemId}/accounts/${dataToAdd.account_id}`)
-    .set(dataToAdd)
-    .catch(err => console.log(err));
+export async function addAccountsToItem(itemId, dataToAdd) {
+  let fs;
+  try {
+    fs = await anItemsDocs(itemId).collection('accounts').doc(`${dataToAdd.account_id}`).set(dataToAdd);
+  } catch (error) {
+    console.log(error);
+  }
+  return fs;
 }
 
-export function removeAllTransactionsInAnItem(itemId) {
-  return db(`items/${itemId}/transactions`)
-    .remove()
-    .catch(err => console.log(err));
+export async function removeAllTransactionsInAnItem(itemId) {
+  let fs;
+  try {
+    fs = await anItemsDocs(itemId).collection('transactions').delete();
+  } catch (error) {
+    console.log(error);
+  }
+  return fs;
 }

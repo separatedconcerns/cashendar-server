@@ -20,19 +20,23 @@ async function processTransactionsRemoved(itemId, removedTransactions) {
 }
 
 async function processInitial(itemId, newTransactions) {
-  const itemData = await getItemFromDB(itemId);
+  const itemData = await getItemFromDB(itemId).catch(e => console.log(e));
   if (itemData) {
     const config = {
-      url: `${HOST}getTransactionsFromPlaid`,
+      url1: `${HOST}getTransactionsFromPlaid`,
+      url2: `${HOST}addCalendarEvents`,
       payload: {
         accessToken: itemData.accessToken,
         uniqueUserId: itemData.uniqueUserId,
         newTransactions,
       },
     };
-    await post(config.url, config.payload);
-    await post(`${HOST}addCalendarEvents`, config.payload);
-    // .catch(e => console.log('plaidWebHook Error!:', e));
+    try {
+      await post(config.url1, config.payload);
+      await post(config.url2, config.payload);
+    } catch (error) {
+      console.log(error);
+    }
   }
   return ' ';
 }

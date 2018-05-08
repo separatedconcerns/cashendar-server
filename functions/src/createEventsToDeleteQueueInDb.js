@@ -3,7 +3,12 @@ import { getUserFromDB, updateEventsToDeleteQueue } from './controllers/userCont
 async function createEventsToDeleteQueueInDb(request, response) {
   const newEventDates = request.body.newEventDates;
   const uniqueUserId = request.body.uniqueUserId;
-  const userData = await getUserFromDB(uniqueUserId);
+  let userData;
+  try {
+    userData = await getUserFromDB(uniqueUserId);
+  } catch (error) {
+    console.log(error);
+  }
   const calendarId = userData.calendarId;
   const OAuthToken = userData.OAuthToken;
   const scheduledEvents = userData.scheduledEvents || [];
@@ -18,7 +23,11 @@ async function createEventsToDeleteQueueInDb(request, response) {
     calendarId,
     OAuthToken,
   };
-  await updateEventsToDeleteQueue(uniqueUserId, eventsToDeleteQueue);
+  try {
+    await updateEventsToDeleteQueue(uniqueUserId, eventsToDeleteQueue);
+  } catch (error) {
+    console.log(error);
+  }
   response.json(responseObj);
   // .catch(e => console.log('Error in createEventsToDeleteQueueInDb', e));
 }

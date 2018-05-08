@@ -17,7 +17,7 @@ const deleteBankItems = async (uniqueUserId) => {
               url: `${HOST}deleteItem`,
               payload: {
                 itemToDelete: currentItem,
-                accessToken: itemData.accessToken,
+                accessToken: itemData.access_token,
               },
             };
             post(config.url, config.payload)

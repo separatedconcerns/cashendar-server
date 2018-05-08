@@ -26,7 +26,7 @@ async function processInitial(itemId, newTransactions) {
       url1: `${HOST}getTransactionsFromPlaid`,
       url2: `${HOST}addCalendarEvents`,
       payload: {
-        accessToken: itemData.accessToken,
+        access_token: itemData.access_token,
         uniqueUserId: itemData.uniqueUserId,
         newTransactions,
       },

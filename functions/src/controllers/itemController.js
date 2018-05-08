@@ -19,7 +19,6 @@ export async function getItemFromDB(itemId) {
   let item;
   try {
     fs = await anItemsDocs(itemId).get();
-    console.log(fs);
     item = fs.data();
   } catch (error) {
     console.log(error);

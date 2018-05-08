@@ -28,10 +28,12 @@ export async function getItemFromDB(itemId) {
 
 export async function getAccessTokenByItem(itemId) {
   let fs;
+  let itemData;
   let accessToken;
   try {
     fs = await anItemsDocs(itemId).get();
-    accessToken = fs.data().accessToken;
+    itemData = fs.data();
+    accessToken = itemData.access_token;
   } catch (error) {
     console.log(error);
   }
@@ -39,12 +41,12 @@ export async function getAccessTokenByItem(itemId) {
 }
 
 export async function getItemTransactionsFromDB(itemId) {
-  let fs;
-  let transactions;
+  const transactions = {};
   try {
-    fs = await anItemsDocs(itemId).get();
-    transactions = fs.data().transactions;
-    // todo: transactions should be in a collection?
+    const snapshot = await anItemsDocs(itemId).collection('transactions').get();
+    snapshot.forEach((doc) => {
+      transactions[doc.id] = doc.data();
+    });
   } catch (error) {
     console.log(error);
   }

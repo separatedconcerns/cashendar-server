@@ -8,15 +8,19 @@ async function exchangePublicToken(request, response) {
   const institutionName = request.body.institution;
   const webhook = request.body.webhook;
 
-  const [uniqueUserId, payload] = await Promise.all([
-    verifyIdToken(idToken),
-    plaidClient.exchangePublicToken(publicToken),
-  ]);
-  await Promise.all([
-    addItemsToUser(uniqueUserId, payload.item_id, institutionName),
-    addDataToItem(payload.item_id, { access_token: payload.access_token, webhook, uniqueUserId }),
-    updateUser(uniqueUserId, { fetchingBanks: true }),
-  ]);
+  try {
+    const [uniqueUserId, payload] = await Promise.all([
+      verifyIdToken(idToken),
+      plaidClient.exchangePublicToken(publicToken),
+    ]);
+    await Promise.all([
+      addItemsToUser(uniqueUserId, payload.item_id, institutionName),
+      addDataToItem(payload.item_id, { access_token: payload.access_token, webhook, uniqueUserId }),
+      updateUser(uniqueUserId, { fetchingBanks: true }),
+    ]);
+  } catch (error) {
+    console.log(error);
+  }
   response.end();
 }
 
